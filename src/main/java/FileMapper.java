@@ -50,7 +50,10 @@ public class FileMapper {
                     lineCount++;
                 }
             }
-            System.out.println(mapping.toString());
+//            System.out.println(mapping.toString());
+            for(String s: mapping.keySet()){
+                System.out.println(s);
+            }
         }
 
 
