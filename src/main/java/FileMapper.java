@@ -55,11 +55,13 @@ public class FileMapper {
                 if(!fs.exists(new Path(outPath + s + ".txt"))){
                     fs.createNewFile(new Path(outPath + s + ".txt"));
                 }
+                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
                 for(String link : mapping.get(s)){
-                    FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
-                    out.writeUTF(link);
-                    out.close();
+
+                    out.writeUTF(link + "\n");
+
                 }
+                out.close();
             }
         }
         return null;
