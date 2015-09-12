@@ -53,6 +53,9 @@ public class FileMapper {
 //            System.out.println(mapping.toString());
             for(String s: mapping.keySet()){
                 System.out.println(s);
+                for(String link : mapping.get(s)){
+                    System.out.println(link);
+                }
             }
         }
 
