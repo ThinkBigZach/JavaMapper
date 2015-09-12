@@ -61,6 +61,9 @@ public class FileMapper {
 
 
     public static void main(String[] args) throws IOException {
+        for(String s: args){
+            System.out.println(s);
+        }
         testing = args[0];
         getControlPath(testing);
     }
