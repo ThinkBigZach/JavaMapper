@@ -1,0 +1,4 @@
+com/symlink/input/SymlinkSerde.class
+com/udf/input/ReplaceChars.class
+com/symlink/input/ExtendedSymlinkTextInputFormat.class
+com/symlink/input/NewInputFormat.class
