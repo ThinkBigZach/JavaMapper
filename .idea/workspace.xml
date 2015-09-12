@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5ab1ab36-39d2-4086-b96c-4b81bbb4bade" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/FileMapper.java" afterPath="$PROJECT_DIR$/src/main/java/FileMapper.java" />
-    </list>
+    <list default="true" id="5ab1ab36-39d2-4086-b96c-4b81bbb4bade" name="Default" comment="" />
     <ignored path="input.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/target/" />
