@@ -1,4 +1,5 @@
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -13,7 +14,7 @@ public class FileMapper {
 
     static String testing ="hdfs://quickstart.cloudera:8020/financialDataFeed/data/8764/athena/finished/2011-07-01-2011-07-31/";
     static String practiceID;
-    static Path p = new Path("/user/financial");
+    static String outPath = "/user/rscott22/mapping/";
     static String entity;
     static String fileName;
     static HashMap<String, ArrayList<String>> mapping;
@@ -50,12 +51,13 @@ public class FileMapper {
                     lineCount++;
                 }
             }
-//            for(String s: mapping.keySet()){
-//                System.out.println(s);
-//                for(String link : mapping.get(s)){
-//                    System.out.println(link);
-//                }
-//            }
+            for(String s: mapping.keySet()){
+                for(String link : mapping.get(s)){
+                    FSDataOutputStream out = fs.append(new Path(outPath + s));
+                    out.writeUTF(link);
+                    out.close();
+                }
+            }
         }
         return null;
     }
