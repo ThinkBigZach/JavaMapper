@@ -13,6 +13,7 @@ public class FileMapper {
 
     static String testing ="hdfs://quickstart.cloudera:8020/financialDataFeed/data/8764/athena/finished/2011-07-01-2011-07-31/";
     static String practiceID;
+    static Path p = new Path("/user/financial");
     static String entity;
     static String fileName;
     static HashMap<String, ArrayList<String>> mapping;
@@ -31,13 +32,12 @@ public class FileMapper {
                         practiceID = line.substring(0, line.indexOf(".asv"));
                         fileName = line.substring(0, line.indexOf(".asv") +4);
                         entity = line.substring(0, line.indexOf("_"));
-                        while(practiceID.contains("_")){
+                        while(practiceID.contains("_")) {
                             practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                         }
-                        System.out.println(practiceID);
                         String testing2 = testing.substring(0, testing.indexOf("/data/") + 6);
-                        String testing3 = testing.substring(testing.indexOf("/athena"));
-                        String newPath = testing2 + practiceID + testing3;
+                        String testing3 = testing.substring(testing.indexOf("/athena/"));
+                        String newPath = testing2 + practiceID + testing3 + "/";
                         if(mapping.containsKey(entity)){
                             mapping.get(entity).add(newPath + fileName);
                         }
@@ -50,18 +50,13 @@ public class FileMapper {
                     lineCount++;
                 }
             }
-//            System.out.println(mapping.toString());
-            for(String s: mapping.keySet()){
-                System.out.println(s);
-                for(String link : mapping.get(s)){
-                    System.out.println(link);
-                }
-            }
+//            for(String s: mapping.keySet()){
+//                System.out.println(s);
+//                for(String link : mapping.get(s)){
+//                    System.out.println(link);
+//                }
+//            }
         }
-
-
-
-
         return null;
     }
 
