@@ -58,11 +58,10 @@ public class FileMapper {
                     while(practiceID.contains("_")) {
                         practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                     }
-                    String testing2 = p.toString().substring(0, p.toString().indexOf("/data/") + 6);
-                    String testing3 = p.toString().substring(p.toString().indexOf("/athena/"));
+                    String fixedPath = p.toString().substring(0, p.toString().indexOf("Manifest"));
+                    String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
+                    String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
                     String newPath = testing2 + practiceID + testing3 + "/";
-
-
                     if(mapping.containsKey(entity)){
                             mapping.get(entity).add(newPath + fileName);
                     }
@@ -104,12 +103,10 @@ public class FileMapper {
             if(status.isDirectory()){
                 if(wildCarded) {
                     if (status.getPath().getName().startsWith(dateWildCard)) {
-                        System.out.println("DIRECTORY:" + status.getPath().toString());
                         readFilesFromPath(status.getPath(), false);
                     }
                 }
                 else{
-                    System.out.println("DIRECTORY:" + status.getPath().toString());
                     readFilesFromPath(status.getPath(), false);
                 }
             }
@@ -120,14 +117,7 @@ public class FileMapper {
                 else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
                     controlFiles.add(status.getPath());
                 }
-                System.out.println("FILE:" + status.getPath().toString());
             }
         }
     }
-
-
-
-
-
-
 }
