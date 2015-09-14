@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.DriverManager;
 
+import org.apache.hadoop.hive.jdbc.HiveDriver;
 /**
  * Created by zw186016 on 9/14/15.
  */
