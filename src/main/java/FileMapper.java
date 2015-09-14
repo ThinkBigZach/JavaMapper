@@ -133,21 +133,18 @@ public class FileMapper {
                             practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                         }
                         String newPath = generateNewPath(p, practiceID);
-                        if (mapping.containsKey(entity)) {
-                            mapping.get(entity).add(newPath + fileName);
-                        } else {
-                            ArrayList<String> newList = new ArrayList<String>();
-                            newList.add(newPath + fileName);
-                            mapping.put(entity, newList);
+                        if(isValidEntry(practiceID,entity, null)) {
+                            addToMapping(newPath);
+                        }
+                        else{
+                            errorArray.add(newPath);
                         }
                     }
                 }
                 if(!fs.exists(new Path(outPath + "manifest.txt"))){
                     fs.createNewFile(new Path(outPath + "manifest.txt"));
                 }
-                FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
-                out.writeUTF(replaceCRandLF(line) + "\n");
-                out.close();
+                myFile += replaceCRandLF(line);
                 lineCount++;
             }
             for(String s: mapping.keySet()){
@@ -160,12 +157,21 @@ public class FileMapper {
                 }
                 out.close();
             }
-
-
+            FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
+            out.write(replaceCRandLF(myFile).getBytes());
+            out.close();
         }
     }
 
-
+    public static void addToMapping(String newPath){
+    if (mapping.containsKey(entity)) {
+        mapping.get(entity).add(newPath + fileName);
+    } else {
+        ArrayList<String> newList = new ArrayList<String>();
+        newList.add(newPath + fileName);
+        mapping.put(entity, newList);
+    }
+}
 
     public static String replaceCRandLF(String line){
         line = line.replaceAll("\012", "");
