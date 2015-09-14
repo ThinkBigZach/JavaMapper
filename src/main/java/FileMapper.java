@@ -35,10 +35,11 @@ public class FileMapper {
             while(temp.contains("/")){
                 temp = temp.substring(temp.indexOf("/") + 1);
             }
-            dateWildCard = temp;
+            dateWildCard = temp.substring(0, temp.length() - 1);
             pathToControl = pathToControl.substring(0, pathToControl.indexOf(dateWildCard));
+            readFilesFromPath(new Path(pathToControl), true);
         }
-        readFilesFromPath(new Path(pathToControl));
+
 //        for(FileStatus status : fileStatuses){
 //            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
 //            String line = "";
@@ -94,17 +95,23 @@ public class FileMapper {
 
 
 
-    public static void readFilesFromPath(Path pathToFiles) throws IOException {
+    public static void readFilesFromPath(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
 
 
 
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
-                System.out.println(status.getPath().getName());
-                if(status.getPath().getName().startsWith(dateWildCard)) {
+                if(wildCarded) {
+                    System.out.println(status.getPath().getName());
+                    if (status.getPath().getName().startsWith(dateWildCard)) {
+                        System.out.println("DIRECTORY:" + status.getPath().toString());
+                        readFilesFromPath(status.getPath(), false);
+                    }
+                }
+                else{
                     System.out.println("DIRECTORY:" + status.getPath().toString());
-                    readFilesFromPath(status.getPath());
+                    readFilesFromPath(status.getPath(), false);
                 }
             }
             else{
