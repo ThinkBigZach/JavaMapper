@@ -27,8 +27,7 @@ public class FileMapper {
     static String dateWildCard = "";
     public static Path getControlPath(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
-        FileStatus[] fileStatuses = fs.listStatus(new Path(pathToControl));
-        mapping = new HashMap<String, ArrayList<String>>();
+//        FileStatus[] fileStatuses = fs.listStatus(new Path(pathToControl));
         if(pathToControl.endsWith("*")){
             isWildcard = true;
             String temp = pathToControl;
@@ -37,48 +36,49 @@ public class FileMapper {
                 temp = temp.substring(temp.indexOf("/") + 1);
             }
             dateWildCard = temp;
+            pathToControl = pathToControl.substring(0, pathToControl.indexOf(dateWildCard));
         }
         readFilesFromPath(new Path(pathToControl));
-        for(FileStatus status : fileStatuses){
-            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
-            String line = "";
-            System.out.println(status.getPath().toString());
-            int lineCount = 0;
-            while((line = br.readLine()) != null){
-                if(status.getPath().toString().contains("Manifest")){
-                    if(lineCount > 3) {
-                        practiceID = line.substring(0, line.indexOf(".asv"));
-                        fileName = line.substring(0, line.indexOf(".asv") +4);
-                        entity = line.substring(0, line.indexOf("_"));
-                        while(practiceID.contains("_")) {
-                            practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
-                        }
-                        String testing2 = testing.substring(0, testing.indexOf("/data/") + 6);
-                        String testing3 = testing.substring(testing.indexOf("/athena/"));
-                        String newPath = testing2 + practiceID + testing3 + "/";
-                        if(mapping.containsKey(entity)){
-                            mapping.get(entity).add(newPath + fileName);
-                        }
-                        else{
-                            ArrayList<String> newList = new ArrayList<String>();
-                            newList.add(newPath + fileName);
-                            mapping.put(entity, newList);
-                        }
-                    }
-                    lineCount++;
-                }
-            }
-            for(String s: mapping.keySet()){
-                if(!fs.exists(new Path(outPath + s + ".txt"))){
-                    fs.createNewFile(new Path(outPath + s + ".txt"));
-                }
-                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
-                for(String link : mapping.get(s)){
-                    out.writeUTF(link + "\n");
-                }
-                out.close();
-            }
-        }
+//        for(FileStatus status : fileStatuses){
+//            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
+//            String line = "";
+//            System.out.println(status.getPath().toString());
+//            int lineCount = 0;
+//            while((line = br.readLine()) != null){
+//                if(status.getPath().toString().contains("Manifest")){
+//                    if(lineCount > 3) {
+//                        practiceID = line.substring(0, line.indexOf(".asv"));
+//                        fileName = line.substring(0, line.indexOf(".asv") +4);
+//                        entity = line.substring(0, line.indexOf("_"));
+//                        while(practiceID.contains("_")) {
+//                            practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
+//                        }
+//                        String testing2 = testing.substring(0, testing.indexOf("/data/") + 6);
+//                        String testing3 = testing.substring(testing.indexOf("/athena/"));
+//                        String newPath = testing2 + practiceID + testing3 + "/";
+//                        if(mapping.containsKey(entity)){
+//                            mapping.get(entity).add(newPath + fileName);
+//                        }
+//                        else{
+//                            ArrayList<String> newList = new ArrayList<String>();
+//                            newList.add(newPath + fileName);
+//                            mapping.put(entity, newList);
+//                        }
+//                    }
+//                    lineCount++;
+//                }
+//            }
+//            for(String s: mapping.keySet()){
+//                if(!fs.exists(new Path(outPath + s + ".txt"))){
+//                    fs.createNewFile(new Path(outPath + s + ".txt"));
+//                }
+//                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
+//                for(String link : mapping.get(s)){
+//                    out.writeUTF(link + "\n");
+//                }
+//                out.close();
+//            }
+//        }
         return null;
     }
 
