@@ -121,6 +121,7 @@ public class FileMapper {
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = "";
             int lineCount = 0;
+            String myFile = "";
             while((line = br.readLine()) != null){
                 if(lineCount > 3) {
                     //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
@@ -141,6 +142,7 @@ public class FileMapper {
                         }
                     }
                 }
+                myFile += replaceCRandLF(line);
                 lineCount++;
             }
             for(String s: mapping.keySet()){
@@ -153,10 +155,23 @@ public class FileMapper {
                 }
                 out.close();
             }
+
+            if(!fs.exists(new Path(outPath + "manifest.txt"))){
+                fs.createNewFile(new Path(outPath + "manifest.txt"));
+            }
+            FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
+            out.writeUTF(myFile + "\n");
+            out.close();
         }
     }
 
 
+
+    public static String replaceCRandLF(String line){
+        line = line.replaceAll("\012", "");
+        line = line.replaceAll("\015", "");
+        return line;
+    }
     public static void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
         for(FileStatus status : fileStatuses){
