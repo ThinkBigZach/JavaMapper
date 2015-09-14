@@ -49,29 +49,29 @@ public class FileMapper {
             String line = "";
             int lineCount = 0;
             while((line = br.readLine()) != null){
-                for(String s : line.split("\037")){
-                    System.out.println(s);
-                }
+//                for(String s : line.split("\037")){
+//                    System.out.println(s);
+//                }
                 if(lineCount > 3) {
                     //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
-
-                    practiceID = line.substring(0, line.indexOf(".asv"));
-                    fileName = line.substring(0, line.indexOf(".asv") +4);
-                    entity = line.substring(0, line.indexOf("_"));
-                    while(practiceID.contains("_")) {
-                        practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
-                    }
-                    String fixedPath = p.toString().substring(0, p.toString().indexOf("Manifest"));
-                    String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
-                    String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
-                    String newPath = testing2 + practiceID + testing3;
-                    if(mapping.containsKey(entity)){
+                    if(Integer.parseInt(line.split("\037")[1]) > 0) {
+                        practiceID = line.substring(0, line.indexOf(".asv"));
+                        fileName = line.substring(0, line.indexOf(".asv") + 4);
+                        entity = line.substring(0, line.indexOf("_"));
+                        while (practiceID.contains("_")) {
+                            practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
+                        }
+                        String fixedPath = p.toString().substring(0, p.toString().indexOf("Manifest"));
+                        String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
+                        String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
+                        String newPath = testing2 + practiceID + testing3;
+                        if (mapping.containsKey(entity)) {
                             mapping.get(entity).add(newPath + fileName);
-                    }
-                    else{
+                        } else {
                             ArrayList<String> newList = new ArrayList<String>();
                             newList.add(newPath + fileName);
                             mapping.put(entity, newList);
+                        }
                     }
                 }
                 lineCount++;

@@ -27,12 +27,12 @@
       <file leaf-file-name="FileMapper.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.58639705">
-              <caret line="51" column="47" selection-start-line="51" selection-start-column="47" selection-end-line="51" selection-end-column="47" />
+            <state vertical-scroll-proportion="0.69669116">
+              <caret line="69" column="32" selection-start-line="69" selection-start-column="32" selection-end-line="69" selection-end-column="32" />
               <folding>
                 <element signature="e#854#860#0" expanded="true" />
                 <element signature="e#919#925#0" expanded="true" />
-                <element signature="e#3347#3355#0" expanded="true" />
+                <element signature="e#3455#3463#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -493,12 +493,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.58639705">
-          <caret line="51" column="47" selection-start-line="51" selection-start-column="47" selection-end-line="51" selection-end-column="47" />
+        <state vertical-scroll-proportion="0.69669116">
+          <caret line="69" column="32" selection-start-line="69" selection-start-column="32" selection-end-line="69" selection-end-column="32" />
           <folding>
             <element signature="e#854#860#0" expanded="true" />
             <element signature="e#919#925#0" expanded="true" />
-            <element signature="e#3347#3355#0" expanded="true" />
+            <element signature="e#3455#3463#0" expanded="true" />
           </folding>
         </state>
       </provider>
