@@ -53,8 +53,8 @@ public class FileMapper {
                         practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                     }
 
-                    String testing2 = testing.substring(0, testing.indexOf("/data/") + 6);
-                    String testing3 = testing.substring(testing.indexOf("/athena/"));
+                    String testing2 = p.toString().substring(0, p.toString().indexOf("/data/") + 6);
+                    String testing3 = p.toString().substring(p.toString().indexOf("/athena/"));
                     String newPath = testing2 + practiceID + testing3 + "/";
                     if(mapping.containsKey(entity)){
                             mapping.get(entity).add(newPath + fileName);
