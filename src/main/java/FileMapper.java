@@ -15,8 +15,8 @@ public class FileMapper {
 
     static String testing ="hdfs://quickstart.cloudera:8020/financialDataFeed/data/8764/athena/finished/2011-07-01-2011-07-31/";
     static String practiceID;
-//    static String outPath = "/user/rscott22/mapping/";
-    static String outPath = "/user/athena/financialdatafeed/extracted/finished";
+    static String outPath = "/user/rscott22/mapping/";
+//    static String outPath = "/user/athena/financialdatafeed/extracted/finished";
     static String entity;
     static String fileName;
     static FileSystem fs;
@@ -71,6 +71,7 @@ public class FileMapper {
             for(String s: mapping.keySet()){
                 if(!fs.exists(new Path(outPath + s + ".txt"))){
                     fs.createNewFile(new Path(outPath + s + ".txt"));
+
                 }
                 FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
                 for(String link : mapping.get(s)){
@@ -128,9 +129,6 @@ public class FileMapper {
 
     public static void readFilesFromPath(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
-
-
-
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
                 if(wildCarded) {
