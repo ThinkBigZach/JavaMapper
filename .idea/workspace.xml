@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5ab1ab36-39d2-4086-b96c-4b81bbb4bade" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/FileMapper.java" afterPath="$PROJECT_DIR$/src/main/java/FileMapper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="input.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +27,8 @@
       <file leaf-file-name="FileMapper.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.6893382">
-              <caret line="38" column="41" selection-start-line="38" selection-start-column="41" selection-end-line="38" selection-end-column="41" />
+            <state vertical-scroll-proportion="0.69669116">
+              <caret line="136" column="72" selection-start-line="136" selection-start-column="72" selection-end-line="136" selection-end-column="72" />
               <folding>
                 <element signature="e#854#860#0" expanded="true" />
                 <element signature="e#919#925#0" expanded="true" />
@@ -494,8 +493,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.6893382">
-          <caret line="38" column="41" selection-start-line="38" selection-start-column="41" selection-end-line="38" selection-end-column="41" />
+        <state vertical-scroll-proportion="0.69669116">
+          <caret line="136" column="72" selection-start-line="136" selection-start-column="72" selection-end-line="136" selection-end-column="72" />
           <folding>
             <element signature="e#854#860#0" expanded="true" />
             <element signature="e#919#925#0" expanded="true" />

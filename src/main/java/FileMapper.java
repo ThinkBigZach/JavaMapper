@@ -131,7 +131,11 @@ public class FileMapper {
 
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
-                System.out.println("DIRECTORY IS:" + status.getPath().toString());
+                String temp =  status.getPath().toString() + datePart;
+                FileStatus[] dateFiles = fs.listStatus(new Path(temp));
+                for(FileStatus dateStatus : dateFiles){
+                    System.out.println(dateStatus.getPath().toString());
+                }
             }
         }
 
