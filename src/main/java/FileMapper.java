@@ -20,12 +20,25 @@ public class FileMapper {
     static String entity;
     static String fileName;
     static FileSystem fs;
+    static ArrayList<Path> manifestFiles = new ArrayList<Path>();
+    static ArrayList<Path> controlFiles = new ArrayList<Path>();
     static HashMap<String, ArrayList<String>> mapping;
+    static boolean isWildcard = false;
+    static String dateWildCard = "";
     public static Path getControlPath(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
-        FileStatus[] fileStatuses = fs.listStatus(new Path(testing));
+        FileStatus[] fileStatuses = fs.listStatus(new Path(pathToControl));
         mapping = new HashMap<String, ArrayList<String>>();
-        readFilesFromPath(new Path(testing));
+        if(pathToControl.endsWith("*")){
+            isWildcard = true;
+            String temp = pathToControl;
+
+            while(temp.contains("/")){
+                temp = temp.substring(temp.indexOf("/") + 1);
+            }
+            dateWildCard = temp;
+        }
+        readFilesFromPath(new Path(pathToControl));
         for(FileStatus status : fileStatuses){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
             String line = "";
@@ -75,7 +88,7 @@ public class FileMapper {
         entity = args[1];
 
 
-        getControlPath(testing);
+        getControlPath(args[0]);
     }
 
 
@@ -84,14 +97,23 @@ public class FileMapper {
     public static void readFilesFromPath(Path pathToFiles) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
 
+
+
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
-                readFilesFromPath(status.getPath());
+                System.out.println("DIRECTORY:" + status.getPath().toString());
+                if(status.getPath().getName().startsWith(dateWildCard)) {
+                    readFilesFromPath(status.getPath());
+                }
             }
             else{
-                System.out.println(status.getPath().toString());
-
-
+                if(status.getPath().toString().contains("Manifest")){
+                    manifestFiles.add(status.getPath());
+                }
+                else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
+                    controlFiles.add(status.getPath());
+                }
+                System.out.println("FILE:" + status.getPath().toString());
             }
         }
     }
