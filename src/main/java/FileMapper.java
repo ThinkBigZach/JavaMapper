@@ -27,6 +27,7 @@ public class FileMapper {
     static String dateWildCard = "";
     public static Path getControlPath(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
+        mapping = new HashMap<String, ArrayList<String>>();
 //        FileStatus[] fileStatuses = fs.listStatus(new Path(pathToControl));
         if(pathToControl.endsWith("*")){
             isWildcard = true;
