@@ -3,6 +3,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import utils.HiveConnector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -161,6 +162,14 @@ public class FileMapper {
             out.write(myFile.getBytes());
             out.close();
         }
+        try {
+            HiveConnector.loadManifestTable("/user/rscott22/mapping/manifest.txt");
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+
+
     }
 
     public static void addToMapping(String newPath){
