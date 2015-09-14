@@ -103,7 +103,6 @@ public class FileMapper {
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
                 if(wildCarded) {
-                    System.out.println(status.getPath().getName());
                     if (status.getPath().getName().startsWith(dateWildCard)) {
                         System.out.println("DIRECTORY:" + status.getPath().toString());
                         readFilesFromPath(status.getPath(), false);
