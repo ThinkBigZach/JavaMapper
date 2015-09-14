@@ -142,10 +142,10 @@ public class FileMapper {
                     FileStatus[] dateFiles = fs.listStatus(new Path(temp));
                     for (FileStatus dateStatus : dateFiles) {
                         if(dateStatus.getPath().toString().contains("Manifest")) {
-                            manifestFiles.add(status.getPath());
+                            manifestFiles.add(dateStatus.getPath());
                         }
                         else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
-                            controlFiles.add(status.getPath());
+                            controlFiles.add(dateStatus.getPath());
                         }
                     }
                 }
