@@ -154,10 +154,10 @@
     <orderEntry type="library" name="Maven: jline:jline:2.12" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.5" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.5" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hive:hive-jdbc:0.13.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hive:hive-common:0.13.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hive:hive-serde:0.13.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hive:hive-service:0.13.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hive:hive-jdbc:0.13.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hive:hive-common:0.13.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hive:hive-serde:0.13.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hive:hive-service:0.13.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jpam:jpam:1.1" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty.aggregate:jetty-all:7.6.0.v20120127" level="project" />
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1.1" level="project" />
