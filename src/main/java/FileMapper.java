@@ -135,6 +135,7 @@ public class FileMapper {
                 try {
                     FileStatus[] dateFiles = fs.listStatus(new Path(temp));
                     for (FileStatus dateStatus : dateFiles) {
+                        if(dateStatus.getPath().toString().contains("Manifest"))
                         System.out.println(dateStatus.getPath().toString());
                     }
                 }
