@@ -158,7 +158,7 @@ public class FileMapper {
                 out.close();
             }
             FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
-            out.write(replaceCRandLF(myFile).getBytes());
+            out.write(myFile.getBytes());
             out.close();
         }
     }
