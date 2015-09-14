@@ -49,6 +49,7 @@ public class FileMapper {
             String line = "";
             int lineCount = 0;
             while((line = br.readLine()) != null){
+                System.out.println(line);
                 if(lineCount > 3) {
                     //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
 
@@ -61,7 +62,7 @@ public class FileMapper {
                     String fixedPath = p.toString().substring(0, p.toString().indexOf("Manifest"));
                     String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
                     String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
-                    String newPath = testing2 + practiceID + testing3 + "/";
+                    String newPath = testing2 + practiceID + testing3;
                     if(mapping.containsKey(entity)){
                             mapping.get(entity).add(newPath + fileName);
                     }
