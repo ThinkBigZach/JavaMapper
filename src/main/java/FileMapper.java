@@ -132,9 +132,15 @@ public class FileMapper {
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
                 String temp =  status.getPath().toString() + datePart;
-                FileStatus[] dateFiles = fs.listStatus(new Path(temp));
-                for(FileStatus dateStatus : dateFiles){
-                    System.out.println(dateStatus.getPath().toString());
+                try {
+                    FileStatus[] dateFiles = fs.listStatus(new Path(temp));
+                    for (FileStatus dateStatus : dateFiles) {
+                        System.out.println(dateStatus.getPath().toString());
+                    }
+                }
+                catch(Exception e){
+                    System.out.println("PATH" + temp + "\nDoes not exist!");
+
                 }
             }
         }
