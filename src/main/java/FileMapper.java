@@ -101,8 +101,9 @@ public class FileMapper {
 
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
-                System.out.println("DIRECTORY:" + status.getPath().toString());
+                System.out.println(status.getPath().getName());
                 if(status.getPath().getName().startsWith(dateWildCard)) {
+                    System.out.println("DIRECTORY:" + status.getPath().toString());
                     readFilesFromPath(status.getPath());
                 }
             }
