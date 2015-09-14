@@ -142,7 +142,12 @@ public class FileMapper {
                         }
                     }
                 }
-                myFile += replaceCRandLF(line);
+                if(!fs.exists(new Path(outPath + "manifest.txt"))){
+                    fs.createNewFile(new Path(outPath + "manifest.txt"));
+                }
+                FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
+                out.writeUTF(replaceCRandLF(line) + "\n");
+                out.close();
                 lineCount++;
             }
             for(String s: mapping.keySet()){
@@ -156,12 +161,7 @@ public class FileMapper {
                 out.close();
             }
 
-            if(!fs.exists(new Path(outPath + "manifest.txt"))){
-                fs.createNewFile(new Path(outPath + "manifest.txt"));
-            }
-            FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
-            out.writeUTF(myFile + "\n");
-            out.close();
+
         }
     }
 
