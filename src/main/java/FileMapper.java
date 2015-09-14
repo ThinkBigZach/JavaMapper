@@ -144,7 +144,7 @@ public class FileMapper {
                 if(!fs.exists(new Path(outPath + "manifest.txt"))){
                     fs.createNewFile(new Path(outPath + "manifest.txt"));
                 }
-                myFile += replaceCRandLF(line);
+                myFile += replaceCRandLF(line) + "\n";
                 lineCount++;
             }
             for(String s: mapping.keySet()){
