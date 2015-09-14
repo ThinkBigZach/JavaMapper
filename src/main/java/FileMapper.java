@@ -29,8 +29,7 @@ public class FileMapper {
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
     public static Path getManifestPaths(String pathToControl) throws IOException {
-        fs = FileSystem.newInstance(new Configuration());
-        mapping = new HashMap<String, ArrayList<String>>();
+
 
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -57,6 +56,8 @@ public class FileMapper {
     public static void main(String[] args) throws IOException {
         testing = args[0];
         entity = args[1];
+        fs = FileSystem.newInstance(new Configuration());
+        mapping = new HashMap<String, ArrayList<String>>();
         getValidPracticeIds();
         getValidEntityNames();
         getManifestPaths(args[0]);
