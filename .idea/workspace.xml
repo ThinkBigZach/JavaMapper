@@ -27,12 +27,12 @@
       <file leaf-file-name="FileMapper.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7242647">
-              <caret line="137" column="80" selection-start-line="137" selection-start-column="80" selection-end-line="137" selection-end-column="80" />
+            <state vertical-scroll-proportion="1.1378677">
+              <caret line="59" column="5" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
               <folding>
-                <element signature="e#854#860#0" expanded="true" />
-                <element signature="e#919#925#0" expanded="true" />
-                <element signature="e#3725#3733#0" expanded="true" />
+                <element signature="e#816#822#0" expanded="true" />
+                <element signature="e#881#887#0" expanded="true" />
+                <element signature="e#4069#4077#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -493,12 +493,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/FileMapper.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7242647">
-          <caret line="137" column="80" selection-start-line="137" selection-start-column="80" selection-end-line="137" selection-end-column="80" />
+        <state vertical-scroll-proportion="1.1378677">
+          <caret line="59" column="5" selection-start-line="59" selection-start-column="5" selection-end-line="59" selection-end-column="5" />
           <folding>
-            <element signature="e#854#860#0" expanded="true" />
-            <element signature="e#919#925#0" expanded="true" />
-            <element signature="e#3725#3733#0" expanded="true" />
+            <element signature="e#816#822#0" expanded="true" />
+            <element signature="e#881#887#0" expanded="true" />
+            <element signature="e#4069#4077#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -5,7 +5,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -25,29 +24,44 @@ public class FileMapper {
     static HashMap<String, ArrayList<String>> mapping;
     static boolean isWildcard = false;
     static String pathToTableDefs = "/enterprise/mappings/athena/athena_table_defs.csv";
-    static String pathToValidPractices = "File: /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
+    static String pathToValidPractices = "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
     static String dateWildCard = "";
-    public static Path getControlPath(String pathToControl) throws IOException {
+    public static Path getManifestPaths(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
         mapping = new HashMap<String, ArrayList<String>>();
 
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
-            readDivisionalPath(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
+            readDivisionalWildcard(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
 //        TODO IMPLEMENT THE DIVISION WILDCARD USE CASE
         }
         //FOR THE DATE WILD CARD USE CASE
         else if(pathToControl.endsWith("*")){
             isWildcard = true;
             String temp = pathToControl;
-
             while(temp.contains("/")){
                 temp = temp.substring(temp.indexOf("/") + 1);
             }
             dateWildCard = temp.substring(0, temp.length() - 1);
             pathToControl = pathToControl.substring(0, pathToControl.indexOf(dateWildCard));
-            readFilesFromPath(new Path(pathToControl), true);
+            readDateWildCard(new Path(pathToControl), true);
         }
+        else{
+            readDateWildCard(new Path(pathToControl), false);
+
+        }
+        writeOutManifestLocations();
+        return null;
+    }
+    public static void main(String[] args) throws IOException {
+        testing = args[0];
+        entity = args[1];
+        getManifestPaths(args[0]);
+    }
+
+
+
+    public static void writeOutManifestLocations() throws IOException {
         for(Path p : manifestFiles){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = "";
@@ -88,30 +102,20 @@ public class FileMapper {
                 out.close();
             }
         }
-        return null;
     }
 
 
-    public static void main(String[] args) throws IOException {
-        testing = args[0];
-        entity = args[1];
-        getControlPath(args[0]);
-    }
-
-
-
-
-    public static void readFilesFromPath(Path pathToFiles, boolean wildCarded) throws IOException {
+    public static void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
                 if(wildCarded) {
                     if (status.getPath().getName().startsWith(dateWildCard)) {
-                        readFilesFromPath(status.getPath(), false);
+                        readDateWildCard(status.getPath(), false);
                     }
                 }
                 else{
-                    readFilesFromPath(status.getPath(), false);
+                    readDateWildCard(status.getPath(), false);
                 }
             }
             else{
@@ -125,18 +129,24 @@ public class FileMapper {
         }
     }
 
-    public static void readDivisionalPath(String divisionPart, String datePart) throws IOException {
+    public static void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
 
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
+
+                //Reads the directory and appends the date part
                 String temp =  status.getPath().toString() + datePart;
                 try {
                     FileStatus[] dateFiles = fs.listStatus(new Path(temp));
                     for (FileStatus dateStatus : dateFiles) {
-                        if(dateStatus.getPath().toString().contains("Manifest"))
-                        System.out.println(dateStatus.getPath().toString());
+                        if(dateStatus.getPath().toString().contains("Manifest")) {
+                            manifestFiles.add(status.getPath());
+                        }
+                        else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
+                            controlFiles.add(status.getPath());
+                        }
                     }
                 }
                 catch(Exception e){
@@ -145,9 +155,5 @@ public class FileMapper {
                 }
             }
         }
-
-
-
-
     }
 }
