@@ -28,8 +28,12 @@ public class FileMapper {
     public static Path getControlPath(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
         mapping = new HashMap<String, ArrayList<String>>();
-//        FileStatus[] fileStatuses = fs.listStatus(new Path(pathToControl));
-        if(pathToControl.endsWith("*")){
+
+        if(pathToControl.contains("data/*")){
+//        TODO IMPLEMENT THE DIVISION WILDCARD USE CASE
+        }
+        //FOR THE DATE WILD CARD USE CASE
+        else if(pathToControl.endsWith("*")){
             isWildcard = true;
             String temp = pathToControl;
 
@@ -46,16 +50,19 @@ public class FileMapper {
             int lineCount = 0;
             while((line = br.readLine()) != null){
                 if(lineCount > 3) {
+                    //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
+
                     practiceID = line.substring(0, line.indexOf(".asv"));
                     fileName = line.substring(0, line.indexOf(".asv") +4);
                     entity = line.substring(0, line.indexOf("_"));
                     while(practiceID.contains("_")) {
                         practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                     }
-
                     String testing2 = p.toString().substring(0, p.toString().indexOf("/data/") + 6);
                     String testing3 = p.toString().substring(p.toString().indexOf("/athena/"));
                     String newPath = testing2 + practiceID + testing3 + "/";
+
+
                     if(mapping.containsKey(entity)){
                             mapping.get(entity).add(newPath + fileName);
                     }
@@ -65,13 +72,11 @@ public class FileMapper {
                             mapping.put(entity, newList);
                     }
                 }
-
                 lineCount++;
             }
             for(String s: mapping.keySet()){
                 if(!fs.exists(new Path(outPath + s + ".txt"))){
                     fs.createNewFile(new Path(outPath + s + ".txt"));
-
                 }
                 FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
                 for(String link : mapping.get(s)){
@@ -79,39 +84,7 @@ public class FileMapper {
                 }
                 out.close();
             }
-
         }
-//        for(FileStatus status : fileStatuses){
-//            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
-//            String line = "";
-//            System.out.println(status.getPath().toString());
-//            int lineCount = 0;
-//            while((line = br.readLine()) != null){
-//                if(status.getPath().toString().contains("Manifest")){
-//                    if(lineCount > 3) {
-//                        practiceID = line.substring(0, line.indexOf(".asv"));
-//                        fileName = line.substring(0, line.indexOf(".asv") +4);
-//                        entity = line.substring(0, line.indexOf("_"));
-//                        while(practiceID.contains("_")) {
-//                            practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
-//                        }
-//                        String testing2 = testing.substring(0, testing.indexOf("/data/") + 6);
-//                        String testing3 = testing.substring(testing.indexOf("/athena/"));
-//                        String newPath = testing2 + practiceID + testing3 + "/";
-//                        if(mapping.containsKey(entity)){
-//                            mapping.get(entity).add(newPath + fileName);
-//                        }
-//                        else{
-//                            ArrayList<String> newList = new ArrayList<String>();
-//                            newList.add(newPath + fileName);
-//                            mapping.put(entity, newList);
-//                        }
-//                    }
-//                    lineCount++;
-//                }
-//            }
-
-//        }
         return null;
     }
 
@@ -119,8 +92,6 @@ public class FileMapper {
     public static void main(String[] args) throws IOException {
         testing = args[0];
         entity = args[1];
-
-
         getControlPath(args[0]);
     }
 
