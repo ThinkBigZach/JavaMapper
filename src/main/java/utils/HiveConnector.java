@@ -24,7 +24,7 @@ public class HiveConnector {
             e.printStackTrace();
             System.exit(1);
         }
-        Connection con = DriverManager.getConnection("jdbc:hive://nameserver1:10000/default", "", "");
+        Connection con = DriverManager.getConnection("jdbc:hive://nameservice1:10000/default", "", "");
         Statement stmt = con.createStatement();
         stmt.executeQuery(sql);
     }
