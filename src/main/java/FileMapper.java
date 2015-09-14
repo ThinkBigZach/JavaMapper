@@ -24,12 +24,16 @@ public class FileMapper {
     static ArrayList<Path> controlFiles = new ArrayList<Path>();
     static HashMap<String, ArrayList<String>> mapping;
     static boolean isWildcard = false;
+    static String pathToTableDefs = "/enterprise/mappings/athena/athena_table_defs.csv";
+    static String pathToValidPractices = "File: /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
     static String dateWildCard = "";
     public static Path getControlPath(String pathToControl) throws IOException {
         fs = FileSystem.newInstance(new Configuration());
         mapping = new HashMap<String, ArrayList<String>>();
 
         if(pathToControl.contains("data/*")){
+            String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
+            readDivisionalPath(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
 //        TODO IMPLEMENT THE DIVISION WILDCARD USE CASE
         }
         //FOR THE DATE WILD CARD USE CASE
@@ -49,9 +53,6 @@ public class FileMapper {
             String line = "";
             int lineCount = 0;
             while((line = br.readLine()) != null){
-//                for(String s : line.split("\037")){
-//                    System.out.println(s);
-//                }
                 if(lineCount > 3) {
                     //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
                     if(Integer.parseInt(line.split("\037")[1]) > 0) {
@@ -122,5 +123,20 @@ public class FileMapper {
                 }
             }
         }
+    }
+
+    public static void readDivisionalPath(String divisionPart, String datePart) throws IOException {
+        //FIRST READ IN ALL DIVISION FOLDERS
+        FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
+
+        for(FileStatus status : fileStatuses){
+            if(status.isDirectory()){
+                System.out.println("DIRECTORY IS:" + status.getPath().toString());
+            }
+        }
+
+
+
+
     }
 }

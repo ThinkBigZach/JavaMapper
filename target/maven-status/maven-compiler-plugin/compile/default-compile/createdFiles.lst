@@ -1,4 +1,9 @@
 com/symlink/input/SymlinkSerde.class
 com/udf/input/ReplaceChars.class
+drivers/DivisionalDriver.class
 com/symlink/input/NewInputFormat.class
+utils/TDConnector.class
+drivers/Driver.class
+drivers/Starter.class
 com/symlink/input/ExtendedSymlinkTextInputFormat.class
+drivers/PathDriver.class
