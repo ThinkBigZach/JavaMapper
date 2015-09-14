@@ -49,7 +49,7 @@ public class FileMapper {
             String line = "";
             int lineCount = 0;
             while((line = br.readLine()) != null){
-                for(String s : line.split("\036")){
+                for(String s : line.split("-")){
                     System.out.println(s);
                 }
                 if(lineCount > 3) {
