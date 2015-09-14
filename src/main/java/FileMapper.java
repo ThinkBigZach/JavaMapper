@@ -49,7 +49,9 @@ public class FileMapper {
             String line = "";
             int lineCount = 0;
             while((line = br.readLine()) != null){
-                System.out.println(line);
+                for(String s : line.split("\036")){
+                    System.out.println(s);
+                }
                 if(lineCount > 3) {
                     //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
 
