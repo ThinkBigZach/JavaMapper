@@ -7,7 +7,6 @@ import org.apache.hadoop.fs.Path;
 import utils.HiveConnector;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
@@ -32,6 +31,7 @@ public class FileMapper implements Driver {
     static ArrayList<String> errorArray = new ArrayList<String>();
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
+
     private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -55,7 +55,8 @@ public class FileMapper implements Driver {
         writeOutFileLocations(controlFiles, "Control");
         return null;
     }
-    public  void main(String[] args) throws IOException {
+
+    public static void main(String[] args) throws IOException {
         testing = args[0];
         entity = args[1];
         for(String s : args){
@@ -65,12 +66,14 @@ public class FileMapper implements Driver {
 
         System.out.println("INITIALIZED FS");
         mapping = new HashMap<String, ArrayList<String>>();
-        getValidPracticeIds();
-        getValidEntityNames();
+
+        FileMapper fileMapper = new FileMapper();
+        fileMapper.getValidPracticeIds();
+        fileMapper.getValidEntityNames();
         System.out.println("GOT ENTITIES AND PRACTICES");
-        getManifestPaths(args[0]);
+        fileMapper.getManifestPaths(args[0]);
         System.out.println("GOT MANIFEST PATHS");
-        loadEntities("");
+        fileMapper.loadEntities("");
     }
 
 
