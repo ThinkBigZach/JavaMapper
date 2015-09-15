@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import utils.HiveConnector;
+import utils.TDConnector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class FileMapper implements Driver {
     static ArrayList<String> errorArray = new ArrayList<String>();
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
-
+    static TDConnector teradata;
     private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -55,18 +56,29 @@ public class FileMapper implements Driver {
         writeOutFileLocations(controlFiles, "Control");
         return null;
     }
-
+// args[0] -- INPUT PATH LIKE THIS - /user/financialDataFeed/data/*/finished/yyyy-mm-dd[-yyyy-mm-dd]
+    //args[1] -- entity like this - allergy or "" "" will give you all entities
+    //args[2] -- outpath like this -- /user/athena/financialdatafeed/extracted/finished
+    //args[3] -- valid practice map location like this --/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv
+    //args[4] -- valid entity map location like this -- /enterprise/mappings/athena/athena_table_defs.csv
+    //TD_HOST - args[5] -dev.teradata.chs.net
+    //TD_USER - args[6] - dbc
+    //TD_PSWD - args[7] - dbc
+    //TD_DATABASE - args[8] -- EDW_ATHENA_STAGE
     public static void main(String[] args) throws IOException {
-        testing = args[0];
-        entity = args[1];
         for(String s : args){
             System.out.println("ARGS ARE " + s);
         }
+        testing = args[0];
+        entity = args[1];
+        outPath = args[2];
+        pathToValidPractices = args[3];
+        pathToTableDefs = args[4];
+        teradata = new TDConnector(args[5], args[6], args[7], args[8]);
         fs = FileSystem.newInstance(new Configuration());
-
+        teradata.Connect();
         System.out.println("INITIALIZED FS");
         mapping = new HashMap<String, ArrayList<String>>();
-
         FileMapper fileMapper = new FileMapper();
         fileMapper.getValidPracticeIds();
         fileMapper.getValidEntityNames();
@@ -273,7 +285,7 @@ public class FileMapper implements Driver {
                     }
                 }
                 catch(Exception e){
-                    System.out.println("PATH " + temp + "Does not exist!");
+//                    System.out.println("PATH " + temp + "Does not exist!");
                 }
             }
         }

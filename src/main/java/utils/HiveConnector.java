@@ -35,8 +35,10 @@ public class HiveConnector {
         stmt.executeQuery(sql);
     }
 
-    //Type is either Manifest, Control, Entity
+    //Type is either Manifest, Control
     public static void loadTable(String type, String fileLocation) throws SQLException {
+
+        System.out.println("LOADING TABLE FOR " + type);
         try {
             Class.forName(driverName);
         } catch (ClassNotFoundException e) {
@@ -48,10 +50,10 @@ public class HiveConnector {
         Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "rscott22", "");
         Statement stmt = con.createStatement();
         if (type.equalsIgnoreCase("MANIFEST")) {
-            stmt.execute("DROP IF EXISTS" + type);
+            stmt.execute("DROP TABLE IF EXISTS " + type);
             stmt.execute(CREATE_MANIFEST_TABLE);
         } else if (type.equalsIgnoreCase("CONTROL")) {
-            stmt.execute("DROP IF EXISTS" + type);
+            stmt.execute("DROP TABLE IF EXISTS " + type);
             stmt.execute(CREATE_CONTROL_TABLE);
         }
         stmt.executeQuery(loadData);

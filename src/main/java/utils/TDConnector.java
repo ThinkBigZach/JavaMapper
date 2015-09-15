@@ -23,8 +23,8 @@ public class TDConnector {
 		try
 		{
 			Class.forName("com.teradata.jdbc.TeraDriver").newInstance();
-			String url = "jdbc:teradata//dev.teradata.chs.net/DATABASE=EDW_ATHENA_STAGE";
-			conn = DriverManager.getConnection(url, "dbc", "dbc"); //Connection w/user and password
+			String url = "jdbc:teradata//" + host + "/DATABASE=" + database;
+			conn = DriverManager.getConnection(url, user, password); //Connection w/user and password
 			if (conn.isValid(0))
 			{
 				System.out.println("Connected to Teradata");
