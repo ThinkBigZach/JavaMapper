@@ -5,6 +5,18 @@ import java.sql.DriverManager;
 
 public class TDConnector {
 
+	private String host;
+	private String user;
+	private String password;
+	private String database;
+	
+	public TDConnector(String _host, String _user, String _password, String _database) {
+		host=_host;
+		user=_user;
+		password=_password;
+		database=_database;
+	}
+	
 	public void Connect()
 	{
 		Connection conn;
@@ -27,4 +39,5 @@ public class TDConnector {
 			e.printStackTrace();
 		}
 	}
+	
 }
