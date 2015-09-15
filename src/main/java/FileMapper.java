@@ -1,3 +1,4 @@
+import drivers.Driver;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -6,12 +7,14 @@ import org.apache.hadoop.fs.Path;
 import utils.HiveConnector;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FileMapper {
+public class FileMapper implements Driver {
 
     static String testing ="hdfs://quickstart.cloudera:8020/financialDataFeed/data/8764/athena/finished/2011-07-01-2011-07-31/";
     static String practiceID;
@@ -29,9 +32,7 @@ public class FileMapper {
     static ArrayList<String> errorArray = new ArrayList<String>();
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
-    public static Path getManifestPaths(String pathToControl) throws IOException {
-
-
+    private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
             readDivisionalWildcard(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
@@ -50,22 +51,48 @@ public class FileMapper {
         else{
             readDateWildCard(new Path(pathToControl), false);
         }
-        writeOutManifestLocations();
+        writeOutFileLocations(manifestFiles, "Manifest");
+        writeOutFileLocations(controlFiles, "Control");
         return null;
     }
-    public static void main(String[] args) throws IOException {
+    public  void main(String[] args) throws IOException {
         testing = args[0];
         entity = args[1];
+        for(String s : args){
+            System.out.println("ARGS ARE " + s);
+        }
         fs = FileSystem.newInstance(new Configuration());
+
+        System.out.println("INITIALIZED FS");
         mapping = new HashMap<String, ArrayList<String>>();
         getValidPracticeIds();
         getValidEntityNames();
+        System.out.println("GOT ENTITIES AND PRACTICES");
         getManifestPaths(args[0]);
+        System.out.println("GOT MANIFEST PATHS");
+        loadEntities("");
     }
 
 
 
-    public static void getValidPracticeIds() throws IOException {
+    private void readAndLoadEntities(ArrayList<String> paths) throws IOException {
+        for(String path : paths){
+            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
+            String line = "";
+            while((line = br.readLine()) != null){
+                String fixedLine = replaceCRandLF(line);
+
+
+
+
+            }
+        }
+
+
+    }
+
+
+    private  void getValidPracticeIds() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToValidPractices))));
         String line = "";
         while((line = br.readLine()) != null){
@@ -74,9 +101,7 @@ public class FileMapper {
         }
     }
 
-
-
-    public static void getValidEntityNames() throws IOException {
+    private void getValidEntityNames() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToTableDefs))));
         String line = "";
         while((line = br.readLine()) != null){
@@ -85,108 +110,123 @@ public class FileMapper {
     }
 
 
-    public static boolean isValidEntry(String practiceID, String entityName, String schema){
+    private  boolean isValidEntry(String practiceID, String entityName, String schema){
         return isValidPractice(practiceID) && isValidEntity(entityName) && isValidSchema(schema);
     }
 
-    public static boolean isValidPractice(String practiceID){
+    private  boolean isValidPractice(String practiceID){
         if(validPracticeIDs.contains(practiceID)){
             return true;
         }
         return false;
     }
 
-    public static boolean isValidEntity(String entityName){
+    private  boolean isValidEntity(String entityName){
         if(validEntityNames.contains(entityName)){
             return true;
         }
         return false;
     }
 
-    public static boolean isValidSchema(String schema){
+    private  boolean isValidSchema(String schema){
 //            TODO VALIDATE SCHEMA
         return true;
     }
 
-    public static String generateNewPath(Path path, String practiceID){
+    private String generateNewPath(Path path, String practiceID){
         String fixedPath = path.toString().substring(0, path.toString().indexOf("Manifest"));
         String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
         String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
         String newPath = testing2 + practiceID + testing3;
         return newPath;
     }
-
-    public static void writeOutManifestLocations() throws IOException {
-        for(Path p : manifestFiles){
+    private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
+        for(Path p : files){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = "";
             int lineCount = 0;
             String myFile = "";
-            while((line = br.readLine()) != null){
-                if(lineCount > 3) {
-                    //REPLACES THE DIVISION ID WITH THE PRACTICE ID FOR EACH LINE IN THE MANIFEST FILES
-                    if(Integer.parseInt(line.split("\037")[1]) > 0) {
-                        practiceID = line.substring(0, line.indexOf(".asv"));
-                        fileName = line.substring(0, line.indexOf(".asv") + 4);
-                        entity = line.substring(0, line.indexOf("_"));
-                        while (practiceID.contains("_")) {
-                            practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
-                        }
-                        String newPath = generateNewPath(p, practiceID);
-                        if(isValidEntry(practiceID,entity, null)) {
-                            addToMapping(newPath);
-                        }
-                        else{
-                            errorArray.add(newPath);
-                        }
+            while((line = br.readLine()) != null) {
+                if (lineCount > 3) {
+                    if (type.equalsIgnoreCase("MANIFEST")) {
+                        processLine(p, line);
                     }
                 }
-                if(!fs.exists(new Path(outPath + "manifest.txt"))){
-                    fs.createNewFile(new Path(outPath + "manifest.txt"));
+                if (!fs.exists(new Path(outPath + type + ".txt"))) {
+                    fs.createNewFile(new Path(outPath + type + ".txt"));
                 }
                 myFile += replaceCRandLF(line) + "\n";
                 lineCount++;
             }
-            for(String s: mapping.keySet()){
-                if(!fs.exists(new Path(outPath + s + ".txt"))){
-                    fs.createNewFile(new Path(outPath + s + ".txt"));
-                }
-                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
-                for(String link : mapping.get(s)){
-                    out.writeUTF(link + "\n");
-                }
-                out.close();
-            }
-            FSDataOutputStream out = fs.append(new Path(outPath +"manifest.txt"));
+            FSDataOutputStream out = fs.append(new Path(outPath + type + ".txt"));
             out.write(myFile.getBytes());
             out.close();
         }
         try {
-            HiveConnector.loadManifestTable("/user/rscott22/mapping/manifest.txt");
+            HiveConnector.loadTable(type, outPath + type + ".txt");
         }
         catch(Exception e){
             System.out.println(e.getMessage());
         }
-
-
     }
 
-    public static void addToMapping(String newPath){
-    if (mapping.containsKey(entity)) {
-        mapping.get(entity).add(newPath + fileName);
-    } else {
-        ArrayList<String> newList = new ArrayList<String>();
-        newList.add(newPath + fileName);
-        mapping.put(entity, newList);
-    }
-}
 
-    public static String replaceCRandLF(String line){
+    private void loadEntities(String entity) throws IOException {
+        for (String s : mapping.keySet()) {
+            if(entity.equals("") || s.equalsIgnoreCase(entity)) {
+                if (!fs.exists(new Path(outPath + s + ".txt"))) {
+                    fs.createNewFile(new Path(outPath + s + ".txt"));
+                }
+                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
+                for (String link : mapping.get(s)) {
+                    try {
+                        HiveConnector.loadTable("Entity", s, link);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+                out.close();
+            }
+        }
+    }
+
+    private void processLine(Path p, String line){
+        if(Integer.parseInt(line.split("\037")[1]) > 0) {
+            practiceID = line.substring(0, line.indexOf(".asv"));
+            fileName = line.substring(0, line.indexOf(".asv") + 4);
+            entity = line.substring(0, line.indexOf("_"));
+            while (practiceID.contains("_")) {
+                practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
+            }
+            String newPath = generateNewPath(p, practiceID);
+            if(isValidEntry(practiceID,entity, null)) {
+                addToMapping(newPath);
+            }
+            else{
+                errorArray.add(newPath);
+            }
+        }
+    }
+
+
+
+
+    private  void addToMapping(String newPath){
+        if (mapping.containsKey(entity)) {
+            mapping.get(entity).add(newPath + fileName);
+        } else {
+            ArrayList<String> newList = new ArrayList<String>();
+            newList.add(newPath + fileName);
+            mapping.put(entity, newList);
+        }
+    }
+
+    private  String replaceCRandLF(String line){
         line = line.replaceAll("\012", "");
         line = line.replaceAll("\015", "");
         return line;
     }
-    public static void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
+    private  void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
@@ -210,10 +250,9 @@ public class FileMapper {
         }
     }
 
-    public static void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
+    private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
-
         for(FileStatus status : fileStatuses){
             if(status.isDirectory()){
 
@@ -231,10 +270,25 @@ public class FileMapper {
                     }
                 }
                 catch(Exception e){
-                    System.out.println("PATH" + temp + "\nDoes not exist!");
-
+                    System.out.println("PATH " + temp + "Does not exist!");
                 }
             }
+        }
+    }
+
+    //@Override
+    public void start(String[] args)  {
+        testing = args[0];
+        entity = args[1];
+        try {
+            fs = FileSystem.newInstance(new Configuration());
+            mapping = new HashMap<String, ArrayList<String>>();
+            getValidPracticeIds();
+            getValidEntityNames();
+            getManifestPaths(args[0]);
+        }
+        catch(Exception e){
+
         }
     }
 }
