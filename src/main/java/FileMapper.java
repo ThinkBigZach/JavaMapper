@@ -49,7 +49,6 @@ public class FileMapper {
         }
         else{
             readDateWildCard(new Path(pathToControl), false);
-
         }
         writeOutManifestLocations();
         return null;

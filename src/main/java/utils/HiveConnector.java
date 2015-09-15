@@ -30,7 +30,6 @@ public class HiveConnector {
     }
 
     public static void loadManifestTable(String fileLocation) throws SQLException {
-
         try {
             Class.forName(driverName);
         } catch (ClassNotFoundException e) {
