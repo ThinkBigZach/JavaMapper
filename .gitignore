@@ -2,3 +2,4 @@ target/
 .*
 .idea
 input.iml
+dependency-reduced-pom.xml
