@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by zw186016 on 9/14/15.
@@ -18,7 +20,7 @@ public class HiveConnector {
     private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + "ROW FORMAT DELIMITED FIELDS TERMINATED BY '~'";
 
 
-    private static String CREATE_ENTITY_START = "CREATE EXTERNAL TABLE IF NOT EXISTS ";
+    private static String CREATE_ENTITY_START = "CREATE TABLE IF NOT EXISTS ";
     private static String CREATE_ENTITY_END = " (line STRING)";
 
     public static void executeStatement(String sql) throws SQLException {
@@ -30,7 +32,7 @@ public class HiveConnector {
             e.printStackTrace();
             System.exit(1);
         }
-        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/a_lynn_db", "", "");
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "", "");
         Statement stmt = con.createStatement();
         stmt.executeQuery(sql);
     }
@@ -46,8 +48,8 @@ public class HiveConnector {
             e.printStackTrace();
             System.exit(1);
         }
-        String loadData = "LOAD DATA LOCAL INPATH '" + fileLocation + "' INTO TABLE " + type;
-        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "rscott22", "");
+        String loadData = "LOAD DATA INPATH '" + fileLocation + "' INTO TABLE " + type;
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
         Statement stmt = con.createStatement();
         if (type.equalsIgnoreCase("MANIFEST")) {
             stmt.execute("DROP TABLE IF EXISTS " + type);
@@ -56,7 +58,25 @@ public class HiveConnector {
             stmt.execute("DROP TABLE IF EXISTS " + type);
             stmt.execute(CREATE_CONTROL_TABLE);
         }
-        stmt.executeQuery(loadData);
+        stmt.execute(loadData);
+    }
+
+
+    public static void createEntityTables(String entity, String outPath) throws SQLException{
+        System.out.println("CREATING ENTITY TABLE " + entity);
+        try {
+            Class.forName(driverName);
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.exit(1);
+        }
+        String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
+        String data = "LOAD DATA INPATH '" + outPath + entity + ".txt" + "' INTO TABLE "  + entity;
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
+        Statement stmt = con.createStatement();
+        stmt.execute(create);
+        stmt.execute(data);
     }
 
 
@@ -70,16 +90,18 @@ public class HiveConnector {
             System.exit(1);
         }
         String loadData = "LOAD DATA LOCAL INPATH '" + fileLocation + "' INTO TABLE " + entity;
-        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "rscott22", "");
+        System.out.println(loadData);
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
         Statement stmt = con.createStatement();
         String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
+        stmt.execute("DROP TABLE IF EXISTS " + entity);
         stmt.execute(create);
-        stmt.executeQuery(loadData);
+        stmt.execute(loadData);
     }
 
     //    If entityFilter is "" then it'll return all entities, otherwise it'll filter to whatever entityFilter is called
-    public static ArrayList<String> getManifestLocations(String entityFilter) throws SQLException {
-        ArrayList<String> returnList = new ArrayList<String>();
+    public static Map<String, ArrayList<String>> getManifestLocations(String entityFilter) throws SQLException {
+        HashMap<String, ArrayList<String>> returnList = new HashMap<String, ArrayList<String>>();
         boolean filter = entityFilter.equals("");
         try {
             Class.forName(driverName);
@@ -88,7 +110,7 @@ public class HiveConnector {
             e.printStackTrace();
             System.exit(1);
         }
-        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "", "");
+        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
         Statement stmt = con.createStatement();
         ResultSet set = stmt.executeQuery("select split(file_name,'_')[0] entity, file_name from manifest where record_count > 0 order by split(file_name,'_')[0];");
         while (!set.isAfterLast()) {
@@ -96,15 +118,32 @@ public class HiveConnector {
             String entityMatch = set.getString(0);
             if (!filter) {
                 if (entityFilter.equalsIgnoreCase(entityMatch)) {
-                    returnList.add(path);
+                    if(returnList.containsKey(entityMatch)){
+                        returnList.get(entityMatch).add(path);
+                    }
+                    else{
+                        ArrayList<String> temp = new ArrayList<String>();
+                        temp.add(path);
+                        returnList.put(entityMatch, temp);
+                    }
                 }
             } else {
-                returnList.add(path);
+                if(returnList.containsKey(entityMatch)){
+                    returnList.get(entityMatch).add(path);
+                }
+                else{
+                    ArrayList<String> temp = new ArrayList<String>();
+                    temp.add(path);
+                    returnList.put(entityMatch, temp);
+                }
             }
             set.next();
         }
         return returnList;
     }
+
+
+
 
 
 }

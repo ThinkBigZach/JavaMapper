@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FileMapper implements Driver {
 
@@ -52,6 +53,13 @@ public class FileMapper implements Driver {
         else{
             readDateWildCard(new Path(pathToControl), false);
         }
+
+        for(Path p : manifestFiles){
+            System.out.println("MANIFEST FILES ARE: " + p.toString());
+        }
+        for(Path p : controlFiles){
+            System.out.println("CONTROL FILES ARE: " + p.toString());
+        }
         writeOutFileLocations(manifestFiles, "Manifest");
         writeOutFileLocations(controlFiles, "Control");
         return null;
@@ -65,6 +73,11 @@ public class FileMapper implements Driver {
     //TD_USER - args[6] - dbc
     //TD_PSWD - args[7] - dbc
     //TD_DATABASE - args[8] -- EDW_ATHENA_STAGE
+
+    /**
+     *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
+     *
+     */
     public static void main(String[] args) throws IOException {
         for(String s : args){
             System.out.println("ARGS ARE " + s);
@@ -74,9 +87,9 @@ public class FileMapper implements Driver {
         outPath = args[2];
         pathToValidPractices = args[3];
         pathToTableDefs = args[4];
-        teradata = new TDConnector(args[5], args[6], args[7], args[8]);
+//        teradata = new TDConnector(args[5], args[6], args[7], args[8]);
         fs = FileSystem.newInstance(new Configuration());
-        teradata.Connect();
+//        teradata.Connect();
         System.out.println("INITIALIZED FS");
         mapping = new HashMap<String, ArrayList<String>>();
         FileMapper fileMapper = new FileMapper();
@@ -85,25 +98,47 @@ public class FileMapper implements Driver {
         System.out.println("GOT ENTITIES AND PRACTICES");
         fileMapper.getManifestPaths(args[0]);
         System.out.println("GOT MANIFEST PATHS");
-        fileMapper.loadEntities("");
+
+        try {
+            for(String s : mapping.keySet()){
+                fileMapper.readAndLoadEntities(mapping.get(s), s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        for(String s :mapping.keySet()){
+            try {
+                HiveConnector.createEntityTables(s, outPath);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
 
 
-    private void readAndLoadEntities(ArrayList<String> paths) throws IOException {
+    private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
+        System.out.println("WRITING FILE FOR ENTITY " + entity);
+        if(!fs.exists(new Path(outPath + entity + ".txt"))){
+            fs.createNewFile(new Path(outPath + entity + ".txt"));
+        }
+        FSDataOutputStream out = fs.append(new Path(outPath + entity + ".txt"));
         for(String path : paths){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
+            int lineCount = 0;
             while((line = br.readLine()) != null){
-                String fixedLine = replaceCRandLF(line);
-
-
-
-
+                if (lineCount > 3) {
+                    String fixedLine = replaceCRandLF(line);
+                    out.write((line + "\n").getBytes());
+                }
+                lineCount++;
             }
         }
-
-
+        out.close();
     }
 
 
@@ -112,7 +147,7 @@ public class FileMapper implements Driver {
         String line = "";
         while((line = br.readLine()) != null){
             String validPractice = line.substring(0, line.indexOf("~"));
-            validPracticeIDs.add(validPractice);
+            validPracticeIDs.add(validPractice.toUpperCase());
         }
     }
 
@@ -120,7 +155,7 @@ public class FileMapper implements Driver {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToTableDefs))));
         String line = "";
         while((line = br.readLine()) != null){
-            validEntityNames.add(line);
+            validEntityNames.add(line.toUpperCase());
         }
     }
 
@@ -130,14 +165,14 @@ public class FileMapper implements Driver {
     }
 
     private  boolean isValidPractice(String practiceID){
-        if(validPracticeIDs.contains(practiceID)){
+        if(validPracticeIDs.contains(practiceID.toUpperCase())){
             return true;
         }
         return false;
     }
 
     private  boolean isValidEntity(String entityName){
-        if(validEntityNames.contains(entityName)){
+        if(validEntityNames.contains(entityName.toUpperCase())){
             return true;
         }
         return false;
@@ -167,11 +202,11 @@ public class FileMapper implements Driver {
                         processLine(p, line);
                     }
                 }
-                if (!fs.exists(new Path(outPath + type + ".txt"))) {
-                    fs.createNewFile(new Path(outPath + type + ".txt"));
-                }
                 myFile += replaceCRandLF(line) + "\n";
                 lineCount++;
+            }
+            if (!fs.exists(new Path(outPath + type + ".txt"))) {
+                fs.createNewFile(new Path(outPath + type + ".txt"));
             }
             FSDataOutputStream out = fs.append(new Path(outPath + type + ".txt"));
             out.write(myFile.getBytes());
@@ -187,7 +222,12 @@ public class FileMapper implements Driver {
 
 
     private void loadEntities(String entity) throws IOException {
+        System.out.println("LOADING ENTITIES NOW");
+        System.out.println("MAPPING SIZE" + mapping.keySet().size());
+        System.out.println("MAPPING SIZE" + mapping.toString());
+
         for (String s : mapping.keySet()) {
+            System.out.println("LOADING FROM FILE " + s);
             if(entity.equals("") || s.equalsIgnoreCase(entity)) {
                 if (!fs.exists(new Path(outPath + s + ".txt"))) {
                     fs.createNewFile(new Path(outPath + s + ".txt"));
@@ -234,6 +274,15 @@ public class FileMapper implements Driver {
             newList.add(newPath + fileName);
             mapping.put(entity, newList);
         }
+//
+//        ArrayList<String> paths = new ArrayList<String>();
+//        paths.add(newPath);
+//        try {
+//            readAndLoadEntities(paths, entity);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
     }
 
     private  String replaceCRandLF(String line){
@@ -279,7 +328,7 @@ public class FileMapper implements Driver {
                         if(dateStatus.getPath().toString().contains("Manifest")) {
                             manifestFiles.add(dateStatus.getPath());
                         }
-                        else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
+                        else if(dateStatus.getPath().toString().toUpperCase().contains("CONTROL")){
                             controlFiles.add(dateStatus.getPath());
                         }
                     }
