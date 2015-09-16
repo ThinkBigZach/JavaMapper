@@ -27,6 +27,8 @@ public class DivisionalDriver implements Driver {
     static String chosenEntity;
     static String fileName;
     static FileSystem fs;
+    long startTime;
+    long endTime;
     static ArrayList<Path> manifestFiles = new ArrayList<Path>();
     static ArrayList<Path> controlFiles = new ArrayList<Path>();
     static HashMap<String, ArrayList<String>> mapping;
@@ -308,18 +310,17 @@ public class DivisionalDriver implements Driver {
         outPath = args[2];
         pathToValidPractices = args[3];
         pathToTableDefs = args[4];
+        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
+        startTime = System.currentTimeMillis();
         TDConnector.init(args[5], args[6], args[7], args[8]);
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
             try {
-//                TODO PLUMB UP TERADATA
                 columnCounts = TDConnector.getColumnCounts();
-                System.out.println("COLUMN COUNTS BY TABLE: " + columnCounts.toString());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            System.out.println("INITIALIZED FS");
             mapping = new HashMap<String, ArrayList<String>>();
             DivisionalDriver divisionalDriver = new DivisionalDriver();
             divisionalDriver.getValidPracticeIds();
@@ -327,18 +328,21 @@ public class DivisionalDriver implements Driver {
             System.out.println("GOT ENTITIES AND PRACTICES");
             divisionalDriver.getManifestPaths(args[0]);
             System.out.println("GOT MANIFEST PATHS");
-
             try {
+                long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
                     if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
                         divisionalDriver.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
+                long endWrite = System.currentTimeMillis();
+                System.out.println(((endWrite - startWrite)/1000) + " seconds to execute writing the files");
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+            long startWrite = System.currentTimeMillis();
             for (String s : mapping.keySet()) {
                 if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
                     try {
@@ -348,6 +352,10 @@ public class DivisionalDriver implements Driver {
                     }
                 }
             }
+            long endWrite = System.currentTimeMillis();
+            System.out.println(((endWrite - startWrite)/1000) + " seconds to execute loading the files");
+            endTime = System.currentTimeMillis();
+            System.out.println(((endTime - startTime)/1000/60) + " minutes to execute");
         }
         catch(IOException e){
 

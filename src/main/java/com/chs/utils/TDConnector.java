@@ -54,7 +54,7 @@ public class TDConnector {
 		database=_database;
 	}
 
-	//TODO CHANGE 'dbc' to the actual database name
+	//TODO CHANGE 'dbc' to the actual database name WHEN GARY GETS BACK TO US
 	public static Map<String, Integer> getColumnCounts() throws SQLException {
 		HashMap<String, Integer> map = new HashMap<String, Integer>();
 
