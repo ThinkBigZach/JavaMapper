@@ -103,6 +103,7 @@ public class FileMapper implements Driver {
         System.out.println("GOT MANIFEST PATHS");
 
         try {
+            //TODO: This can be threaded to somehow work with the readAndLoadEntities
             for(String s : mapping.keySet()){
                 fileMapper.readAndLoadEntities(mapping.get(s), s);
             }
@@ -129,7 +130,7 @@ public class FileMapper implements Driver {
             fs.createNewFile(new Path(outPath + entity + ".txt"));
         }
         FSDataOutputStream out = fs.append(new Path(outPath + entity + ".txt"));
-        //TODO:  This could be paralellized or a thread for each path
+        //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
