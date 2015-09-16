@@ -1,9 +1,8 @@
 package com.chs.utils;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TDConnector {
 
@@ -54,11 +53,29 @@ public class TDConnector {
 		password=_password;
 		database=_database;
 	}
-	
+
+
+	public static Map<String, Integer> getColumnCounts() throws SQLException {
+		HashMap<String, Integer> map = new HashMap<String, Integer>();
+		String query =
+				"select tablename, count(*) from dbc.columnsV c on dbc.tablesV t on c.databasename = t.databasename and c.tablename = t.tablename where t.databasename = <TD_Dbase> and t.commentstring not in ('Ignore') and c.commentstring not in ('Ignore','ETL');";
+		Connection conn = getConnection();
+		Statement stmt = conn.createStatement();
+		ResultSet set = stmt.executeQuery(query);
+		while(!set.isAfterLast()){
+			map.put(set.getString(0), set.getInt(1));
+			set.next();
+		}
+		return map;
+	}
+
 	public void executeQuery(String sql) throws SQLException
 	{
-		Connection con = getConnection();
+		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
-		stmt.executeQuery(sql);
+		ResultSet set = stmt.executeQuery(sql);
+
+
+
 	}
 }

@@ -318,14 +318,13 @@ public class DivisionalDriver implements Driver {
         outPath = args[2];
         pathToValidPractices = args[3];
         pathToTableDefs = args[4];
-        //teradata = new TDConnector(args[5], args[6], args[7], args[8]);
         TDConnector.init(args[5], args[6], args[7], args[8]);
-        teradata = TDConnector.getConnection();
+        TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
             try {
 //                TODO PLUMB UP TERADATA
-                columnCounts = teradata.getColumnCounts();
+                columnCounts = TDConnector.getColumnCounts();
             } catch (SQLException e) {
                 e.printStackTrace();
             }

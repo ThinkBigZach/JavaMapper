@@ -14,7 +14,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>FileMapper</mainClass>
+              <mainClass>com.chs.drivers.Starter</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -42,7 +42,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>FileMapper</mainClass>
+              <mainClass>com.chs.drivers.Starter</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -123,6 +123,20 @@
           <groupId>org.apache.hadoop</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.teradata.jdbc</groupId>
+      <artifactId>terajdbc4</artifactId>
+      <version>1</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/libs/terajdbc4.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.teradata.jdbc</groupId>
+      <artifactId>tdgssconfig</artifactId>
+      <version>1</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/libs/tdgssconfig.jar</systemPath>
     </dependency>
   </dependencies>
 </project>

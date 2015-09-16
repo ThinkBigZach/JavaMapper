@@ -30,7 +30,7 @@ public class HiveConnector {
 
     private static Connection conn;
     public static Connection getConnection() throws SQLException {
-        if(conn == null){
+        if(conn == null || conn.isClosed()){
             try {
                 Class.forName(driverName);
             } catch (ClassNotFoundException e) {
@@ -56,6 +56,7 @@ public class HiveConnector {
     //Type is either Manifest, Control
     public static void loadTable(String type, String fileLocation) throws SQLException {
         System.out.println("LOADING TABLE FOR " + type);
+        System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         String loadData = "LOAD DATA INPATH '" + fileLocation + "' INTO TABLE " + type;
         Connection con = getConnection();
         Statement stmt = con.createStatement();
@@ -72,7 +73,7 @@ public class HiveConnector {
 
     public static void createEntityTables(String entity, String outPath) throws SQLException{
         System.out.println("CREATING ENTITY TABLE " + entity);
-
+        System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         String dropTable = "DROP TABLE IF EXISTS " + entity;
         String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
         String data = "LOAD DATA INPATH '" + outPath + entity + ".txt" + "' INTO TABLE "  + entity;
@@ -99,7 +100,7 @@ public class HiveConnector {
     //    If entityFilter is "" then it'll return all entities, otherwise it'll filter to whatever entityFilter is called
     public static Map<String, ArrayList<String>> getManifestLocations(String entityFilter) throws SQLException {
         HashMap<String, ArrayList<String>> returnList = new HashMap<String, ArrayList<String>>();
-        Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
+        Connection con = getConnection();
         Statement stmt = con.createStatement();
         ResultSet set = stmt.executeQuery("select split(file_name,'_')[0] entity, file_name from manifest where record_count > 0 order by split(file_name,'_')[0];");
         while (!set.isAfterLast()) {
