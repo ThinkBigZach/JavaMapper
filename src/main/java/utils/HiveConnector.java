@@ -39,7 +39,6 @@ public class HiveConnector {
 
     //Type is either Manifest, Control
     public static void loadTable(String type, String fileLocation) throws SQLException {
-
         System.out.println("LOADING TABLE FOR " + type);
         try {
             Class.forName(driverName);
@@ -71,10 +70,12 @@ public class HiveConnector {
             e.printStackTrace();
             System.exit(1);
         }
+        String dropTable = "DROP TABLE IF EXISTS " + entity;
         String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
         String data = "LOAD DATA INPATH '" + outPath + entity + ".txt" + "' INTO TABLE "  + entity;
         Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/testing", "rscott22", "");
         Statement stmt = con.createStatement();
+        stmt.execute(dropTable);
         stmt.execute(create);
         stmt.execute(data);
     }
