@@ -37,13 +37,10 @@ public class DivisionalDriver implements Driver {
     static ArrayList<String> errorArray = new ArrayList<String>();
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
-    final String CR = "\012";
-    final String LF = "\015";
-
-
+    final String CR = "\012"; //carriage return
+    final String LF = "\015"; //line feed
     static Map<String, Integer> columnCounts;
-    //static TDConnector teradata;
-    static Connection teradata;
+
 
     private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
@@ -64,13 +61,8 @@ public class DivisionalDriver implements Driver {
         else{
             readDateWildCard(new Path(pathToControl), false);
         }
-
-        for(Path p : manifestFiles){
-            System.out.println("MANIFEST FILES ARE: " + p.toString());
-        }
-        for(Path p : controlFiles){
-            System.out.println("CONTROL FILES ARE: " + p.toString());
-        }
+        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
+        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
         writeOutFileLocations(manifestFiles, "Manifest");
         writeOutFileLocations(controlFiles, "Control");
         return null;
@@ -91,7 +83,7 @@ public class DivisionalDriver implements Driver {
             int lineCount = 0;
             while((line = br.readLine()) != null){
                 if(lineCount == 1){
-
+                    validateColumnCounts(line, entity);
 
                 }
                 if (lineCount > 3) {
@@ -104,7 +96,7 @@ public class DivisionalDriver implements Driver {
         out.close();
     }
 
-
+//TODO SWITCH FROM return true; to return line.split("\037").length == columnCounts.get(entity); WHEN GARY GETS BACK TO US
     private boolean validateColumnCounts(String line, String entity){
         return true;
 //        return line.split("\037").length == columnCounts.get(entity);
@@ -146,10 +138,6 @@ public class DivisionalDriver implements Driver {
         return false;
     }
 
-    private  boolean isValidSchema(String schema){
-//            TODO VALIDATE SCHEMA
-        return true;
-    }
 
     private String generateNewPath(Path path, String practiceID){
         String fixedPath = path.toString().substring(0, path.toString().indexOf("Manifest"));
@@ -264,7 +252,7 @@ public class DivisionalDriver implements Driver {
                 }
             }
             else{
-                if(status.getPath().toString().contains("Manifest")){
+                if (status.getPath().toString().toUpperCase().contains("MANIFEST")){
                     manifestFiles.add(status.getPath());
                 }
                 else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
@@ -285,7 +273,7 @@ public class DivisionalDriver implements Driver {
                 try {
                     FileStatus[] dateFiles = fs.listStatus(new Path(temp));
                     for (FileStatus dateStatus : dateFiles) {
-                        if(dateStatus.getPath().toString().contains("Manifest")) {
+                        if (dateStatus.getPath().toString().toUpperCase().contains("MANIFEST")) {
                             manifestFiles.add(dateStatus.getPath());
                         }
                         else if(dateStatus.getPath().toString().toUpperCase().contains("CONTROL")){
@@ -307,10 +295,13 @@ public class DivisionalDriver implements Driver {
      *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
      *
      */
+
+
+    static String[] argNames = {"Input Path", "Entity", "Output Path","Valid Practice Map Location", "Valid Entity Map Location", "TD_HOST", "TD_USER", "TD_PASSWORD", "TD_DATABASE", "Division or Path?"};
     //@Override
     public void start(String[] args)  {
-        for(String s : args){
-            System.out.println("ARGS ARE " + s);
+        for(int i = 0; i < args.length; i++) {
+            System.out.println(argNames[i] + "=" + args[i]);
         }
         testing = args[0];
         chosenEntity = args[1];
@@ -324,6 +315,7 @@ public class DivisionalDriver implements Driver {
             try {
 //                TODO PLUMB UP TERADATA
                 columnCounts = TDConnector.getColumnCounts();
+                System.out.println("COLUMN COUNTS BY TABLE: " + columnCounts.toString());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
