@@ -1,8 +1,6 @@
-package com.symlink.input;
+package com.chs.symlink;
 
 import java.io.BufferedReader;
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -17,14 +15,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hive.com.esotericsoftware.minlog.Log;
 
 /**
  * Symlink file is a text file which contains a list of filename / dirname.

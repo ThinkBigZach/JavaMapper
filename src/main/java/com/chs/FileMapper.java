@@ -1,11 +1,13 @@
-import drivers.Driver;
+package com.chs;
+
+import com.chs.drivers.Driver;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import utils.HiveConnector;
-import utils.TDConnector;
+import com.chs.utils.HiveConnector;
+import com.chs.utils.TDConnector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +15,6 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class FileMapper implements Driver {
 
@@ -34,6 +35,8 @@ public class FileMapper implements Driver {
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
     static TDConnector teradata;
+
+
     private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -126,6 +129,7 @@ public class FileMapper implements Driver {
             fs.createNewFile(new Path(outPath + entity + ".txt"));
         }
         FSDataOutputStream out = fs.append(new Path(outPath + entity + ".txt"));
+        //TODO:  This could be paralellized or a thread for each path
         for(String path : paths){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
@@ -190,6 +194,7 @@ public class FileMapper implements Driver {
         String newPath = testing2 + practiceID + testing3;
         return newPath;
     }
+
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         for(Path p : files){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
@@ -285,6 +290,7 @@ public class FileMapper implements Driver {
 
     }
 
+    //TODO: create constants for these characters.
     private  String replaceCRandLF(String line){
         line = line.replaceAll("\012", "");
         line = line.replaceAll("\015", "");

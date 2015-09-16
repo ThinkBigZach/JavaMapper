@@ -1,33 +1,22 @@
-package com.serde;
+package com.chs.symlink.serde;
 
 import org.apache.hadoop.hive.serde2.*;
 
-import java.sql.Timestamp;
-        import java.util.ArrayList;
+import java.util.ArrayList;
         import java.util.Arrays;
-        import java.util.HashMap;
-        import java.util.List;
-        import java.util.Map;
-        import java.util.Properties;
-        import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.hadoop.hive.serde2.objectinspector.*;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
         import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
         import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
         import org.apache.hadoop.io.Writable;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-        import org.apache.commons.logging.Log;
-        import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
         import org.apache.hadoop.io.Text;
-  import javax.print.attribute.standard.DateTimeAtCompleted;
-        import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configuration;
         import org.apache.hadoop.hive.serde.Constants;
-        import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * Properties:

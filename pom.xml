@@ -111,7 +111,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>FileMapper</mainClass>
+                            <mainClass>com.chs.FileMapper</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -132,7 +132,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>FileMapper</mainClass>
+                            <mainClass>com.chs.FileMapper</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

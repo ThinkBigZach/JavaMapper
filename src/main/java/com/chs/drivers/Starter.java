@@ -1,10 +1,10 @@
-package drivers;
+package com.chs.drivers;
 
 public class Starter {
 
 	public static void main(String[] args) throws Exception {
 		if(args.length != 10) {
-			throw new Exception("Expected 10 parameters, recieved " + args.length);
+			throw new Exception("Expected 10 parameters, received " + args.length);
 		}
 		Driver driver;
 		if(args[9].equals("divisional")) {

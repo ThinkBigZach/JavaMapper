@@ -1,6 +1,6 @@
-package drivers;
+package com.chs.drivers;
 
-public class DivisionalDriver implements Driver {
+public class PathDriver implements Driver {
 
 	public void start(String[] args) {
 		// TODO Auto-generated method stub

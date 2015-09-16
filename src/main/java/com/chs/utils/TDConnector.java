@@ -1,4 +1,4 @@
-package utils;
+package com.chs.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

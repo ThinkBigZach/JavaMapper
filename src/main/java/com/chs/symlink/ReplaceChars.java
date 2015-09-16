@@ -1,8 +1,6 @@
-package com.udf.input;
+package com.chs.symlink;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
-
-
 
 
 public class ReplaceChars extends UDF {

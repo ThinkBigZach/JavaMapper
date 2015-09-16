@@ -1,4 +1,4 @@
-package com.symlink.input;
+package com.chs.symlink;
 
 
 import org.apache.hadoop.conf.Configuration;
@@ -10,22 +10,12 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Properties;
 
-import java.io.CharArrayReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -34,7 +24,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 //import au.com.bytecode.opencsv.CSVReader;
 //import au.com.bytecode.opencsv.CSVWriter;

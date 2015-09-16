@@ -1,4 +1,4 @@
-package com.symlink.input;
+package com.chs.symlink;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;

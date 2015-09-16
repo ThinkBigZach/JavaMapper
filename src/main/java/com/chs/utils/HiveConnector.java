@@ -1,4 +1,4 @@
-package utils;
+package com.chs.utils;
 
 
 import java.sql.SQLException;
@@ -22,6 +22,12 @@ public class HiveConnector {
 
     private static String CREATE_ENTITY_START = "CREATE TABLE IF NOT EXISTS ";
     private static String CREATE_ENTITY_END = " (line STRING)";
+
+
+    //TODO:  Zach, don't create a new connection each time you need to do a Hive operations.
+    //TODO:  create a singleton type of class that does a lazy initialzation.
+    //TODO:  Also check and see if the connection needs to be closed upon process termination.
+
 
     public static void executeStatement(String sql) throws SQLException {
         System.out.println("Running: " + sql);
@@ -142,9 +148,5 @@ public class HiveConnector {
         }
         return returnList;
     }
-
-
-
-
 
 }
