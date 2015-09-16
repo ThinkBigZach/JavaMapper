@@ -5,12 +5,14 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
 import com.chs.utils.HiveConnector;
 import com.chs.utils.TDConnector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +41,8 @@ public class DivisionalDriver implements Driver {
 
 
     static Map<String, Integer> columnCounts;
-    static TDConnector teradata;
-
+    //static TDConnector teradata;
+    static Connection teradata;
 
     private  Path getManifestPaths(String pathToControl) throws IOException {
         if(pathToControl.contains("data/*")){
@@ -316,7 +318,9 @@ public class DivisionalDriver implements Driver {
         outPath = args[2];
         pathToValidPractices = args[3];
         pathToTableDefs = args[4];
-        teradata = new TDConnector(args[5], args[6], args[7], args[8]);
+        //teradata = new TDConnector(args[5], args[6], args[7], args[8]);
+        TDConnector.init(args[5], args[6], args[7], args[8]);
+        teradata = TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
             try {

@@ -13,11 +13,13 @@ public class TDConnector {
 	private static String database;
 	private static Connection conn;
 	
+	private TDConnector() {/* Empty private constructor just because */}
+	
 	/***
 	 * Must call init() before attempting to query/connect
 	 * @return
 	 */
-	private static Connection getConnection()
+	public static Connection getConnection()
 	{
 		if (conn == null)
 		{
