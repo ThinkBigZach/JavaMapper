@@ -34,7 +34,8 @@ public class DivisionalDriver implements Driver {
     static ArrayList<String> errorArray = new ArrayList<String>();
     static ArrayList<String> validPracticeIDs = new ArrayList<String>();
     static ArrayList<String> validEntityNames = new ArrayList<String>();
-
+    final String CR = "\012";
+    final String LF = "\015";
 
 
     static Map<String, Integer> columnCounts;
@@ -240,21 +241,12 @@ public class DivisionalDriver implements Driver {
             newList.add(newPath + fileName);
             mapping.put(entity, newList);
         }
-//
-//        ArrayList<String> paths = new ArrayList<String>();
-//        paths.add(newPath);
-//        try {
-//            readAndLoadEntities(paths, entity);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
     }
 
-    //TODO: create constants for these characters.
+
     private  String replaceCRandLF(String line){
-        line = line.replaceAll("\012", "");
-        line = line.replaceAll("\015", "");
+        line = line.replaceAll(CR, "");
+        line = line.replaceAll(LF, "");
         return line;
     }
     private  void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
@@ -328,6 +320,7 @@ public class DivisionalDriver implements Driver {
         try {
             fs = FileSystem.newInstance(new Configuration());
             try {
+//                TODO PLUMB UP TERADATA
                 columnCounts = teradata.getColumnCounts();
             } catch (SQLException e) {
                 e.printStackTrace();
