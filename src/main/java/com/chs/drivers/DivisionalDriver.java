@@ -20,7 +20,6 @@ import java.util.Map;
 
 public class DivisionalDriver implements Driver {
 
-    static String testing ="hdfs://quickstart.cloudera:8020/financialDataFeed/data/8764/athena/finished/2011-07-01-2011-07-31/";
     static String practiceID;
     static String outPath = "/user/rscott22/mapping/";
     static String entity;
@@ -42,9 +41,8 @@ public class DivisionalDriver implements Driver {
     final String CR = "\012"; //carriage return
     final String LF = "\015"; //line feed
     static Map<String, Integer> columnCounts;
-
-
     private  Path getManifestPaths(String pathToControl) throws IOException {
+        //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
             readDivisionalWildcard(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
@@ -63,14 +61,36 @@ public class DivisionalDriver implements Driver {
         else{
             readDateWildCard(new Path(pathToControl), false);
         }
+//           TODO FIX LOGIC FOR EXCESS CONTROL FILES
+        removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
+
+
+
         writeOutFileLocations(manifestFiles, "Manifest");
         writeOutFileLocations(controlFiles, "Control");
         return null;
     }
 
 
+
+    public void removeUnusedControlFiles(){
+        ArrayList<Path> newControl = new ArrayList<Path>();
+        for(Path p : controlFiles){
+            String id = p.toString().substring(p.toString().indexOf("data/") + 5, p.toString().indexOf("/athena"));
+            for(Path path : manifestFiles){
+                if(path.toString().contains(id)){
+                   newControl.add(p);
+                    break;
+                }
+            }
+        }
+        controlFiles.clear();
+        for(Path p : newControl){
+            controlFiles.add(p);
+        }
+    }
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
@@ -85,12 +105,13 @@ public class DivisionalDriver implements Driver {
             int lineCount = 0;
             while((line = br.readLine()) != null){
                 if(lineCount == 1){
+//                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     validateColumnCounts(line, entity);
 
                 }
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
-                    out.write((line + "\n").getBytes());
+                    out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
             }
@@ -178,8 +199,6 @@ public class DivisionalDriver implements Driver {
             System.out.println(e.getMessage());
         }
     }
-
-
     private void loadEntities(String entity) throws IOException {
         System.out.println("LOADING ENTITIES NOW");
         System.out.println("MAPPING SIZE" + mapping.keySet().size());
@@ -297,15 +316,13 @@ public class DivisionalDriver implements Driver {
      *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
      *
      */
-
-
     static String[] argNames = {"Input Path", "Entity", "Output Path","Valid Practice Map Location", "Valid Entity Map Location", "TD_HOST", "TD_USER", "TD_PASSWORD", "TD_DATABASE", "Division or Path?"};
     //@Override
     public void start(String[] args)  {
         for(int i = 0; i < args.length; i++) {
             System.out.println(argNames[i] + "=" + args[i]);
         }
-        testing = args[0];
+        String inputPath = args[0];
         chosenEntity = args[1];
         outPath = args[2];
         pathToValidPractices = args[3];
@@ -326,7 +343,7 @@ public class DivisionalDriver implements Driver {
             divisionalDriver.getValidPracticeIds();
             divisionalDriver.getValidEntityNames();
             System.out.println("GOT ENTITIES AND PRACTICES");
-            divisionalDriver.getManifestPaths(args[0]);
+            divisionalDriver.getManifestPaths(inputPath);
             System.out.println("GOT MANIFEST PATHS");
             try {
                 long startWrite = System.currentTimeMillis();

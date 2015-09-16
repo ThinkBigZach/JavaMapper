@@ -24,9 +24,7 @@ public class HiveConnector {
     private static String CREATE_ENTITY_END = " (line STRING)";
 
 
-    //TODO:  Zach, don't create a new connection each time you need to do a Hive operations.
-    //TODO:  create a singleton type of class that does a lazy initialzation.
-    //TODO:  Also check and see if the connection needs to be closed upon process termination.
+
 
     private static Connection conn;
     public static Connection getConnection() throws SQLException {
@@ -73,8 +71,6 @@ public class HiveConnector {
             con.close();
         }
     }
-
-
     public static void createEntityTables(String entity, String outPath) throws SQLException{
         System.out.println("CREATING ENTITY TABLE " + entity);
         String dropTable = "DROP TABLE IF EXISTS " + entity;
