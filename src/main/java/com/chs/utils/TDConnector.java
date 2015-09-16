@@ -25,7 +25,7 @@ public class TDConnector {
 			try
 			{
 				Class.forName("com.teradata.jdbc.TeraDriver").newInstance();
-				String url = "jdbc:teradata//" + host + "/DATABASE=" + database;
+				String url = "jdbc:teradata://" + host + "/DATABASE=" + database;
 				conn = DriverManager.getConnection(url, user, password); //Connection w/user and password
 				if (!conn.isValid(0))
 				{
@@ -58,12 +58,13 @@ public class TDConnector {
 	public static Map<String, Integer> getColumnCounts() throws SQLException {
 		HashMap<String, Integer> map = new HashMap<String, Integer>();
 		String query =
-				"select tablename, count(*) from dbc.columnsV c on dbc.tablesV t on c.databasename = t.databasename and c.tablename = t.tablename where t.databasename = <TD_Dbase> and t.commentstring not in ('Ignore') and c.commentstring not in ('Ignore','ETL');";
+				"SELECT c.tablename, count(*) FROM dbc.columnsV c JOIN dbc.tablesV t ON c.databasename = t.databasename AND c.tablename = t.tablename WHERE t.databasename = " + database + " AND t.commentstring NOT IN ('Ignore') AND c.commentstring NOT IN ('Ignore','ETL') GROUP BY c.tablename";
+		System.out.println("EXECUTING QUERY" + query);
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
 		ResultSet set = stmt.executeQuery(query);
 		while(!set.isAfterLast()){
-			map.put(set.getString(0), set.getInt(1));
+			map.put(set.getString(0).toUpperCase(), set.getInt(1));
 			set.next();
 		}
 		return map;

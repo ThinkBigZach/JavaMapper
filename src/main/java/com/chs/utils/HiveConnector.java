@@ -16,8 +16,8 @@ import java.util.Map;
 public class HiveConnector {
 
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
-    private static String CREATE_MANIFEST_TABLE = "CREATE EXTERNAL TABLE manifest (file_name STRING, records INT, hash STRING)" + "ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
-    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + "ROW FORMAT DELIMITED FIELDS TERMINATED BY '~'";
+    private static String CREATE_MANIFEST_TABLE = "CREATE EXTERNAL TABLE manifest (file_name STRING, records INT, hash STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
+    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '~'";
 
 
     private static String CREATE_ENTITY_START = "CREATE TABLE IF NOT EXISTS ";
@@ -51,14 +51,15 @@ public class HiveConnector {
         Connection con = getConnection();
         Statement stmt = con.createStatement();
         stmt.executeQuery(sql);
+
     }
 
     //Type is either Manifest, Control
     public static void loadTable(String type, String fileLocation) throws SQLException {
-        System.out.println("LOADING TABLE FOR " + type);
-        System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         String loadData = "LOAD DATA INPATH '" + fileLocation + "' INTO TABLE " + type;
         Connection con = getConnection();
+        System.out.println("LOADING TABLE FOR " + type);
+        System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         Statement stmt = con.createStatement();
         if (type.equalsIgnoreCase("MANIFEST")) {
             stmt.execute("DROP TABLE IF EXISTS " + type);
@@ -68,19 +69,24 @@ public class HiveConnector {
             stmt.execute(CREATE_CONTROL_TABLE);
         }
         stmt.execute(loadData);
+        if(!con.isClosed()){
+            con.close();
+        }
     }
 
 
     public static void createEntityTables(String entity, String outPath) throws SQLException{
         System.out.println("CREATING ENTITY TABLE " + entity);
-        System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         String dropTable = "DROP TABLE IF EXISTS " + entity;
         String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
         String data = "LOAD DATA INPATH '" + outPath + entity + ".txt" + "' INTO TABLE "  + entity;
         Connection con = getConnection();
+        System.out.println(dropTable);
         Statement stmt = con.createStatement();
         stmt.execute(dropTable);
+        System.out.println(create);
         stmt.execute(create);
+        System.out.println(data);
         stmt.execute(data);
     }
 

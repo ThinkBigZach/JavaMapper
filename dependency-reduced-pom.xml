@@ -124,20 +124,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>com.teradata.jdbc</groupId>
-      <artifactId>terajdbc4</artifactId>
-      <version>1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/terajdbc4.jar</systemPath>
-    </dependency>
-    <dependency>
-      <groupId>com.teradata.jdbc</groupId>
-      <artifactId>tdgssconfig</artifactId>
-      <version>1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/libs/tdgssconfig.jar</systemPath>
-    </dependency>
   </dependencies>
 </project>
 

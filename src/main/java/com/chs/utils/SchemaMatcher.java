@@ -19,7 +19,6 @@ public class SchemaMatcher {
         boolean tripwire = false;
         Scanner goldenFile = new Scanner(new File(goldenURL)).useDelimiter(delimiter);
         Scanner compareFile = new Scanner(new File(compareURL)).useDelimiter(delimiter);
-        
         int golden_size = cleanStringByColumn(goldenFile.next()).length;
         int file2_size = cleanStringByColumn(compareFile.next()).length;
         //My understanding (via Gary) that RIGHT NOW, it should ONLY match when column counts are the SAME

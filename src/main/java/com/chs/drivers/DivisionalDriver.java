@@ -24,6 +24,7 @@ public class DivisionalDriver implements Driver {
     static String practiceID;
     static String outPath = "/user/rscott22/mapping/";
     static String entity;
+    static String chosenEntity;
     static String fileName;
     static FileSystem fs;
     static ArrayList<Path> manifestFiles = new ArrayList<Path>();
@@ -104,11 +105,10 @@ public class DivisionalDriver implements Driver {
     }
 
 
-//    private boolean validateColumnCounts(String line){
-//
-//
-//
-//    }
+    private boolean validateColumnCounts(String line, String entity){
+        return true;
+//        return line.split("\037").length == columnCounts.get(entity);
+    }
 
     private  void getValidPracticeIds() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToValidPractices))));
@@ -129,7 +129,7 @@ public class DivisionalDriver implements Driver {
 
 
     private  boolean isValidEntry(String practiceID, String entityName, String schema){
-        return isValidPractice(practiceID) && isValidEntity(entityName) && isValidSchema(schema);
+        return isValidPractice(practiceID) && isValidEntity(entityName) && validateColumnCounts(schema, entityName);
     }
 
     private  boolean isValidPractice(String practiceID){
@@ -194,7 +194,6 @@ public class DivisionalDriver implements Driver {
         System.out.println("LOADING ENTITIES NOW");
         System.out.println("MAPPING SIZE" + mapping.keySet().size());
         System.out.println("MAPPING SIZE" + mapping.toString());
-
         for (String s : mapping.keySet()) {
             System.out.println("LOADING FROM FILE " + s);
             if(entity.equals("") || s.equalsIgnoreCase(entity)) {
@@ -236,12 +235,12 @@ public class DivisionalDriver implements Driver {
 
 
     private  void addToMapping(String newPath){
-        if (mapping.containsKey(entity)) {
-            mapping.get(entity).add(newPath + fileName);
+        if (mapping.containsKey(entity.toUpperCase())) {
+            mapping.get(entity.toUpperCase()).add(newPath + fileName);
         } else {
             ArrayList<String> newList = new ArrayList<String>();
             newList.add(newPath + fileName);
-            mapping.put(entity, newList);
+            mapping.put(entity.toUpperCase(), newList);
         }
     }
 
@@ -314,7 +313,7 @@ public class DivisionalDriver implements Driver {
             System.out.println("ARGS ARE " + s);
         }
         testing = args[0];
-        entity = args[1];
+        chosenEntity = args[1];
         outPath = args[2];
         pathToValidPractices = args[3];
         pathToTableDefs = args[4];
@@ -340,19 +339,22 @@ public class DivisionalDriver implements Driver {
             try {
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    divisionalDriver.readAndLoadEntities(mapping.get(s), s);
+                    if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
+                        divisionalDriver.readAndLoadEntities(mapping.get(s), s);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             for (String s : mapping.keySet()) {
-                try {
-                    HiveConnector.createEntityTables(s, outPath);
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
+                    try {
+                        HiveConnector.createEntityTables(s, outPath);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                 }
-
             }
         }
         catch(IOException e){
