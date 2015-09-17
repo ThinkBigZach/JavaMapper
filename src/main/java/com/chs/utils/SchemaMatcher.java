@@ -2,7 +2,11 @@ package com.chs.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -19,27 +23,70 @@ public class SchemaMatcher {
         boolean tripwire = false;
         Scanner goldenFile = new Scanner(new File(goldenURL)).useDelimiter(delimiter);
         Scanner compareFile = new Scanner(new File(compareURL)).useDelimiter(delimiter);
-        int golden_size = cleanStringByColumn(goldenFile.next()).length;
-        int file2_size = cleanStringByColumn(compareFile.next()).length;
-        //My understanding (via Gary) that RIGHT NOW, it should ONLY match when column counts are the SAME
-        if (golden_size == file2_size) {
-//            System.out.println("Schema matched! SUCCESS");
-            LOG.info("==========Schema match success===========");
-            tripwire = true;
+        Map<String, String> goldenMap = null;
+		Map<String, String> compareMap = null;
+		try {
+			goldenMap = extractMapFromFile(cleanStringByColumn(goldenFile.next()), cleanStringByColumn(goldenFile.next()));
+			compareMap = extractMapFromFile(cleanStringByColumn(compareFile.next()), cleanStringByColumn(compareFile.next()));
+		} catch (Exception e) {
+			LOG.info("====SCHEMA COULD NOT BE MATCHED -> COLUMN COUNT NOT EQUAL");
+			e.printStackTrace();
+		}
+        //Dynamic Schema Match change >> Checks to make sure column and column data type are equal. All must match to pass.
+        if ((goldenMap != null && compareMap != null)
+        		&& goldenMap.size() == compareMap.size()) 
+        {
+        	if (schemaMatch(goldenMap, compareMap, goldenMap.size()))
+        	{
+        		LOG.info("==========Schema match success===========");
+        		tripwire = true;        		
+        	}
+        	else
+        	{
+        		LOG.info("==========Schema match failed============");        		
+        		//TODO:1        	
+        	}
         } else {
-//            System.out.println(String.format("Comparing schema had different number of columns than Golden. \nMoving \n\t%s \nto Error Array. FAILURE",
-//                    compareURL));
-        	LOG.info("==========Schema match failed============");
-            //TODO:1
+        	LOG.info("====SCHEMA COULD NOT BE MATCHED -> COLUMN COUNT NOT EQUAL");
         }
         goldenFile.close();
         compareFile.close();
         return tripwire;
     }
+    
+    public static boolean schemaMatch(Map<String,String> file1Map, Map<String,String> file2map, int mapSize)
+	{
+		//Dont forget to return ticket on final
+		int ticket = 0;
+		for(Entry<String,String> kv : file2map.entrySet())
+		{
+			String mapkey = kv.getKey();
+			//Column names match. If column Types match, we got it.
+			if (file1Map.containsKey(mapkey) && kv.getValue().equals(file1Map.get(mapkey)))
+			{
+				ticket++;
+			}
+			else
+			{
+				ticket--;
+			}
+		}
+		return (ticket == mapSize);
+	}
 
     private static String[] cleanStringByColumn(String beCleaned) {
         return beCleaned.replaceAll("\\036", "")
                 .replaceAll("\n", "")
                 .replaceAll("\\037", ",").split(",");
     }
+    
+    public static Map extractMapFromFile(String[] column_Names, String[] column_Types)
+	{
+		Map<String, String> map = new HashMap<String, String>();
+		for (int i = 0; i < column_Names.length; i++)
+		{
+			map.put(column_Names[i], column_Types[i]);
+		}
+		return map;
+	}
 }
