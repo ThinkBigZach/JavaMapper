@@ -19,6 +19,10 @@ import java.util.Map;
 
 public class DivisionalDriver implements Driver {
 
+    //ascii replacement args
+    private final String CR = "\012"; //carriage return
+    private final String LF = "\015"; //line feed
+    private final String UNIT_SEPERATOR = "\031";
 	
 	//Constructor Args
 	private String input_path;
@@ -34,21 +38,15 @@ public class DivisionalDriver implements Driver {
 	//unsorted Args
     private String fileName;
     private FileSystem fs;
-    private long startTime;
-    private long endTime;
-    private ArrayList<Path> manifestFiles = new ArrayList<Path>();
-    private ArrayList<Path> controlFiles = new ArrayList<Path>();
-    private HashMap<String, ArrayList<String>> mapping;
     private boolean isWildcard = false;
-    private String dateWildCard = "";
-    private ArrayList<String> errorArray = new ArrayList<String>();
-    private ArrayList<String> validPracticeIDs = new ArrayList<String>();
-    private ArrayList<String> validEntityNames = new ArrayList<String>();
+    private String dateWildCard;
+    private ArrayList<Path> manifestFiles;
+    private ArrayList<Path> controlFiles;
+    private ArrayList<String> errorArray;
+    private ArrayList<String> validPracticeIDs;
+    private ArrayList<String> validEntityNames;
+    private HashMap<String, ArrayList<String>> mapping;
     private Map<String, Integer> columnCounts;
-    
-    private final String CR = "\012"; //carriage return
-    private final String LF = "\015"; //line feed
-    private final String UNIT_SEPERATOR = "\031";
 
 
 public DivisionalDriver(String[] args) {
@@ -61,6 +59,11 @@ public DivisionalDriver(String[] args) {
 	TD_User = args[6]; 
 	TD_Password = args[7]; 
 	TD_Database = args[8];
+	manifestFiles = new ArrayList<Path>();
+	controlFiles = new ArrayList<Path>();
+	errorArray = new ArrayList<String>();
+	validPracticeIDs = new ArrayList<String>();
+	validEntityNames = new ArrayList<String>();
 }
     
     private Path getManifestPaths(String pathToControl) throws IOException {
@@ -171,17 +174,13 @@ public DivisionalDriver(String[] args) {
     }
 
     private  boolean isValidPractice(String practiceID){
-        if(validPracticeIDs.contains(practiceID.toUpperCase())){
-            return true;
-        }
-        return false;
+        boolean isValid = validPracticeIDs.contains(practiceID.toUpperCase());
+        return isValid;
     }
 
     private  boolean isValidEntity(String entityName){
-        if(validEntityNames.contains(entityName.toUpperCase())){
-            return true;
-        }
-        return false;
+    	boolean isValid = validEntityNames.contains(entityName.toUpperCase());
+    	return isValid;
     }
 
 
@@ -283,6 +282,7 @@ public DivisionalDriver(String[] args) {
         line = line.replaceAll(LF, "");
         return line;
     }
+    
     private  void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
         for(FileStatus status : fileStatuses){
@@ -334,14 +334,14 @@ public DivisionalDriver(String[] args) {
     }
 
 
-    /**
-     *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
-     *
+    /*
+     * (non-Javadoc)
+     * @see com.chs.drivers.Driver#start()
+     * core launch method. All logic for divisional load needs to be in or called from this method
      */
-     
     public void start()  {
         System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
-        startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
         TDConnector.getConnection();
         try {
@@ -383,8 +383,8 @@ public DivisionalDriver(String[] args) {
             }
             long endWrite = System.currentTimeMillis();
             System.out.println(((endWrite - startWrite) / 1000) + " seconds to execute loading the files");
-            endTime = System.currentTimeMillis();
-            System.out.println(((endTime - startTime)/1000/60) + " minutes to execute");
+            long endTime = System.currentTimeMillis();
+            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
         }
         catch(IOException e){
 

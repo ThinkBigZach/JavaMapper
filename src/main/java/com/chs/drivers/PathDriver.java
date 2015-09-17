@@ -6,7 +6,7 @@ public class PathDriver implements Driver {
 		// TODO Auto-generated constructor stub
 	}
 
-	public void start(String[] args) {
+	public void start() {
 		// TODO Auto-generated method stub
 		
 	}
