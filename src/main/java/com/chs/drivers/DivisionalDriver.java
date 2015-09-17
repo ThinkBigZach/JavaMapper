@@ -96,8 +96,6 @@ public DivisionalDriver(String[] args) {
         return null;
     }
 
-
-
     public void removeUnusedControlFiles(){
         ArrayList<Path> newControl = new ArrayList<Path>();
         for(Path p : controlFiles){
@@ -196,16 +194,16 @@ public DivisionalDriver(String[] args) {
         for(Path p : files){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = "";
-            int lineCount = 0;
+            int current_line = 0;
             String myFile = "";
             while((line = br.readLine()) != null) {
-                if (lineCount > 3) {
+                if (current_line > 3) {
                     if (type.equalsIgnoreCase("MANIFEST")) {
                         processLine(p, line);
                     }
                 }
                 myFile += replaceCRandLF(line) + "\n";
-                lineCount++;
+                current_line++;
             }
             if (!fs.exists(new Path(out_path + type + ".txt"))) {
                 fs.createNewFile(new Path(out_path + type + ".txt"));
@@ -221,29 +219,7 @@ public DivisionalDriver(String[] args) {
             System.out.println(e.getMessage());
         }
     }
-    private void loadEntities(String entity) throws IOException {
-        System.out.println("LOADING ENTITIES NOW");
-        System.out.println("MAPPING SIZE" + mapping.keySet().size());
-        System.out.println("MAPPING SIZE" + mapping.toString());
-        for (String s : mapping.keySet()) {
-            System.out.println("LOADING FROM FILE " + s);
-            if(entity.equals("") || s.equalsIgnoreCase(entity)) {
-                if (!fs.exists(new Path(out_path + s + ".txt"))) {
-                    fs.createNewFile(new Path(out_path + s + ".txt"));
-                }
-                FSDataOutputStream out = fs.append(new Path(out_path + s + ".txt"));
-                for (String link : mapping.get(s)) {
-                    try {
-                        HiveConnector.loadTable("Entity", s, link);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-                out.close();
-            }
-        }
-    }
-
+  
     private void processLine(Path p, String line){
     	String practiceID;
         if(Integer.parseInt(line.split("\037")[1]) > 0) {
@@ -263,9 +239,6 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-
-
-
     private  void addToMapping(String newPath){
         if (mapping.containsKey(entity.toUpperCase())) {
             mapping.get(entity.toUpperCase()).add(newPath + fileName);
@@ -275,7 +248,6 @@ public DivisionalDriver(String[] args) {
             mapping.put(entity.toUpperCase(), newList);
         }
     }
-
 
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, "");

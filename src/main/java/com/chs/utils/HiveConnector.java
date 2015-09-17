@@ -86,19 +86,6 @@ public class HiveConnector {
         stmt.execute(data);
     }
 
-
-    //Type is Entity
-    public static void loadTable(String type, String entity, String fileLocation) throws SQLException {
-        String loadData = "LOAD DATA LOCAL INPATH '" + fileLocation + "' INTO TABLE " + entity;
-        System.out.println(loadData);
-        Connection con = getConnection();
-        Statement stmt = con.createStatement();
-        String create = CREATE_ENTITY_START + entity + CREATE_ENTITY_END;
-        stmt.execute("DROP TABLE IF EXISTS " + entity);
-        stmt.execute(create);
-        stmt.execute(loadData);
-    }
-
     //    If entityFilter is "" then it'll return all entities, otherwise it'll filter to whatever entityFilter is called
     public static Map<String, ArrayList<String>> getManifestLocations(String entityFilter) throws SQLException {
         HashMap<String, ArrayList<String>> returnList = new HashMap<String, ArrayList<String>>();
