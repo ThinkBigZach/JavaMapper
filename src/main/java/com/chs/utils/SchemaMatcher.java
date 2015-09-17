@@ -54,7 +54,7 @@ public class SchemaMatcher {
         return tripwire;
     }
     
-    public static boolean schemaMatch(Map<String,String> file1Map, Map<String,String> file2map, int mapSize)
+    private static boolean schemaMatch(Map<String,String> file1Map, Map<String,String> file2map, int mapSize)
 	{
 		//Dont forget to return ticket on final
 		int ticket = 0;
@@ -80,7 +80,7 @@ public class SchemaMatcher {
                 .replaceAll("\\037", ",").split(",");
     }
     
-    public static Map extractMapFromFile(String[] column_Names, String[] column_Types)
+    private static Map extractMapFromFile(String[] column_Names, String[] column_Types)
 	{
 		Map<String, String> map = new HashMap<String, String>();
 		for (int i = 0; i < column_Names.length; i++)
