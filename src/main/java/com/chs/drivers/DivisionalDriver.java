@@ -18,28 +18,28 @@ import java.util.Map;
 
 public class DivisionalDriver implements Driver {
 
-    static String practiceID;
-    static String outPath = "/user/rscott22/mapping/";
-    static String entity;
-    static String chosenEntity;
-    static String fileName;
-    static FileSystem fs;
-    long startTime;
-    long endTime;
-    static ArrayList<Path> manifestFiles = new ArrayList<Path>();
-    static ArrayList<Path> controlFiles = new ArrayList<Path>();
-    static HashMap<String, ArrayList<String>> mapping;
-    static boolean isWildcard = false;
-    static String pathToTableDefs = "/enterprise/mappings/athena/athena_table_defs.csv";
-    static String pathToValidPractices = "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
-    static String dateWildCard = "";
-    static ArrayList<String> errorArray = new ArrayList<String>();
-    static ArrayList<String> validPracticeIDs = new ArrayList<String>();
-    static ArrayList<String> validEntityNames = new ArrayList<String>();
-    final String CR = "\012"; //carriage return
-    final String LF = "\015"; //line feed
-    final String UNIT_SEPERATOR = "\031";
-    static Map<String, Integer> columnCounts;
+    private String outPath = "/user/rscott22/mapping/";
+    private String entity;
+    private String chosenEntity;
+    private String fileName;
+    private FileSystem fs;
+    private long startTime;
+    private long endTime;
+    private ArrayList<Path> manifestFiles = new ArrayList<Path>();
+    private ArrayList<Path> controlFiles = new ArrayList<Path>();
+    private HashMap<String, ArrayList<String>> mapping;
+    private boolean isWildcard = false;
+    private String pathToTableDefs = "/enterprise/mappings/athena/athena_table_defs.csv";
+    private String pathToValidPractices = "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
+    private String dateWildCard = "";
+    private ArrayList<String> errorArray = new ArrayList<String>();
+    private ArrayList<String> validPracticeIDs = new ArrayList<String>();
+    private ArrayList<String> validEntityNames = new ArrayList<String>();
+    private Map<String, Integer> columnCounts;
+    
+    private final String CR = "\012"; //carriage return
+    private final String LF = "\015"; //line feed
+    private final String UNIT_SEPERATOR = "\031";
 
     private Path getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
@@ -226,6 +226,7 @@ public class DivisionalDriver implements Driver {
     }
 
     private void processLine(Path p, String line){
+    	String practiceID;
         if(Integer.parseInt(line.split("\037")[1]) > 0) {
             practiceID = line.substring(0, line.indexOf(".asv"));
             fileName = line.substring(0, line.indexOf(".asv") + 4);
@@ -317,9 +318,9 @@ public class DivisionalDriver implements Driver {
      *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
      *
      */
-    static String[] argNames = {"Input Path", "Entity", "Output Path","Valid Practice Map Location", "Valid Entity Map Location", "TD_HOST", "TD_USER", "TD_PASSWORD", "TD_DATABASE", "Division or Path?"};
-    //@Override
+     
     public void start(String[] args)  {
+    	final String[] argNames = {"Input Path", "Entity", "Output Path","Valid Practice Map Location", "Valid Entity Map Location", "TD_HOST", "TD_USER", "TD_PASSWORD", "TD_DATABASE", "Division or Path?"};
         for(int i = 0; i < args.length; i++) {
             System.out.println(argNames[i] + "=" + args[i]);
         }
