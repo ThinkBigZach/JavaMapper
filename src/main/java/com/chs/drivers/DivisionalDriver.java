@@ -2,6 +2,7 @@ package com.chs.drivers;
 
 import com.chs.utils.HiveConnector;
 import com.chs.utils.TDConnector;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -18,9 +19,19 @@ import java.util.Map;
 
 public class DivisionalDriver implements Driver {
 
-    private String outPath = "/user/rscott22/mapping/";
-    private String entity;
-    private String chosenEntity;
+	
+	//Constructor Args
+	private String input_path;
+	private String entity;
+	private String out_path;
+	private String practiceMap_path;
+	private String entityMap_path;
+	private String TD_Host;
+	private String TD_User;
+	private String TD_Password;
+	private String TD_Database;
+	
+	//unsorted Args
     private String fileName;
     private FileSystem fs;
     private long startTime;
@@ -29,8 +40,6 @@ public class DivisionalDriver implements Driver {
     private ArrayList<Path> controlFiles = new ArrayList<Path>();
     private HashMap<String, ArrayList<String>> mapping;
     private boolean isWildcard = false;
-    private String pathToTableDefs = "/enterprise/mappings/athena/athena_table_defs.csv";
-    private String pathToValidPractices = "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv";
     private String dateWildCard = "";
     private ArrayList<String> errorArray = new ArrayList<String>();
     private ArrayList<String> validPracticeIDs = new ArrayList<String>();
@@ -41,6 +50,19 @@ public class DivisionalDriver implements Driver {
     private final String LF = "\015"; //line feed
     private final String UNIT_SEPERATOR = "\031";
 
+
+public DivisionalDriver(String[] args) {
+	input_path = args[0]; 
+	entity = args[1]; 
+	out_path = args[2];
+	practiceMap_path = args[3]; 
+	entityMap_path = args[4]; 
+	TD_Host = args[5];
+	TD_User = args[6]; 
+	TD_Password = args[7]; 
+	TD_Database = args[8];
+}
+    
     private Path getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
@@ -65,8 +87,6 @@ public class DivisionalDriver implements Driver {
         removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
-
-
 
         writeOutFileLocations(manifestFiles, "Manifest");
         writeOutFileLocations(controlFiles, "Control");
@@ -94,10 +114,10 @@ public class DivisionalDriver implements Driver {
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
-        if(!fs.exists(new Path(outPath + entity + ".txt"))){
-            fs.createNewFile(new Path(outPath + entity + ".txt"));
+        if(!fs.exists(new Path(out_path + entity + ".txt"))){
+            fs.createNewFile(new Path(out_path + entity + ".txt"));
         }
-        FSDataOutputStream out = fs.append(new Path(outPath + entity + ".txt"));
+        FSDataOutputStream out = fs.append(new Path(out_path + entity + ".txt"));
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
@@ -129,7 +149,7 @@ public class DivisionalDriver implements Driver {
     }
 
     private  void getValidPracticeIds() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToValidPractices))));
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(practiceMap_path))));
         String line = "";
         while((line = br.readLine()) != null){
             String validPractice = line.substring(0, line.indexOf("~"));
@@ -138,7 +158,7 @@ public class DivisionalDriver implements Driver {
     }
 
     private void getValidEntityNames() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToTableDefs))));
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(entityMap_path))));
         String line = "";
         while((line = br.readLine()) != null){
             validEntityNames.add(line.toUpperCase());
@@ -188,15 +208,15 @@ public class DivisionalDriver implements Driver {
                 myFile += replaceCRandLF(line) + "\n";
                 lineCount++;
             }
-            if (!fs.exists(new Path(outPath + type + ".txt"))) {
-                fs.createNewFile(new Path(outPath + type + ".txt"));
+            if (!fs.exists(new Path(out_path + type + ".txt"))) {
+                fs.createNewFile(new Path(out_path + type + ".txt"));
             }
-            FSDataOutputStream out = fs.append(new Path(outPath + type + ".txt"));
+            FSDataOutputStream out = fs.append(new Path(out_path + type + ".txt"));
             out.write(myFile.getBytes());
             out.close();
         }
         try {
-            HiveConnector.loadTable(type, outPath + type + ".txt");
+            HiveConnector.loadTable(type, out_path + type + ".txt");
         }
         catch(Exception e){
             System.out.println(e.getMessage());
@@ -209,10 +229,10 @@ public class DivisionalDriver implements Driver {
         for (String s : mapping.keySet()) {
             System.out.println("LOADING FROM FILE " + s);
             if(entity.equals("") || s.equalsIgnoreCase(entity)) {
-                if (!fs.exists(new Path(outPath + s + ".txt"))) {
-                    fs.createNewFile(new Path(outPath + s + ".txt"));
+                if (!fs.exists(new Path(out_path + s + ".txt"))) {
+                    fs.createNewFile(new Path(out_path + s + ".txt"));
                 }
-                FSDataOutputStream out = fs.append(new Path(outPath + s + ".txt"));
+                FSDataOutputStream out = fs.append(new Path(out_path + s + ".txt"));
                 for (String link : mapping.get(s)) {
                     try {
                         HiveConnector.loadTable("Entity", s, link);
@@ -319,19 +339,10 @@ public class DivisionalDriver implements Driver {
      *
      */
      
-    public void start(String[] args)  {
-    	final String[] argNames = {"Input Path", "Entity", "Output Path","Valid Practice Map Location", "Valid Entity Map Location", "TD_HOST", "TD_USER", "TD_PASSWORD", "TD_DATABASE", "Division or Path?"};
-        for(int i = 0; i < args.length; i++) {
-            System.out.println(argNames[i] + "=" + args[i]);
-        }
-        String inputPath = args[0];
-        chosenEntity = args[1];
-        outPath = args[2];
-        pathToValidPractices = args[3];
-        pathToTableDefs = args[4];
+    public void start()  {
         System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
         startTime = System.currentTimeMillis();
-        TDConnector.init(args[5], args[6], args[7], args[8]);
+        TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
@@ -341,18 +352,17 @@ public class DivisionalDriver implements Driver {
                 e.printStackTrace();
             }
             mapping = new HashMap<String, ArrayList<String>>();
-            DivisionalDriver divisionalDriver = new DivisionalDriver();
-            divisionalDriver.getValidPracticeIds();
-            divisionalDriver.getValidEntityNames();
+            this.getValidPracticeIds();
+            this.getValidEntityNames();
             System.out.println("GOT ENTITIES AND PRACTICES");
-            divisionalDriver.getManifestPaths(inputPath);
+            this.getManifestPaths(input_path);
             System.out.println("GOT MANIFEST PATHS");
             try {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
-                        divisionalDriver.readAndLoadEntities(mapping.get(s), s);
+                    if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
+                        this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
                 long endWrite = System.currentTimeMillis();
@@ -363,9 +373,9 @@ public class DivisionalDriver implements Driver {
             }
             long startWrite = System.currentTimeMillis();
             for (String s : mapping.keySet()) {
-                if(s.equalsIgnoreCase(chosenEntity) || chosenEntity.equalsIgnoreCase("")) {
+                if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
                     try {
-                        HiveConnector.createEntityTables(s, outPath);
+                        HiveConnector.createEntityTables(s, out_path);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }

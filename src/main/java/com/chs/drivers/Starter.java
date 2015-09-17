@@ -20,16 +20,16 @@ public class Starter {
 		}
 		Driver driver;
 		if(args[9].equals("divisional")) {
-			driver = new DivisionalDriver();
+			driver = new DivisionalDriver(args);
 		}
 		else if (args[9].equals("path")) {
-			driver = new PathDriver();
+			driver = new PathDriver(args);
 		}
 		else {
 			throw new Exception("you did not specify \"divisional\" or \"path\" load");
 		}
 		
-		driver.start(args);
+		driver.start();
 	}
 
 }

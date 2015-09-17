@@ -2,6 +2,6 @@ package com.chs.drivers;
 
 public interface Driver {
 
-	void start(String[] args);
+	void start();
 	
 }
