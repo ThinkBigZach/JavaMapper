@@ -117,10 +117,11 @@ public DivisionalDriver(String[] args) {
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
-        if(!fs.exists(new Path(out_path + entity + ".txt"))){
-            fs.createNewFile(new Path(out_path + entity + ".txt"));
+        String entityOutpath = out_path + entity + "/";
+        if(!fs.exists(new Path(entityOutpath + entity + ".txt"))){
+            fs.createNewFile(new Path(entityOutpath + entity + ".txt"));
         }
-        FSDataOutputStream out = fs.append(new Path(out_path + entity + ".txt"));
+        FSDataOutputStream out = fs.append(new Path(entityOutpath + entity + ".txt")); 
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
@@ -221,28 +222,6 @@ public DivisionalDriver(String[] args) {
             System.out.println(e.getMessage());
         }
     }
-    private void loadEntities(String entity) throws IOException {
-        System.out.println("LOADING ENTITIES NOW");
-        System.out.println("MAPPING SIZE" + mapping.keySet().size());
-        System.out.println("MAPPING SIZE" + mapping.toString());
-        for (String s : mapping.keySet()) {
-            System.out.println("LOADING FROM FILE " + s);
-            if(entity.equals("") || s.equalsIgnoreCase(entity)) {
-                if (!fs.exists(new Path(out_path + s + ".txt"))) {
-                    fs.createNewFile(new Path(out_path + s + ".txt"));
-                }
-                FSDataOutputStream out = fs.append(new Path(out_path + s + ".txt"));
-                for (String link : mapping.get(s)) {
-                    try {
-                        HiveConnector.loadTable("Entity", s, link);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-                out.close();
-            }
-        }
-    }
 
     private void processLine(Path p, String line){
     	String practiceID;
@@ -262,9 +241,6 @@ public DivisionalDriver(String[] args) {
             }
         }
     }
-
-
-
 
     private  void addToMapping(String newPath){
         if (mapping.containsKey(entity.toUpperCase())) {
@@ -375,7 +351,8 @@ public DivisionalDriver(String[] args) {
             for (String s : mapping.keySet()) {
                 if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
                     try {
-                        HiveConnector.createEntityTables(s, out_path);
+                    	String entityOutpath = out_path + s + "/";
+                        HiveConnector.createEntityTables(s, entityOutpath);//out_path);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
