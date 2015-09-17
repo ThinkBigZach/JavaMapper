@@ -1,18 +1,16 @@
 package com.chs.drivers;
 
+import com.chs.utils.HiveConnector;
+import com.chs.utils.TDConnector;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.chs.utils.HiveConnector;
-import com.chs.utils.TDConnector;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +38,10 @@ public class DivisionalDriver implements Driver {
     static ArrayList<String> validEntityNames = new ArrayList<String>();
     final String CR = "\012"; //carriage return
     final String LF = "\015"; //line feed
+    final String UNIT_SEPERATOR = "\031";
     static Map<String, Integer> columnCounts;
-    private  Path getManifestPaths(String pathToControl) throws IOException {
+
+    private Path getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -111,6 +111,9 @@ public class DivisionalDriver implements Driver {
                 }
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
+                    String filename = new Path(path).getName();
+                    //add jobrow, job_id, filename;
+                    fixedLine = fixedLine + UNIT_SEPERATOR + "0" + UNIT_SEPERATOR + "FOO" + filename;
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
@@ -310,8 +313,6 @@ public class DivisionalDriver implements Driver {
     }
 
 
-
-
     /**
      *hadoop jar input.jar /user/financialDataFeed/data/<star>/athena/finished/2015-09-13 allergy /user/rscott22/mapping/ /enterprise/mappings/athena/chs-practice-id-mapping-athena.csv /enterprise/mappings/athena/athena_table_defs.csv dev.teradata.chs.net dbc dbc EDW_ATHENA_STAGE
      *
@@ -370,7 +371,7 @@ public class DivisionalDriver implements Driver {
                 }
             }
             long endWrite = System.currentTimeMillis();
-            System.out.println(((endWrite - startWrite)/1000) + " seconds to execute loading the files");
+            System.out.println(((endWrite - startWrite) / 1000) + " seconds to execute loading the files");
             endTime = System.currentTimeMillis();
             System.out.println(((endTime - startTime)/1000/60) + " minutes to execute");
         }

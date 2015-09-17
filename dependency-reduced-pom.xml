@@ -9,45 +9,17 @@
     <plugins>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
         <configuration>
           <archive>
             <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
               <addClasspath>true</addClasspath>
               <mainClass>com.chs.drivers.Starter</mainClass>
             </manifest>
+            <manifestEntries>
+              <Class-Path>/usr/share/java/terajdbc4.jar /usr/share/java/tdgssconfig.jar</Class-Path>
+            </manifestEntries>
           </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>com.chs.drivers.Starter</mainClass>
-            </manifest>
-          </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
         </configuration>
       </plugin>
       <plugin>
@@ -61,6 +33,11 @@
           </execution>
         </executions>
         <configuration>
+          <transformers>
+            <transformer>
+              <mainClass>com.chs.drivers.Starter</mainClass>
+            </transformer>
+          </transformers>
           <finalName>${artifactId}</finalName>
         </configuration>
       </plugin>
