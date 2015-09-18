@@ -117,7 +117,7 @@ public DivisionalDriver(String[] args) {
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
-        String entityOutpath = out_path + entity + "/";
+        String entityOutpath = out_path + entity.toLowerCase() + "/";
         if(!fs.exists(new Path(entityOutpath + entity + ".txt"))){
             fs.createNewFile(new Path(entityOutpath + entity + ".txt"));
         }
@@ -212,7 +212,8 @@ public DivisionalDriver(String[] args) {
     }
 
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
-        for(Path p : files){
+        String manconOutpath = null;
+    	for(Path p : files){
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = "";
             int current_line = 0;
@@ -226,25 +227,22 @@ public DivisionalDriver(String[] args) {
                 myFile += replaceCRandLF(line) + "\n";
                 current_line++;
             }
-            if (!fs.exists(new Path(out_path + type + ".txt"))) {
-                fs.createNewFile(new Path(out_path + type + ".txt"));
+            manconOutpath = out_path + type.toLowerCase() + "/";
+            if (!fs.exists(new Path(manconOutpath + type + ".txt"))) {
+                fs.createNewFile(new Path(manconOutpath + type + ".txt"));
             }
-            FSDataOutputStream out = fs.append(new Path(out_path + type + ".txt"));
+            FSDataOutputStream out = fs.append(new Path(manconOutpath + type + ".txt"));
             out.write(myFile.getBytes());
             out.close();
         }
         try {
-            HiveConnector.loadTable(type, out_path + type + ".txt");
+            HiveConnector.loadTable(type, manconOutpath + type + ".txt");
         }
         catch(Exception e){
             System.out.println(e.getMessage());
         }
     }
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 59236e2364326fe7f6264a52d8cba47df31a7d6a
+    
     private void processLine(Path p, String line){
     	String practiceID;
         if(Integer.parseInt(line.split("\037")[1]) > 0) {
@@ -372,7 +370,7 @@ public DivisionalDriver(String[] args) {
             for (String s : mapping.keySet()) {
                 if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
                     try {
-                    	String entityOutpath = out_path + s + "/";
+                    	String entityOutpath = out_path + s.toLowerCase() + "/";
                         HiveConnector.createEntityTables(s, entityOutpath);//out_path);
                     } catch (SQLException e) {
                         e.printStackTrace();
