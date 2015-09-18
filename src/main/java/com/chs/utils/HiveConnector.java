@@ -16,8 +16,8 @@ import java.util.Map;
 public class HiveConnector {
 
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
-    private static String CREATE_MANIFEST_TABLE = "CREATE EXTERNAL TABLE manifest (file_name STRING, records INT, hash STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
-    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
+    private static String CREATE_MANIFEST_TABLE = "CREATE EXTERNAL TABLE manifest (file_name STRING, records INT, hash STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037' LOCATION ";
+    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037' LOCATION ";
 
 
     private static String CREATE_ENTITY_START = "CREATE TABLE IF NOT EXISTS ";
@@ -54,19 +54,20 @@ public class HiveConnector {
 
     //Type is either Manifest, Control
     public static void loadTable(String type, String fileLocation) throws SQLException {
-        String loadData = "LOAD DATA INPATH '" + fileLocation + "' INTO TABLE " + type;
+//        String loadData = "LOAD DATA INPATH '" + fileLocation + "' INTO TABLE " + type;
         Connection con = getConnection();
         System.out.println("LOADING TABLE FOR " + type);
         System.out.println("IS CONNECTION CLOSED?" + conn.isClosed());
         Statement stmt = con.createStatement();
         if (type.equalsIgnoreCase("MANIFEST")) {
             stmt.execute("DROP TABLE IF EXISTS " + type);
-            stmt.execute(CREATE_MANIFEST_TABLE);
+            stmt.execute(CREATE_MANIFEST_TABLE + "'"+ fileLocation +"'");
         } else if (type.equalsIgnoreCase("CONTROL")) {
             stmt.execute("DROP TABLE IF EXISTS " + type);
-            stmt.execute(CREATE_CONTROL_TABLE);
+            stmt.execute(CREATE_CONTROL_TABLE + "'"+ fileLocation +"'");
         }
-        stmt.execute(loadData);
+        //DOESN'T NEED TO LOAD DATA SINCE ITS AN EXTERNAL TABLE
+//        stmt.execute(loadData);
         if(!con.isClosed()){
             con.close();
         }

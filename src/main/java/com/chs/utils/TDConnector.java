@@ -65,11 +65,6 @@ public class TDConnector {
 		System.out.println("EXECUTING QUERY" + query);
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
-
-
-
-
-
 		ResultSet set = stmt.executeQuery(query);
 		while(set.isBeforeFirst()){
 			set.next();
