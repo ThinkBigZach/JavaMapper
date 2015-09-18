@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 public class SchemaMatcher {
 	
 	private static String delimiter = "\\036";
+	private static String spacelimiter = "\\037";
 	private static Logger LOG = Logger.getLogger(SchemaMatcher.class);
 	
     public static boolean matchSchemas(String goldenURL, String compareURL) throws FileNotFoundException {
@@ -75,9 +76,9 @@ public class SchemaMatcher {
 	}
 
     private static String[] cleanStringByColumn(String beCleaned) {
-        return beCleaned.replaceAll("\\036", "")
+        return beCleaned.replaceAll(delimiter, "")
                 .replaceAll("\n", "")
-                .replaceAll("\\037", ",").split(",");
+                .replaceAll(spacelimiter, ",").split(",");
     }
     
     private static Map extractMapFromFile(String[] column_Names, String[] column_Types)
