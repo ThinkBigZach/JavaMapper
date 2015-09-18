@@ -22,12 +22,12 @@ public class DivisionalDriver implements Driver {
     //ascii replacement args
     private final String CR = "\r"; //carriage return
     private final String LF = "\n"; //line feed
-    private final String UNIT_SEPERATOR = "\037";
+    private final String UNIT_SEPARATOR = "\037";
 	
 	//Constructor Args
 	private String input_path;
 	private String entity;
-    private String entity1;
+    private String inputParamEntity;
 	private String out_path;
 	private String practiceMap_path;
 	private String entityMap_path;
@@ -53,7 +53,7 @@ public class DivisionalDriver implements Driver {
 public DivisionalDriver(String[] args) {
 	input_path = args[0];
 	entity = args[1];
-    entity1 = args[1];
+    inputParamEntity = args[1];
 	out_path = args[2];
 	practiceMap_path = args[3]; 
 	entityMap_path = args[4]; 
@@ -138,7 +138,7 @@ public DivisionalDriver(String[] args) {
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
-                    fixedLine = fixedLine + UNIT_SEPERATOR + "0" + UNIT_SEPERATOR + jobId + UNIT_SEPERATOR + fileName;
+                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + fileName;
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
@@ -275,7 +275,7 @@ public DivisionalDriver(String[] args) {
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, "");
         line = line.replaceAll(LF, "");
-        line = line.replaceAll("~", UNIT_SEPERATOR);
+        line = line.replaceAll("~", UNIT_SEPARATOR);
         return line;
     }
     
@@ -357,7 +357,7 @@ public DivisionalDriver(String[] args) {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(entity1) || entity1.equalsIgnoreCase("")) {
+                    if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
                         this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
