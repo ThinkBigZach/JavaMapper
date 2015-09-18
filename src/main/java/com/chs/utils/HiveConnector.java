@@ -17,7 +17,7 @@ public class HiveConnector {
 
     private static String driverName = "org.apache.hive.jdbc.HiveDriver";
     private static String CREATE_MANIFEST_TABLE = "CREATE EXTERNAL TABLE manifest (file_name STRING, records INT, hash STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
-    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '~'";
+    private static String CREATE_CONTROL_TABLE = "CREATE EXTERNAL TABLE control (job_id STRING, date STRING, date2 STRING, path STRING)" + " ROW FORMAT DELIMITED FIELDS TERMINATED BY '\037'";
 
 
     private static String CREATE_ENTITY_START = "CREATE TABLE IF NOT EXISTS ";

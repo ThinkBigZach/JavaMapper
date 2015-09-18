@@ -20,8 +20,8 @@ import java.util.Map;
 public class DivisionalDriver implements Driver {
 
     //ascii replacement args
-    private final String CR = "\012"; //carriage return
-    private final String LF = "\015"; //line feed
+    private final String CR = "\r"; //carriage return
+    private final String LF = "\n"; //line feed
     private final String UNIT_SEPERATOR = "\031";
 	
 	//Constructor Args
