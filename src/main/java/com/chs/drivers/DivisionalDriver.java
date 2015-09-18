@@ -125,7 +125,6 @@ public DivisionalDriver(String[] args) {
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             String jobId = getJobIdFromPaths(path);
-            System.out.println("JOB ID IS:  " +jobId);
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
             int lineCount = 0;
@@ -138,7 +137,8 @@ public DivisionalDriver(String[] args) {
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
-                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + fileName;
+                    String myFileName = path.substring(path.lastIndexOf("/")+1);
+                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
