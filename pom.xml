@@ -20,7 +20,6 @@
         </repository>
     </repositories>
 
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -89,40 +88,12 @@
             <version>2.5.0-cdh5.3.4</version>
             <scope>provided</scope>
         </dependency>
-        <!--        <dependency>
-                    <groupId>com.teradata.jdbc</groupId>
-                    <artifactId>tdgssconfig</artifactId>
-                    <version>14.00.00.21</version>
-                    <scope>runtime</scope>
-                </dependency>
-                <dependency>
-                    <groupId>com.teradata.jdbc</groupId>
-                    <artifactId>terajdbc4</artifactId>
-                    <version>14.00.00.21</version>
-                    <scope>runtime</scope>
-                </dependency>
-        -->
-        <!--<dependency>-->
-        <!--<artifactId>terajdbc4</artifactId>-->
-        <!--<groupId>com.teradata.jdbc</groupId>-->
-        <!--<scope>system</scope>-->
-        <!--<version>1</version>-->
-        <!--<systemPath>${project.basedir}/libs/terajdbc4.jar</systemPath>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<artifactId>tdgssconfig</artifactId>-->
-        <!--<groupId>com.teradata.jdbc</groupId>-->
-        <!--<scope>system</scope>-->
-        <!--<version>1</version>-->
-        <!--<systemPath>${project.basedir}/libs/tdgssconfig.jar</systemPath>-->
-        <!--</dependency>-->
 
     </dependencies>
 
     <build>
 
         <finalName>${project.artifactId}</finalName>
-
         <plugins>
 
             <plugin>
@@ -144,7 +115,6 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
@@ -164,6 +134,7 @@
                     <finalName>${artifactId}</finalName>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>
