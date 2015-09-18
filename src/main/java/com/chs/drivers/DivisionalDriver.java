@@ -125,7 +125,7 @@ public DivisionalDriver(String[] args) {
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             String jobId = getJobIdFromPaths(path);
-            System.out.println("WHAT IS JOBID " +jobId);
+            System.out.println("JOB ID IS:  " +jobId);
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
             int lineCount = 0;
@@ -137,9 +137,7 @@ public DivisionalDriver(String[] args) {
                 }
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
-                    //String filename = new Path(path).getName();
-                    //add row entry (default to 0 for now), jobId, filename;
-                    System.out.println ("THIS IS WHERE THE COLUMNS ARE APPENDED");
+                    //add row entry (default to 0 for now), jobId, fileName;
                     fixedLine = fixedLine + UNIT_SEPERATOR + "0" + UNIT_SEPERATOR + jobId + UNIT_SEPERATOR + fileName;
                     out.write((fixedLine + "\n").getBytes());
                 }
@@ -150,17 +148,13 @@ public DivisionalDriver(String[] args) {
     }
 
     private String getJobIdFromPaths(String path) {
-        System.out.println("LYNNN1111" + path);
         String temp = path.substring(0,path.lastIndexOf('/'));
         temp = temp+"/CONTROL.TXT";
-        System.out.println("LYNN!!! " + temp);
 
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(temp))));
             String line = br.readLine();
-            System.out.println("SCOTT:  " + line);
             if (!line.isEmpty()) {
-                System.out.println("SPLITTING");
                 return line.split("~")[3];
             }
         } catch (IOException e) {
@@ -361,10 +355,7 @@ public DivisionalDriver(String[] args) {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    System.out.println("S IS: " + s);
-                    System.out.println("entity is : " + entity1);
                     if(s.equalsIgnoreCase(entity1) || entity1.equalsIgnoreCase("")) {
-                        System.out.println("IN ER");
                         this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
