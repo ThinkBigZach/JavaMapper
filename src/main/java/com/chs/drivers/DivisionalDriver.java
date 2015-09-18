@@ -275,6 +275,7 @@ public DivisionalDriver(String[] args) {
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, "");
         line = line.replaceAll(LF, "");
+        line = line.replaceAll("~", "\037");
         return line;
     }
     
