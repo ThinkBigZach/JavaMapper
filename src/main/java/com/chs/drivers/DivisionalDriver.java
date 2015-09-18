@@ -27,6 +27,7 @@ public class DivisionalDriver implements Driver {
 	//Constructor Args
 	private String input_path;
 	private String entity;
+    private String entity1;
 	private String out_path;
 	private String practiceMap_path;
 	private String entityMap_path;
@@ -50,8 +51,9 @@ public class DivisionalDriver implements Driver {
 
 
 public DivisionalDriver(String[] args) {
-	input_path = args[0]; 
-	entity = args[1]; 
+	input_path = args[0];
+	entity = args[1];
+    entity1 = args[1];
 	out_path = args[2];
 	practiceMap_path = args[3]; 
 	entityMap_path = args[4]; 
@@ -66,7 +68,7 @@ public DivisionalDriver(String[] args) {
 	validEntityNames = new ArrayList<String>();
 }
     
-    private Path getManifestPaths(String pathToControl) throws IOException {
+    private void getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
@@ -93,7 +95,7 @@ public DivisionalDriver(String[] args) {
 
         writeOutFileLocations(manifestFiles, "Manifest");
         writeOutFileLocations(controlFiles, "Control");
-        return null;
+        return;
     }
 
     public void removeUnusedControlFiles(){
@@ -115,12 +117,15 @@ public DivisionalDriver(String[] args) {
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
-        if(!fs.exists(new Path(out_path + entity + ".txt"))){
-            fs.createNewFile(new Path(out_path + entity + ".txt"));
+        String entityOutpath = out_path + entity + "/";
+        if(!fs.exists(new Path(entityOutpath + entity + ".txt"))){
+            fs.createNewFile(new Path(entityOutpath + entity + ".txt"));
         }
-        FSDataOutputStream out = fs.append(new Path(out_path + entity + ".txt"));
+        FSDataOutputStream out = fs.append(new Path(entityOutpath + entity + ".txt")); 
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
+            String jobId = getJobIdFromPaths(path);
+            System.out.println("JOB ID IS:  " +jobId);
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             String line = "";
             int lineCount = 0;
@@ -132,15 +137,31 @@ public DivisionalDriver(String[] args) {
                 }
                 if (lineCount > 3) {
                     String fixedLine = replaceCRandLF(line);
-                    String filename = new Path(path).getName();
-                    //add jobrow, job_id, filename;
-                    fixedLine = fixedLine + UNIT_SEPERATOR + "0" + UNIT_SEPERATOR + "FOO" + filename;
+                    //add row entry (default to 0 for now), jobId, fileName;
+                    fixedLine = fixedLine + UNIT_SEPERATOR + "0" + UNIT_SEPERATOR + jobId + UNIT_SEPERATOR + fileName;
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
             }
         }
         out.close();
+    }
+
+    private String getJobIdFromPaths(String path) {
+        String temp = path.substring(0,path.lastIndexOf('/'));
+        temp = temp+"/CONTROL.TXT";
+
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(temp))));
+            String line = br.readLine();
+            if (!line.isEmpty()) {
+                return line.split("~")[3];
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+
     }
 
 //TODO SWITCH FROM return true; to return line.split("\037").length == columnCounts.get(entity); WHEN GARY GETS BACK TO US
@@ -219,7 +240,11 @@ public DivisionalDriver(String[] args) {
             System.out.println(e.getMessage());
         }
     }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 59236e2364326fe7f6264a52d8cba47df31a7d6a
     private void processLine(Path p, String line){
     	String practiceID;
         if(Integer.parseInt(line.split("\037")[1]) > 0) {
@@ -333,7 +358,7 @@ public DivisionalDriver(String[] args) {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
+                    if(s.equalsIgnoreCase(entity1) || entity1.equalsIgnoreCase("")) {
                         this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
@@ -347,7 +372,8 @@ public DivisionalDriver(String[] args) {
             for (String s : mapping.keySet()) {
                 if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
                     try {
-                        HiveConnector.createEntityTables(s, out_path);
+                    	String entityOutpath = out_path + s + "/";
+                        HiveConnector.createEntityTables(s, entityOutpath);//out_path);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -359,6 +385,7 @@ public DivisionalDriver(String[] args) {
             System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
         }
         catch(IOException e){
+            System.out.println(e.getMessage());
 
         }
     }
