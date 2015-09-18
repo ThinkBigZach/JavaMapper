@@ -22,7 +22,7 @@ public class DivisionalDriver implements Driver {
     //ascii replacement args
     private final String CR = "\r"; //carriage return
     private final String LF = "\n"; //line feed
-    private final String UNIT_SEPERATOR = "\031";
+    private final String UNIT_SEPERATOR = "\037";
 	
 	//Constructor Args
 	private String input_path;
@@ -275,7 +275,7 @@ public DivisionalDriver(String[] args) {
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, "");
         line = line.replaceAll(LF, "");
-        line = line.replaceAll("~", "\037");
+        line = line.replaceAll("~", UNIT_SEPERATOR);
         return line;
     }
     
