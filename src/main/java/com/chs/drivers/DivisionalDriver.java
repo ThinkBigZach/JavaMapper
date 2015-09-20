@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class DivisionalDriver implements Driver {
 
@@ -23,6 +24,7 @@ public class DivisionalDriver implements Driver {
     private final String CR = "\r"; //carriage return
     private final String LF = "\n"; //line feed
     private final String UNIT_SEPARATOR = "\037";
+    private static final String RECORD_SEPARATOR = "\036";
 	
 	//Constructor Args
 	private String input_path;
@@ -126,10 +128,26 @@ public DivisionalDriver(String[] args) {
         for(String path : paths){
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
+
+
+            //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
+            Scanner fileScanner = new Scanner(fs.open(new Path(path)));
+            fileScanner.useDelimiter(RECORD_SEPARATOR);
+
             String line = "";
             int lineCount = 0;
-            while((line = br.readLine()) != null){
+            while(fileScanner.hasNextLine()) {
+                line = fileScanner.next();
+
+//                while((line = br.readLine()) != null){
+
+                if (line.length() <= 1) {
+                    continue;
+                }
+
+               // if (!line.matches(".*[a-zA-Z]+.*")) {
+                 //   continue;
+                //}
                 if(lineCount == 1){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     validateColumnCounts(line, entity);
@@ -139,6 +157,7 @@ public DivisionalDriver(String[] args) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
                     fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                   // System.out.println("LINES: " + fixedLine + " LENGTH " + fixedLine.length());
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
@@ -214,11 +233,20 @@ public DivisionalDriver(String[] args) {
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         String manconOutpath = null;
     	for(Path p : files){
-            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
+            //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
+            Scanner fileScanner = new Scanner(fs.open(p));
+            fileScanner.useDelimiter(RECORD_SEPARATOR);
+
             String line = "";
             int current_line = 0;
             String myFile = "";
-            while((line = br.readLine()) != null) {
+            //while((line = br.readLine()) != null) {
+            while(fileScanner.hasNextLine()) {
+                line = fileScanner.next();
+                if (line.length() <= 1) {
+                    continue;
+                }
+
                 if (current_line > 3) {
                     if (type.equalsIgnoreCase("MANIFEST")) {
                         processLine(p, line);
