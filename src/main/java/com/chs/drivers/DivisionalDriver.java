@@ -141,13 +141,6 @@ public DivisionalDriver(String[] args) {
 
 //                while((line = br.readLine()) != null){
 
-                if (line.length() <= 1) {
-                    continue;
-                }
-
-               // if (!line.matches(".*[a-zA-Z]+.*")) {
-                 //   continue;
-                //}
                 if(lineCount == 1){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     validateColumnCounts(line, entity);
@@ -206,7 +199,6 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-
     private  boolean isValidEntry(String practiceID, String entityName, String schema){
         return isValidPractice(practiceID) && isValidEntity(entityName) && validateColumnCounts(schema, entityName);
     }
@@ -243,15 +235,14 @@ public DivisionalDriver(String[] args) {
             //while((line = br.readLine()) != null) {
             while(fileScanner.hasNextLine()) {
                 line = fileScanner.next();
-                if (line.length() <= 1) {
-                    continue;
-                }
+                line = line.substring(1);
 
                 if (current_line > 3) {
                     if (type.equalsIgnoreCase("MANIFEST")) {
                         processLine(p, line);
                     }
                 }
+
                 myFile += replaceCRandLF(line) + "\n";
                 current_line++;
             }
@@ -271,21 +262,28 @@ public DivisionalDriver(String[] args) {
         }
     }
     
-    private void processLine(Path p, String line){
+    private void processLine(Path p, String line) {
     	String practiceID;
-        if(Integer.parseInt(line.split("\037")[1]) > 0) {
-            practiceID = line.substring(0, line.indexOf(".asv"));
-            fileName = line.substring(0, line.indexOf(".asv") + 4);
-            entity = line.substring(0, line.indexOf("_"));
-            while (practiceID.contains("_")) {
-                practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
-            }
-            String newPath = generateNewPath(p, practiceID);
-            if(isValidEntry(practiceID,entity, null)) {
-                addToMapping(newPath);
-            }
-            else{
-                errorArray.add(newPath);
+
+        line = line.replaceFirst("^\\s+", "");
+        line =  replaceCRandLF(line);
+        String splitValue[] = line.split(UNIT_SEPARATOR);
+        if (splitValue.length > 1) {
+
+            if (Integer.parseInt(splitValue[1]) > 0) {
+                practiceID = line.substring(0, line.indexOf(".asv"));
+                fileName = line.substring(0, line.indexOf(".asv") + 4);
+
+                entity = line.substring(0, line.indexOf("_"));
+                while (practiceID.contains("_")) {
+                    practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
+                }
+                String newPath = generateNewPath(p, practiceID);
+                if (isValidEntry(practiceID, entity, null)) {
+                    addToMapping(newPath);
+                } else {
+                    errorArray.add(newPath);
+                }
             }
         }
     }
@@ -301,8 +299,9 @@ public DivisionalDriver(String[] args) {
     }
 
     private  String replaceCRandLF(String line){
-        line = line.replaceAll(CR, "");
-        line = line.replaceAll(LF, "");
+
+        line = line.replaceAll(CR, " ");
+        line = line.replaceAll(LF, " ");
         line = line.replaceAll("~", UNIT_SEPARATOR);
         return line;
     }
