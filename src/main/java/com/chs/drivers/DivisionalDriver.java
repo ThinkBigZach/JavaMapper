@@ -141,7 +141,7 @@ public DivisionalDriver(String[] args) {
 
 //                while((line = br.readLine()) != null){
 
-                if(lineCount == 1){
+                if(lineCount == 0){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     validateColumnCounts(line, entity);
 
@@ -299,7 +299,6 @@ public DivisionalDriver(String[] args) {
     }
 
     private  String replaceCRandLF(String line){
-
         line = line.replaceAll(CR, " ");
         line = line.replaceAll(LF, " ");
         line = line.replaceAll("~", UNIT_SEPARATOR);
