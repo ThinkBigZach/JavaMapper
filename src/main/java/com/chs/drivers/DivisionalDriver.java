@@ -233,7 +233,6 @@ public DivisionalDriver(String[] args) {
             String myFile = "";
             while(fileScanner.hasNextLine()) {
                 line = fileScanner.next();
-                line = line.substring(1);
 
                 if (current_line > 3) {
                     if (type.equalsIgnoreCase("MANIFEST")) {
