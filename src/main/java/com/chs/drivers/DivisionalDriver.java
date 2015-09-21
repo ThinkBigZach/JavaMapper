@@ -243,7 +243,7 @@ public DivisionalDriver(String[] args) {
                     }
                 }
 
-                myFile += replaceCRandLF(line) + "\n";
+                myFile += replaceCRandLF(line);
                 current_line++;
             }
             manconOutpath = out_path + type.toLowerCase() + "/";
@@ -300,7 +300,8 @@ public DivisionalDriver(String[] args) {
 
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, " ");
-        line = line.replaceAll(LF, " ");
+        line = line.replaceAll(LF, "");
+        line = line.replaceAll(RECORD_SEPARATOR, "\n");
         line = line.replaceAll("~", UNIT_SEPARATOR);
         return line;
     }
