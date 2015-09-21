@@ -393,9 +393,9 @@ public DivisionalDriver(String[] args) {
             }
             long startWrite = System.currentTimeMillis();
             for (String s : mapping.keySet()) {
-                if(s.equalsIgnoreCase(entity) || entity.equalsIgnoreCase("")) {
+                if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
                     try {
-                    	String entityOutpath = out_path + s.toLowerCase() + "/";
+                    	String entityOutpath = out_path + "/" + s.toLowerCase() + "/";
                         HiveConnector.createEntityTables(s, entityOutpath);//out_path);
                     } catch (SQLException e) {
                         e.printStackTrace();
