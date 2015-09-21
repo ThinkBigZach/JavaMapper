@@ -146,7 +146,7 @@ public DivisionalDriver(String[] args) {
                     validateColumnCounts(line, entity);
 
                 }
-                if (lineCount > 3) {
+                if (lineCount > 3 && line.trim().length() > 0) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
                     fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
@@ -243,7 +243,7 @@ public DivisionalDriver(String[] args) {
                     }
                 }
 
-                myFile += replaceCRandLF(line);
+                myFile += replaceCRandLF(line) + "\n";
                 current_line++;
             }
             manconOutpath = out_path +"/" +  type.toLowerCase() + "/";
@@ -301,7 +301,7 @@ public DivisionalDriver(String[] args) {
     private  String replaceCRandLF(String line){
         line = line.replaceAll(CR, " ");
         line = line.replaceAll(LF, "");
-        line = line.replaceAll(RECORD_SEPARATOR, "\n");
+        line = line.replaceAll(RECORD_SEPARATOR, "");
         line = line.replaceAll("~", UNIT_SEPARATOR);
         return line;
     }
