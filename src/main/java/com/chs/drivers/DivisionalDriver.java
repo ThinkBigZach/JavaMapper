@@ -222,8 +222,8 @@ public DivisionalDriver(String[] args) {
     }
 
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
-        String manconOutpath = null;
-        String outFileNameMili = appendTimeAndExtension(manconOutpath + type);
+        String manconOutpath = out_path +"/" +  type.toLowerCase() + "/"  + type;
+        String outFileNameMili = appendTimeAndExtension(manconOutpath);
     	for(Path p : files){
             Scanner fileScanner = new Scanner(fs.open(p));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
@@ -243,7 +243,6 @@ public DivisionalDriver(String[] args) {
                 myFile += replaceCRandLF(line) + "\n";
                 current_line++;
             }
-            manconOutpath = out_path +"/" +  type.toLowerCase() + "/";
             if (!fs.exists(new Path(outFileNameMili))) {
                 fs.createNewFile(new Path(outFileNameMili));
             }
