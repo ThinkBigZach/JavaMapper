@@ -1,6 +1,5 @@
 package com.chs.drivers;
 
-import com.chs.utils.HiveConnector;
 import com.chs.utils.TDConnector;
 
 import org.apache.hadoop.conf.Configuration;
@@ -250,12 +249,6 @@ public DivisionalDriver(String[] args) {
             out.write(myFile.getBytes());
             out.close();
         }
-        try {
-            HiveConnector.loadTable(type, manconOutpath + type + ".txt");
-        }
-        catch(Exception e){
-            System.out.println(e.getMessage());
-        }
     }
     
     private void processLine(Path p, String line) {
@@ -389,19 +382,6 @@ public DivisionalDriver(String[] args) {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            long startWrite = System.currentTimeMillis();
-            for (String s : mapping.keySet()) {
-                if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
-                    try {
-                    	String entityOutpath = out_path + "/" + s.toLowerCase() + "/";
-                        HiveConnector.createEntityTables(s, entityOutpath);//out_path);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            long endWrite = System.currentTimeMillis();
-            System.out.println(((endWrite - startWrite) / 1000) + " seconds to execute loading the files");
             long endTime = System.currentTimeMillis();
             System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
         }
