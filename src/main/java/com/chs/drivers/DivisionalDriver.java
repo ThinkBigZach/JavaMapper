@@ -119,7 +119,7 @@ public DivisionalDriver(String[] args) {
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
-        String entityOutpath = out_path + entity.toLowerCase() + "/";
+        String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         if(!fs.exists(new Path(entityOutpath + entity + ".txt"))){
             fs.createNewFile(new Path(entityOutpath + entity + ".txt"));
         }
@@ -246,7 +246,7 @@ public DivisionalDriver(String[] args) {
                 myFile += replaceCRandLF(line);
                 current_line++;
             }
-            manconOutpath = out_path + type.toLowerCase() + "/";
+            manconOutpath = out_path +"/" +  type.toLowerCase() + "/";
             if (!fs.exists(new Path(manconOutpath + type + ".txt"))) {
                 fs.createNewFile(new Path(manconOutpath + type + ".txt"));
             }
