@@ -121,14 +121,15 @@ public DivisionalDriver(String[] args) {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
+
         if(!fs.exists(new Path(outFileNameMili))){
             fs.createNewFile(new Path(outFileNameMili));
         }
 
-
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
+
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
 
@@ -222,6 +223,7 @@ public DivisionalDriver(String[] args) {
 
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         String manconOutpath = null;
+        String outFileNameMili = appendTimeAndExtension(manconOutpath + type);
     	for(Path p : files){
             Scanner fileScanner = new Scanner(fs.open(p));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
@@ -243,11 +245,9 @@ public DivisionalDriver(String[] args) {
                 current_line++;
             }
             manconOutpath = out_path +"/" +  type.toLowerCase() + "/";
-            String outFileNameMili = appendTimeAndExtension(manconOutpath + entity);
             if (!fs.exists(new Path(outFileNameMili))) {
                 fs.createNewFile(new Path(outFileNameMili));
             }
-
             FSDataOutputStream out = fs.append(new Path(outFileNameMili));
             out.write(myFile.getBytes());
             out.close();
