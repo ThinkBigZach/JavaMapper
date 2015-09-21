@@ -120,27 +120,26 @@ public DivisionalDriver(String[] args) {
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
-        if(!fs.exists(new Path(entityOutpath + entity + ".txt"))){
-            fs.createNewFile(new Path(entityOutpath + entity + ".txt"));
+        String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
+        if(!fs.exists(new Path(outFileNameMili))){
+            fs.createNewFile(new Path(outFileNameMili));
         }
-        FSDataOutputStream out = fs.append(new Path(entityOutpath + entity + ".txt")); 
+
+
+        FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
 
-
-            //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
             Scanner fileScanner = new Scanner(fs.open(new Path(path)));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
 
             String line = "";
             int lineCount = 0;
             while(fileScanner.hasNextLine()) {
+
                 line = fileScanner.next();
-
-//                while((line = br.readLine()) != null){
-
                 if(lineCount == 0){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     validateColumnCounts(line, entity);
@@ -150,7 +149,6 @@ public DivisionalDriver(String[] args) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
                     fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                   // System.out.println("LINES: " + fixedLine + " LENGTH " + fixedLine.length());
                     out.write((fixedLine + "\n").getBytes());
                 }
                 lineCount++;
@@ -160,7 +158,7 @@ public DivisionalDriver(String[] args) {
     }
 
     private String getJobIdFromPaths(String path) {
-        String temp = path.substring(0,path.lastIndexOf('/'));
+        String temp = path.substring(0, path.lastIndexOf('/'));
         temp = temp+"/CONTROL.TXT";
 
         try {
@@ -225,14 +223,12 @@ public DivisionalDriver(String[] args) {
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         String manconOutpath = null;
     	for(Path p : files){
-            //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(p)));
             Scanner fileScanner = new Scanner(fs.open(p));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
 
             String line = "";
             int current_line = 0;
             String myFile = "";
-            //while((line = br.readLine()) != null) {
             while(fileScanner.hasNextLine()) {
                 line = fileScanner.next();
                 line = line.substring(1);
@@ -247,10 +243,12 @@ public DivisionalDriver(String[] args) {
                 current_line++;
             }
             manconOutpath = out_path +"/" +  type.toLowerCase() + "/";
-            if (!fs.exists(new Path(manconOutpath + type + ".txt"))) {
-                fs.createNewFile(new Path(manconOutpath + type + ".txt"));
+            String outFileNameMili = appendTimeAndExtension(manconOutpath + entity);
+            if (!fs.exists(new Path(outFileNameMili))) {
+                fs.createNewFile(new Path(outFileNameMili));
             }
-            FSDataOutputStream out = fs.append(new Path(manconOutpath + type + ".txt"));
+
+            FSDataOutputStream out = fs.append(new Path(outFileNameMili));
             out.write(myFile.getBytes());
             out.close();
         }
@@ -356,7 +354,6 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-
     /*
      * (non-Javadoc)
      * @see com.chs.drivers.Driver#start()
@@ -415,4 +412,12 @@ public DivisionalDriver(String[] args) {
 
         }
     }
+
+    private String appendTimeAndExtension(String s) {
+
+        String time = "."+System.currentTimeMillis();
+        return s += time + ".txt";
+
+    }
+
 }
