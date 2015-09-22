@@ -236,12 +236,13 @@ public DivisionalDriver(String[] args) {
             while(fileScanner.hasNextLine()) {
                 line = fileScanner.next();
 
-                if (current_line > 3) {
-                    if (type.equalsIgnoreCase("MANIFEST")) {
-                        processLine(p, line);
-                    }
+                if (current_line > 3 && type.equalsIgnoreCase("MANIFEST")) {
+                    processLine(p, line);
+                    myFile += replaceCRandLF(line) + "\n";
                 }
-                myFile += replaceCRandLF(line) + "\n";
+                else if(type.equalsIgnoreCase("CONTROL")){
+                    myFile += replaceCRandLF(line) + "\n";
+                }
                 current_line++;
             }
         }
