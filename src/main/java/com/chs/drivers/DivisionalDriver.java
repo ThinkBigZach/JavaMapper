@@ -126,7 +126,6 @@ public DivisionalDriver(String[] args) {
         }
 
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
-        //TODO:  This could be paralellized or a thread for each path, see the caller above.
         for(String path : paths){
 
             String jobId = getJobIdFromPaths(path);
@@ -148,8 +147,8 @@ public DivisionalDriver(String[] args) {
                 if (lineCount > 3 && line.trim().length() > 0) {
                     String fixedLine = replaceCRandLF(line);
                     //add row entry (default to 0 for now), jobId, fileName;
-                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                    out.write((fixedLine + "\n").getBytes());
+                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName + "\n";
+                    out.write((fixedLine).getBytes());
                 }
                 lineCount++;
             }
@@ -241,7 +240,9 @@ public DivisionalDriver(String[] args) {
                     myFile += replaceCRandLF(line) + "\n";
                 }
                 else if(type.equalsIgnoreCase("CONTROL")){
-                    myFile += replaceCRandLF(line) + "\n";
+                	String fixedLine = replaceCRandLF(line);
+                	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
+                    myFile += fixedLine + "\n";
                 }
                 current_line++;
             }
@@ -291,7 +292,6 @@ public DivisionalDriver(String[] args) {
         line = line.replaceAll(CR, " ");
         line = line.replaceAll(LF, "");
         line = line.replaceAll(RECORD_SEPARATOR, "");
-        line = line.replaceAll("~", UNIT_SEPARATOR);
         return line;
     }
     
