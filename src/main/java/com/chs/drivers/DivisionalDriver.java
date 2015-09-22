@@ -193,9 +193,9 @@ public DivisionalDriver(String[] args) {
         String line = "";
         while((line = br.readLine()) != null){
         	String currentValidName = line.toUpperCase();
-        	String tempWriteDir = out_path +"/" + currentValidName + "/";
+        	String tempWriteDir = out_path +"/" + currentValidName.toLowerCase() + "/";
             if (!fs.exists(new Path(tempWriteDir))) {
-                fs.createNewFile(new Path(tempWriteDir));
+                fs.mkdirs(new Path(tempWriteDir));
             }
             validEntityNames.add(currentValidName);
         }
