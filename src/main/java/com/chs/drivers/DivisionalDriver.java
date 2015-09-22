@@ -7,12 +7,14 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.lf5.util.DateFormatManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -396,6 +398,7 @@ public DivisionalDriver(String[] args) {
             }
             long endTime = System.currentTimeMillis();
             System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
+            writeErrorFiles();
         }
         catch(IOException e){
             System.out.println(e.getMessage());
@@ -403,7 +406,25 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-    private String appendTimeAndExtension(String s) {
+    private void writeErrorFiles() throws IllegalArgumentException, IOException {
+    	String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "error/";
+        if (!fs.exists(new Path(tempOutpath))) {
+            fs.mkdirs(new Path(tempOutpath));
+        }
+        Date tempDate = new Date(System.currentTimeMillis());
+        String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
+        String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
+        if (!fs.exists(new Path(errorOutpath))) {
+            fs.createNewFile(new Path(errorOutpath));
+        }
+        FSDataOutputStream out = fs.append(new Path(errorOutpath));
+		for (String line : errorArray){
+			out.write((line).getBytes());
+		}
+		out.close();
+	}
+
+	private String appendTimeAndExtension(String s) {
 
         String time = "."+System.currentTimeMillis();
         return s += time + ".txt";
