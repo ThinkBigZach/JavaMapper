@@ -1,5 +1,6 @@
 package com.chs.drivers;
 
+import com.chs.utils.SchemaMatcher;
 import com.chs.utils.TDConnector;
 
 import org.apache.hadoop.conf.Configuration;
@@ -10,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.lf5.util.DateFormatManager;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
@@ -17,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class DivisionalDriver implements Driver {
 
@@ -126,36 +130,113 @@ public DivisionalDriver(String[] args) {
         if(!fs.exists(new Path(outFileNameMili))){
             fs.createNewFile(new Path(outFileNameMili));
         }
-
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         for(String path : paths){
 
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
-
             Scanner fileScanner = new Scanner(fs.open(new Path(path)));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
 
             String line = "";
             int lineCount = 0;
+            String schemaInfo = null;
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
                 if(lineCount == 0){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
-                    validateColumnCounts(line, entity);
-
+                    schemaInfo = line;
+                	//validateColumnCounts(line, entity);
+                    if (!validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
+                    {
+                    	errorArray.add(path);
+                    	break;
+                    }
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
-                    String fixedLine = replaceCRandLF(line);
-                    //add row entry (default to 0 for now), jobId, fileName;
-                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName + "\n";
-                    out.write((fixedLine).getBytes());
+                	String cleanLine = replaceCRandLF(line);
+        			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+//                	String schemaLine = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), line.split(UNIT_SEPARATOR), schemaInfo.split(UNIT_SEPARATOR));
+//        			String cleanLine = replaceCRandLF(schemaLine);
+//        			System.out.println("BEFORE \t-> " + replaceCRandLF(line) + "\nAFTER \t->" + cleanLine);
+//        			cleanLine = cleanLine + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+        			out.write((cleanLine + "\n").getBytes());
                 }
                 lineCount++;
             }
         }
         out.close();
+    }
+        
+        //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
+        //boolean schemaMatched = SchemaMatcher.matchSchemas(new Path(path).toString(), new Path(entityOutpath + entity + ".txt").toString());
+//            if (validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
+//            {
+////            	
+////            	FSDataOutputStream out = fs.append(new Path(entityOutpath + entity + ".txt")); 
+////            	Scanner fileScanner = new Scanner(fs.open(new Path(path))).useDelimiter(RECORD_SEPARATOR);
+//            	int count = 0;
+//            	String schemainfo = fileScanner.next();
+//            	while (fileScanner.hasNext())
+//            	{
+//            		String line = fileScanner.next();
+//            		if (count > 2)
+//            		{
+//            			String schemaLine = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), line.split(UNIT_SEPARATOR), schemainfo.split(UNIT_SEPARATOR));
+//            			String cleanLine = replaceCRandLF(schemaLine);
+//            			//String cleanLine = replaceCRandLF(line);
+//            			//cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+//            			System.out.println("BEFORE \t-> " + replaceCRandLF(line) + "\nAFTER \t->" + cleanLine);
+//            			cleanLine = cleanLine + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+//            			out.write((cleanLine + "\n").getBytes());
+//            		}
+//            		count++;            			
+//            	}
+//            	out.close();
+//            }
+//            else
+//            {
+//            	//TODO: Throw away file
+//            	errorArray.add(path);
+//            }
+    
+    private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
+    {
+    	int colcounts = schemaColumns.length;
+    	StringBuilder orderedScheme = new StringBuilder();
+    	Map<String, Integer> tempMap = new HashMap<String, Integer>();
+    	Map<Integer, String> outSchema = new TreeMap<Integer, String>();
+    	int count = 0;
+//    	System.out.println("COLUMN COUNT: " + colcounts + "\nCOLUMNS: " + schemaColumns.toString());
+    	if (!goldSchema.isEmpty())
+    	{
+//	    	for (Entry<String,String> kv : goldSchema.entrySet())
+//	    	{
+//	    		tempSchema.put(kv.getKey(), count);
+//	    		count++;
+//	    	}
+    		for (String headerColumn : headerinfo)
+    		{
+    			tempMap.put(headerColumn.toLowerCase(), goldSchema.get(headerColumn.toLowerCase()));
+    		}
+//	    	int id = 0;
+//    		for (String col : schemaColumns)
+//    		{
+//				//id = goldSchema.get();
+//				outSchema.put(id, col);    	
+//    		}    		
+    	}
+    	for (int i = 0; i < colcounts; i++)
+    	{
+//    		goldSchema.get(tempMap.get(i));
+    		outSchema.put(tempMap.get(schemaColumns[i].toLowerCase()), schemaColumns[i]);
+    	}
+    	for (Entry<Integer, String> kv : outSchema.entrySet())
+    	{
+    		orderedScheme.append(kv.getValue()).append(UNIT_SEPARATOR);    		
+    	}
+    	return orderedScheme.toString();
     }
 
     private String getJobIdFromPaths(String path) {
@@ -176,9 +257,8 @@ public DivisionalDriver(String[] args) {
     }
 
 //TODO SWITCH FROM return true; to return line.split("\037").length == columnCounts.get(entity); WHEN GARY GETS BACK TO US
-    private boolean validateColumnCounts(String line, String entity){
-        return true;
-//        return line.split("\037").length == columnCounts.get(entity);
+    private boolean validateColumnCounts(String entity, String colFile2, FileSystem fs) throws FileNotFoundException{
+    	return SchemaMatcher.matchSchemas(entity, colFile2, fs);
     }
 
     private  void getValidPracticeIds() throws IOException {
@@ -203,8 +283,8 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-    private  boolean isValidEntry(String practiceID, String entityName, String schema){
-        return isValidPractice(practiceID) && isValidEntity(entityName) && validateColumnCounts(schema, entityName);
+    private  boolean isValidEntry(String practiceID, String entityName){
+        return isValidPractice(practiceID) && isValidEntity(entityName);
     }
 
     private  boolean isValidPractice(String practiceID){
@@ -276,7 +356,7 @@ public DivisionalDriver(String[] args) {
                     practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
                 }
                 String newPath = generateNewPath(p, practiceID);
-                if (isValidEntry(practiceID, entity, null)) {
+                if (isValidEntry(practiceID, entity)) {
                     addToMapping(newPath);
 
                     //Creates a path for CONTROL.TXT in each Practice ID Folder
