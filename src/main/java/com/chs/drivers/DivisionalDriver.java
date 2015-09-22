@@ -90,7 +90,7 @@ public DivisionalDriver(String[] args) {
             readDateWildCard(new Path(pathToControl), false);
         }
 //           TODO FIX LOGIC FOR EXCESS CONTROL FILES
-//        removeUnusedControlFiles();
+        removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
 
@@ -276,6 +276,7 @@ public DivisionalDriver(String[] args) {
                 String newPath = generateNewPath(p, practiceID);
                 if (isValidEntry(practiceID, entity, null)) {
                     addToMapping(newPath);
+                    controlFiles.add(new Path(newPath + "CONTROL.TXT"));
                 } else {
                     errorArray.add(newPath);
                 }
