@@ -40,8 +40,6 @@ public class DivisionalDriver implements Driver {
 	//unsorted Args
     private String fileName;
     private FileSystem fs;
-    private boolean isWildcard = false;
-    private String dateWildCard;
     private ArrayList<Path> manifestFiles;
     private ArrayList<Path> controlFiles;
     private ArrayList<String> errorArray;
@@ -68,7 +66,9 @@ public DivisionalDriver(String[] args) {
 	validPracticeIDs = new ArrayList<String>();
 	validEntityNames = new ArrayList<String>();
 }
-    
+
+
+
     private void getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
@@ -77,17 +77,16 @@ public DivisionalDriver(String[] args) {
         }
         //FOR THE DATE WILD CARD USE CASE
         else if(pathToControl.endsWith("*")){
-            isWildcard = true;
             String temp = pathToControl;
             while(temp.contains("/")){
                 temp = temp.substring(temp.indexOf("/") + 1);
             }
-            dateWildCard = temp.substring(0, temp.length() - 1);
+            String dateWildCard = temp.substring(0, temp.length() - 1);
             pathToControl = pathToControl.substring(0, pathToControl.indexOf(dateWildCard));
-            readDateWildCard(new Path(pathToControl), true);
+            readDateWildCard(new Path(pathToControl), dateWildCard, true);
         }
         else{
-            readDateWildCard(new Path(pathToControl), false);
+            readDateWildCard(new Path(pathToControl), null, false);
         }
 //           TODO FIX LOGIC FOR EXCESS CONTROL FILES
         removeUnusedControlFiles();
@@ -307,25 +306,24 @@ public DivisionalDriver(String[] args) {
         return line;
     }
     
-    private  void readDateWildCard(Path pathToFiles, boolean wildCarded) throws IOException {
-        FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
-        for(FileStatus status : fileStatuses){
-            if(status.isDirectory()){
-                if(wildCarded) {
-                    if (status.getPath().getName().startsWith(dateWildCard)) {
-                        readDateWildCard(status.getPath(), false);
+    private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
+        if(fs.exists(pathToFiles)) {
+            FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
+            for (FileStatus status : fileStatuses) {
+                if (status.isDirectory()) {
+                    if (wildCarded) {
+                        if (status.getPath().getName().startsWith(dateWildCard)) {
+                            readDateWildCard(status.getPath(), dateWildCard, false);
+                        }
+                    } else {
+                        readDateWildCard(status.getPath(), dateWildCard, false);
                     }
-                }
-                else{
-                    readDateWildCard(status.getPath(), false);
-                }
-            }
-            else{
-                if (status.getPath().toString().toUpperCase().contains("MANIFEST")){
-                    manifestFiles.add(status.getPath());
-                }
-                else if(status.getPath().toString().toUpperCase().contains("CONTROL")){
-                    controlFiles.add(status.getPath());
+                } else {
+                    if (status.getPath().toString().toUpperCase().contains("MANIFEST")) {
+                        manifestFiles.add(status.getPath());
+                    } else if (status.getPath().toString().toUpperCase().contains("CONTROL")) {
+                        controlFiles.add(status.getPath());
+                    }
                 }
             }
         }
@@ -335,27 +333,37 @@ public DivisionalDriver(String[] args) {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
         for(FileStatus status : fileStatuses){
-            if(status.isDirectory()){
+            if(status.isDirectory()) {
 
                 //Reads the directory and appends the date part
-                String temp =  status.getPath().toString() + datePart;
-                try {
-                    FileStatus[] dateFiles = fs.listStatus(new Path(temp));
-                    for (FileStatus dateStatus : dateFiles) {
-                        if (dateStatus.getPath().toString().toUpperCase().contains("MANIFEST")) {
-                            manifestFiles.add(dateStatus.getPath());
+                String temp = status.getPath().toString() + datePart;
+
+                if (temp.endsWith("*")) {
+
+                    //DATE IS WILDCARDED TOO
+                    String dateWildCard = temp.substring(temp.lastIndexOf("/") + 1);
+                    dateWildCard = dateWildCard.substring(0, dateWildCard.length() - 1);
+
+                    readDateWildCard(new Path(temp.substring(0, temp.indexOf(dateWildCard))), dateWildCard, true);
+                } else {
+
+                    //DATE ISN'T WILDCARDED READ NORMALLY
+                    try {
+                        FileStatus[] dateFiles = fs.listStatus(new Path(temp));
+                        for (FileStatus dateStatus : dateFiles) {
+                            if (dateStatus.getPath().toString().toUpperCase().contains("MANIFEST")) {
+                                manifestFiles.add(dateStatus.getPath());
+                            } else if (dateStatus.getPath().toString().toUpperCase().contains("CONTROL")) {
+                                controlFiles.add(dateStatus.getPath());
+                            }
                         }
-                        else if(dateStatus.getPath().toString().toUpperCase().contains("CONTROL")){
-                            controlFiles.add(dateStatus.getPath());
-                        }
+                    } catch (Exception e) {
+//                    System.out.println("PATH " + temp + "Does not exist!");
                     }
                 }
-                catch(Exception e){
-//                    System.out.println("PATH " + temp + "Does not exist!");
-                }
+            }
             }
         }
-    }
 
     /*
      * (non-Javadoc)
