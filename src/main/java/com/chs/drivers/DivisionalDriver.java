@@ -192,7 +192,12 @@ public DivisionalDriver(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(entityMap_path))));
         String line = "";
         while((line = br.readLine()) != null){
-            validEntityNames.add(line.toUpperCase());
+        	String currentValidName = line.toUpperCase();
+        	String tempWriteDir = out_path +"/" + currentValidName + "/";
+            if (!fs.exists(new Path(tempWriteDir))) {
+                fs.createNewFile(new Path(tempWriteDir));
+            }
+            validEntityNames.add(currentValidName);
         }
     }
 
