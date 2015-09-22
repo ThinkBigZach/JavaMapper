@@ -92,9 +92,10 @@ public DivisionalDriver(String[] args) {
 //           TODO FIX LOGIC FOR EXCESS CONTROL FILES
         removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
-        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
 
         writeOutFileLocations(manifestFiles, "Manifest");
+        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
+
         writeOutFileLocations(controlFiles, "Control");
         return;
     }
@@ -276,7 +277,12 @@ public DivisionalDriver(String[] args) {
                 String newPath = generateNewPath(p, practiceID);
                 if (isValidEntry(practiceID, entity, null)) {
                     addToMapping(newPath);
-                    controlFiles.add(new Path(newPath + "CONTROL.TXT"));
+
+                    //Creates a path for CONTROL.TXT in each Practice ID Folder
+                    Path controlPath = new Path(newPath + "CONTROL.TXT");
+                    if(!controlFiles.contains(controlPath)){
+                        controlFiles.add(controlPath);
+                    }
                 } else {
                     errorArray.add(newPath);
                 }
