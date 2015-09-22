@@ -415,7 +415,7 @@ public DivisionalDriver(String[] args) {
     }
 
     private void writeErrorFiles() throws IllegalArgumentException, IOException {
-    	String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "error/";
+    	String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/";
         if (!fs.exists(new Path(tempOutpath))) {
             fs.mkdirs(new Path(tempOutpath));
         }
