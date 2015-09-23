@@ -96,7 +96,6 @@ public DivisionalDriver(String[] args) {
         else{
             readDateWildCard(new Path(pathToControl), null, false);
         }
-//           TODO FIX LOGIC FOR EXCESS CONTROL FILES
         removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
 
@@ -149,10 +148,8 @@ public DivisionalDriver(String[] args) {
 
                 line = fileScanner.next();
                 if(lineCount == 0){
-//                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
                     headerInfo = line;
-                	//validateColumnCounts(line, entity);
-                    if (!validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
+                    if (!validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
                     	errorArray.add(path);
                     	break;
@@ -166,10 +163,6 @@ public DivisionalDriver(String[] args) {
                 	}
                 	
         			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-//                	String schemaLine = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), line.split(UNIT_SEPARATOR), schemaInfo.split(UNIT_SEPARATOR));
-//        			String cleanLine = replaceCRandLF(schemaLine);
-//        			System.out.println("BEFORE \t-> " + replaceCRandLF(line) + "\nAFTER \t->" + cleanLine);
-//        			cleanLine = cleanLine + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
         			out.write((cleanLine + "\n").getBytes());
                 }
                 lineCount++;
@@ -216,37 +209,7 @@ public DivisionalDriver(String[] args) {
     	}
     	return false;
     }
-        //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
-        //boolean schemaMatched = SchemaMatcher.matchSchemas(new Path(path).toString(), new Path(entityOutpath + entity + ".txt").toString());
-//            if (validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
-//            {
-////            	
-////            	FSDataOutputStream out = fs.append(new Path(entityOutpath + entity + ".txt")); 
-////            	Scanner fileScanner = new Scanner(fs.open(new Path(path))).useDelimiter(RECORD_SEPARATOR);
-//            	int count = 0;
-//            	String schemainfo = fileScanner.next();
-//            	while (fileScanner.hasNext())
-//            	{
-//            		String line = fileScanner.next();
-//            		if (count > 2)
-//            		{
-//            			String schemaLine = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), line.split(UNIT_SEPARATOR), schemainfo.split(UNIT_SEPARATOR));
-//            			String cleanLine = replaceCRandLF(schemaLine);
-//            			//String cleanLine = replaceCRandLF(line);
-//            			//cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-//            			System.out.println("BEFORE \t-> " + replaceCRandLF(line) + "\nAFTER \t->" + cleanLine);
-//            			cleanLine = cleanLine + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-//            			out.write((cleanLine + "\n").getBytes());
-//            		}
-//            		count++;            			
-//            	}
-//            	out.close();
-//            }
-//            else
-//            {
-//            	//TODO: Throw away file
-//            	errorArray.add(path);
-//            }
+       
     
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
@@ -303,7 +266,6 @@ public DivisionalDriver(String[] args) {
 
     }
 
-//TODO SWITCH FROM return true; to return line.split("\037").length == columnCounts.get(entity); WHEN GARY GETS BACK TO US
     private boolean validateColumnCounts(String entity, String colFile2, FileSystem fs) throws FileNotFoundException{
     	return SchemaMatcher.matchSchemas(entity, colFile2, fs);
     }
