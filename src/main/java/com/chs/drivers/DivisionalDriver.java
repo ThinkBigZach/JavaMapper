@@ -442,7 +442,7 @@ public DivisionalDriver(String[] args) {
                             }
                         }
                     } catch (Exception e) {
-                            errorArray.add(temp + ": path to Manifest file does not exist");
+                            //errorArray.add(temp + ": path to Manifest file does not exist");
                     }
                 }
             }
@@ -501,7 +501,7 @@ public DivisionalDriver(String[] args) {
         }
         FSDataOutputStream out = fs.append(new Path(errorOutpath));
 		for (String line : errorArray){
-			out.write((line).getBytes());
+			out.write((line + "\n").getBytes());
 		}
 		out.close();
 	}
