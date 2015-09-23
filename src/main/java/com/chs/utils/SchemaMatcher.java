@@ -2,6 +2,7 @@ package com.chs.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class SchemaMatcher {
 	 * @return
 	 * @throws FileNotFoundException
 	 */
-    public static boolean matchSchemas(String entity, String compareURL, FileSystem fs) throws FileNotFoundException {
+    public static boolean matchSchemas(String entity, String compareURL, FileSystem fs, ArrayList<String> errorArray) throws FileNotFoundException {
         boolean tripwire = false;
         Map<String, String> goldenMap = getGoldenSchema(entity.toLowerCase());
         Map<String, String> compareMap = null;
@@ -45,6 +46,7 @@ public class SchemaMatcher {
 	        compareMap = extractMapFromFile(cleanStringByColumn(compareFile.next()), cleanStringByColumn(compareFile.next()));
 		} catch (Exception e) {
 			LOG.info("====SCHEMA COULD NOT BE MATCHED====");
+			errorArray.add(compareURL + ": file could not be read");
 			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
 			e.printStackTrace();
 		}
@@ -60,6 +62,12 @@ public class SchemaMatcher {
         		LOG.info("==========Schema match failed============");       
         	}
         } else {
+        	if (goldenMap == null) {
+        		errorArray.add(compareURL + ": schema for " + entity + " could not be read from Teradata");
+        	}
+        	else if (compareMap == null) {
+        		errorArray.add(compareURL + ": schema could not be read from Header of file");
+        	}
         	LOG.info("====SCHEMA COULD NOT BE MATCHED");
         }
         compareFile.close();

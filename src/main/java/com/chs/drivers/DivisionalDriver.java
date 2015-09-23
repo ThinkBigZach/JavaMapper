@@ -151,7 +151,6 @@ public DivisionalDriver(String[] args) {
                     headerInfo = line;
                     if (!validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
-                    	errorArray.add(path);
                     	break;
                     }
                 }
@@ -267,7 +266,7 @@ public DivisionalDriver(String[] args) {
     }
 
     private boolean validateColumnCounts(String entity, String colFile2, FileSystem fs) throws FileNotFoundException{
-    	return SchemaMatcher.matchSchemas(entity, colFile2, fs);
+    	return SchemaMatcher.matchSchemas(entity, colFile2, fs, errorArray);
     }
 
     private  void getValidPracticeIds() throws IOException {
