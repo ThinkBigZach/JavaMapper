@@ -56,25 +56,6 @@ public class TDConnector {
 		database=_database;
 	}
 
-	//TODO CHANGE 'dbc' to the actual database name WHEN GARY GETS BACK TO US
-	public static Map<String, Integer> getColumnCounts() throws SQLException {
-		HashMap<String, Integer> map = new HashMap<String, Integer>();
-		String describeTable = "DESCRIBE dbc.tablesV";
-		String query =
-				"SELECT c.tablename, count(*) FROM dbc.columnsV c JOIN dbc.tablesV t ON c.databasename = t.databasename AND c.tablename = t.tablename WHERE UPPER(t.databasename) = 'dbc' AND t.commentstring NOT IN ('Ignore') AND c.commentstring NOT IN ('Ignore','ETL') GROUP BY c.tablename";
-		System.out.println("EXECUTING QUERY" + query);
-		Connection conn = getConnection();
-		Statement stmt = conn.createStatement();
-		ResultSet set = stmt.executeQuery(query);
-		while(set.isBeforeFirst()){
-			set.next();
-		}
-		while(!set.isAfterLast()){
-			map.put(set.getString(1).toUpperCase(), set.getInt(2));
-			set.next();
-		}
-		return map;
-	}
 	
 	public static Map<String, List<SchemaRecord>> getSchemas()
 	{
@@ -112,32 +93,5 @@ public class TDConnector {
 			//throw e;
 		}
 		return schemaInfo;
-	}
-	
-	private void translate(String key)
-	{
-		String pay = new String();
-		if(key.equalsIgnoreCase("I"))
-		{
-			pay = "INT";
-		}
-		else if (key.equalsIgnoreCase("N"))
-		{
-			pay = "DOUBLE";
-		}
-		else
-		{
-			pay = "STRING";
-		}
-	}
-
-	public void executeQuery(String sql) throws SQLException
-	{
-		Connection conn = getConnection();
-		Statement stmt = conn.createStatement();
-		ResultSet set = stmt.executeQuery(sql);
-
-
-
 	}
 }

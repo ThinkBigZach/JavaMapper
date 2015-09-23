@@ -54,7 +54,6 @@ public class DivisionalDriver implements Driver {
     private ArrayList<String> validPracticeIDs;
     private ArrayList<String> validEntityNames;
     private HashMap<String, ArrayList<String>> mapping;
-    private Map<String, Integer> columnCounts;
 
 
 public DivisionalDriver(String[] args) {
@@ -98,10 +97,8 @@ public DivisionalDriver(String[] args) {
         }
         removeUnusedControlFiles();
         System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
-
         writeOutFileLocations(manifestFiles, "Manifest");
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
-
         writeOutFileLocations(controlFiles, "Control");
         return;
     }
@@ -259,6 +256,7 @@ public DivisionalDriver(String[] args) {
                 return line.split("~")[3];
             }
         } catch (IOException e) {
+            errorArray.add(path + ":job id couldn't be read");
             e.printStackTrace();
         }
         return "";
@@ -358,7 +356,6 @@ public DivisionalDriver(String[] args) {
             if (Integer.parseInt(splitValue[1]) > 0) {
                 practiceID = line.substring(0, line.indexOf(".asv"));
                 fileName = line.substring(0, line.indexOf(".asv") + 4);
-
                 entity = line.substring(0, line.indexOf("_"));
                 while (practiceID.contains("_")) {
                     practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
@@ -366,7 +363,6 @@ public DivisionalDriver(String[] args) {
                 String newPath = generateNewPath(p, practiceID);
                 if (isValidEntry(practiceID, entity)) {
                     addToMapping(newPath);
-
                     //Creates a path for CONTROL.TXT in each Practice ID Folder
                     Path controlPath = new Path(newPath + "CONTROL.TXT");
                     if(!controlFiles.contains(controlPath)){
@@ -446,7 +442,7 @@ public DivisionalDriver(String[] args) {
                             }
                         }
                     } catch (Exception e) {
-//                    System.out.println("PATH " + temp + "Does not exist!");
+                            errorArray.add(temp + ": path to Manifest file does not exist");
                     }
                 }
             }
@@ -465,33 +461,25 @@ public DivisionalDriver(String[] args) {
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
-            try {
-                columnCounts = TDConnector.getColumnCounts();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
             mapping = new HashMap<String, ArrayList<String>>();
             this.getValidPracticeIds();
             this.getValidEntityNames();
             System.out.println("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
             System.out.println("GOT MANIFEST PATHS");
-            try {
-                long startWrite = System.currentTimeMillis();
-                //TODO: This can be threaded to somehow work with the readAndLoadEntities
-                for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
-                        this.readAndLoadEntities(mapping.get(s), s);
+            long startWrite = System.currentTimeMillis();
+            for (String s : mapping.keySet()) {
+                if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
+                    try {
+                    this.readAndLoadEntities(mapping.get(s), s);
+                    } catch (Exception e) {
+                        errorArray.add(out_path + "/" + s + "/" + ":Error writing file for entity " + s);
                     }
                 }
-                long endWrite = System.currentTimeMillis();
-                System.out.println(((endWrite - startWrite)/1000) + " seconds to execute writing the files");
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
             long endTime = System.currentTimeMillis();
-            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
+            System.out.println(((endTime - startWrite)/1000) + " seconds to execute writing the files");
+            System.out.println(((endTime - startTime) / 1000) + " seconds to execute entire request");
             writeErrorFiles();
         }
         catch(IOException e){
