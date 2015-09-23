@@ -22,6 +22,7 @@ public class SchemaMatcher {
 	private static String delimiter = "\036";
 	private static String spacelimiter = "\037";
 	private static Logger LOG = Logger.getLogger(SchemaMatcher.class);
+	private static List<String> missCols = new ArrayList<String>();
 	public static Map<String, List<SchemaRecord>> goldenEntitySchemaMap = TDConnector.getSchemas();
 	
 	//Dynamic Schema Match change >> Checks to make sure column and column data type are equal. All must match to pass.
@@ -59,7 +60,14 @@ public class SchemaMatcher {
         	}
         	else
         	{
-        		LOG.info("==========Schema match failed============");       
+        		LOG.info("==========Schema match failed============");
+        		StringBuilder builder = new StringBuilder();
+        		for (String col : missCols)
+        		{
+        			builder.append(col).append(",");
+        		}
+        		String missedcols = builder.substring(0, builder.lastIndexOf(","));
+        		errorArray.add(compareURL + ": schema from file contained the following columns that could not be matched -> " + missedcols);
         	}
         } else {
         	if (goldenMap == null) {
@@ -121,7 +129,8 @@ public class SchemaMatcher {
 			}
 			else
 			{
-				//No Match
+				//No Match kv.getKey()
+				missCols.add(kv.getKey());
 			}
 		}
 		return (ticket >= mapSize);
