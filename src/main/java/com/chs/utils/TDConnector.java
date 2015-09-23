@@ -81,7 +81,7 @@ public class TDConnector {
 		Map<String, List<SchemaRecord>> schemaInfo = null;
 		try {
 			schemaInfo = new HashMap<String, List<SchemaRecord>>();//c.columnname
-			String query = "SELECT c.tablename, c.columntitle, c.columnid FROM dbc.columnsV c WHERE c.databasename = 'EDW_ATHENA_STAGE' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3";
+			String query = "SELECT c.tablename, c.columntitle, c.columnid, c.commentstring FROM dbc.columnsV c WHERE c.databasename = 'EDW_ATHENA_STAGE' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3";
 			Connection conn = getConnection();
 			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery(query);
@@ -95,13 +95,12 @@ public class TDConnector {
 				//System.out.println("Tablename: " + set.getString(1) + "\n\tColumn title: " + set.getString(2) + "\n\tColumn type: " + set.getString(3));
 				if (schemaInfo.containsKey(set.getString(1).toLowerCase()))
 				{
-					schemaInfo.get(set.getString(1).toLowerCase()).add(new SchemaRecord(fixedTitle, set.getString(3)));
+					schemaInfo.get(set.getString(1).toLowerCase()).add(new SchemaRecord(fixedTitle, set.getString(3), set.getString(4)));
 				}
 				else
 				{
 					String types = set.getString(3);
-					
-					SchemaRecord schema = new SchemaRecord(fixedTitle, set.getString(3));
+					SchemaRecord schema = new SchemaRecord(fixedTitle, set.getString(3), set.getString(4));
 					List<SchemaRecord> schemarec = new ArrayList<SchemaRecord>();
 					schemarec.add(schema);
 					schemaInfo.put(set.getString(1).toLowerCase(), schemarec);

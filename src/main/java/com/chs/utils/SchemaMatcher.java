@@ -22,7 +22,7 @@ public class SchemaMatcher {
 	private static String delimiter = "\036";
 	private static String spacelimiter = "\037";
 	private static Logger LOG = Logger.getLogger(SchemaMatcher.class);
-	private static Map<String, List<SchemaRecord>> goldenEntitySchemaMap = TDConnector.getSchemas();
+	public static Map<String, List<SchemaRecord>> goldenEntitySchemaMap = TDConnector.getSchemas();
 	
     public static boolean matchSchemas(String entity, String compareURL, FileSystem fs) throws FileNotFoundException {
         boolean tripwire = false;

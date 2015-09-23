@@ -1,6 +1,7 @@
 package com.chs.drivers;
 
 import com.chs.utils.SchemaMatcher;
+import com.chs.utils.SchemaRecord;
 import com.chs.utils.TDConnector;
 
 import org.apache.hadoop.conf.Configuration;
@@ -18,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -140,13 +142,15 @@ public DivisionalDriver(String[] args) {
 
             String line = "";
             int lineCount = 0;
-            String schemaInfo = null;
+            String headerInfo = null;
+            Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
+            boolean needsProcess = removePII(schemas.get(entity.toLowerCase()));
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
                 if(lineCount == 0){
 //                    TODO: THROW OUT FILE IF COLUMN COUNTS DONT MATCH WHEN GARY GETS BACK TO US
-                    schemaInfo = line;
+                    headerInfo = line;
                 	//validateColumnCounts(line, entity);
                     if (!validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
                     {
@@ -156,6 +160,11 @@ public DivisionalDriver(String[] args) {
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                 	String cleanLine = replaceCRandLF(line);
+                	if (needsProcess)
+                	{
+                		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
+                	}
+                	
         			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                	String schemaLine = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), line.split(UNIT_SEPARATOR), schemaInfo.split(UNIT_SEPARATOR));
 //        			String cleanLine = replaceCRandLF(schemaLine);
@@ -169,6 +178,42 @@ public DivisionalDriver(String[] args) {
         out.close();
     }
         
+    private String piiProcess(String[] line, String[] headerInfo, List<SchemaRecord> schemarecords) 
+    {
+    	StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < line.length; i++)
+		{
+			for(SchemaRecord sr : schemarecords)
+			{
+				if (sr.getColumn_name().equalsIgnoreCase(headerInfo[i]))
+				{
+					if (sr.getCommentstring() != null && sr.getCommentstring().equalsIgnoreCase("remove"))
+					{
+						builder.append("null" + UNIT_SEPARATOR);						
+					}
+					else
+					{
+						builder.append(line[i]).append(UNIT_SEPARATOR);
+					}
+				}
+			}
+		}
+		return builder.toString();
+	}
+
+
+
+	private boolean removePII(List<SchemaRecord> records)
+    {
+    	for(SchemaRecord r : records)
+    	{
+    		if (r.getCommentstring() != null && r.getCommentstring().equalsIgnoreCase("remove"))
+    		{
+    			return true;
+    		}
+    	}
+    	return false;
+    }
         //BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
         //boolean schemaMatched = SchemaMatcher.matchSchemas(new Path(path).toString(), new Path(entityOutpath + entity + ".txt").toString());
 //            if (validateColumnCounts(entity, new Path(path).toString(), fs))//entityOutpath + entity + ".txt").toString()
