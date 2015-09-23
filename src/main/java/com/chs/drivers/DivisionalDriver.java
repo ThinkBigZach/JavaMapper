@@ -185,11 +185,11 @@ public DivisionalDriver(String[] args) {
 		{
 			for(SchemaRecord sr : schemarecords)
 			{
-				if (sr.getColumn_name().equalsIgnoreCase(headerInfo[i]))
+				if (sr.getColumn_name().equalsIgnoreCase(headerInfo[i].replaceAll(" ", "_")))
 				{
 					if (sr.getCommentstring() != null && sr.getCommentstring().equalsIgnoreCase("remove"))
 					{
-						builder.append("null" + UNIT_SEPARATOR);						
+						builder.append("" + UNIT_SEPARATOR);
 					}
 					else
 					{
@@ -198,7 +198,9 @@ public DivisionalDriver(String[] args) {
 				}
 			}
 		}
-		return builder.toString();
+        String val = builder.toString();
+        val = val.substring(0, val.lastIndexOf(UNIT_SEPARATOR));
+		return val;
 	}
 
 
