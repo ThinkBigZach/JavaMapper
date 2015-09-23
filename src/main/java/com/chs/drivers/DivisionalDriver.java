@@ -373,8 +373,6 @@ public DivisionalDriver(String[] args) {
                     if(!controlFiles.contains(controlPath)){
                         controlFiles.add(controlPath);
                     }
-                } else {
-                    errorArray.add(newPath);
                 }
             }
         }
