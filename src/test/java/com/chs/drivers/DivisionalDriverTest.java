@@ -1,11 +1,17 @@
 package com.chs.drivers;
-
+import static org.mockito.Mockito.*;
 import com.sun.org.apache.xpath.internal.operations.Div;
-import org.apache.hadoop.fs.Path;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -83,12 +89,82 @@ public class DivisionalDriverTest {
 
     }
 
+
+
     @Test
-    public void testGetManifestPaths() throws NoSuchMethodException,
-            InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+    public void testGetManifestPaths2() throws IOException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
+        Method method = DivisionalDriver.class.getDeclaredMethod("getManifestPaths", String.class);
+        method.setAccessible(true);
+        FileSystem fs= mock(FileSystem.class);
+        FSDataOutputStream out = mock(FSDataOutputStream.class);
         String testDivisionalWildCard = "/user/financialDataFeed/data/*/athena/finished/2015-09-01";
+        FileStatus[] return3 = new FileStatus[2];
+        return3[0] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/1113"));
+        return3[1] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/3223"));
+        FileStatus[] return4 = new FileStatus[2];
+        return4[0] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest"));
+        return4[1] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/3223/athena/finished/2015-09-01/Manifest"));
+        when(fs.listStatus((Path) anyObject())).thenReturn(return3).thenReturn(return4);
+        when(fs.append((Path) anyObject())).thenReturn(out);
+        when(fs.exists((Path) anyObject())).thenReturn(true).thenReturn(false);
+        Field fileSystem = divisionalDriverClass.getDeclaredField("fs");
+        fileSystem.setAccessible(true);
+        fileSystem.set(divisionalDriver, fs);
+        Field manifestFiles = divisionalDriverClass.getDeclaredField("manifestFiles");
+        manifestFiles.setAccessible(true);
+        Field controlFiles = divisionalDriverClass.getDeclaredField("controlFiles");
+        controlFiles.setAccessible(true);
+        Field input = divisionalDriverClass.getDeclaredField("input_path");
+        input.setAccessible(true);
+        input.set(divisionalDriver, testDivisionalWildCard);
+        try {
+            method.invoke(divisionalDriver, testDivisionalWildCard);
+        }
+        catch(Exception e){
+            assertEquals(2, ((ArrayList) manifestFiles.get(divisionalDriver)).size());
+        }
+    }
+
+
+    @Test
+    public void testGetManifestPaths1() throws NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException, NoSuchFieldException, IOException {
+
+        //DATE WILD CARD TEST
         String testDateWildCard = "/user/financialDataFeed/data/1111/athena/finished/2015-09*";
-        
+        FileSystem fs= mock(FileSystem.class);
+        FSDataOutputStream out = mock(FSDataOutputStream.class);
+        FileStatus[] return1 = new FileStatus[2];
+        return1[0] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01"));
+        return1[1] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-02"));
+        FileStatus[] return2 = new FileStatus[4];
+        return2[0] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest"));
+        return2[1] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-02/Manifest"));
+        return2[2] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Control"));
+        return2[3] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-02/Control"));
+        when(fs.listStatus((Path) anyObject())).thenReturn(return1).thenReturn(return2);
+        when(fs.append((Path) anyObject())).thenReturn(out);
+        when(fs.exists((Path) anyObject())).thenReturn(true).thenReturn(true).thenReturn(false);
+        Method method = DivisionalDriver.class.getDeclaredMethod("getManifestPaths", String.class);
+        method.setAccessible(true);
+        Field fileSystem = divisionalDriverClass.getDeclaredField("fs");
+        fileSystem.setAccessible(true);
+        fileSystem.set(divisionalDriver, fs);
+        Field manifestFiles = divisionalDriverClass.getDeclaredField("manifestFiles");
+        manifestFiles.setAccessible(true);
+        Field controlFiles = divisionalDriverClass.getDeclaredField("controlFiles");
+        controlFiles.setAccessible(true);
+        Field input = divisionalDriverClass.getDeclaredField("input_path");
+        input.setAccessible(true);
+        input.set(divisionalDriver, testDateWildCard);
+        try {
+            method.invoke(divisionalDriver, testDateWildCard);
+        }
+        catch(Exception e){
+            assertEquals(2, ((ArrayList)manifestFiles.get(divisionalDriver)).size());
+            assertEquals(2, ((ArrayList)controlFiles.get(divisionalDriver)).size());
+            ((ArrayList)manifestFiles.get(divisionalDriver)).clear();
+        }
 
     }
 

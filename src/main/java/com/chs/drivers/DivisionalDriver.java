@@ -57,6 +57,8 @@ public class DivisionalDriver implements Driver {
     private Map<String, Integer> columnCounts;
 
 
+
+
 public DivisionalDriver(String[] args) {
 	input_path = args[0];
 	entity = args[1];
@@ -101,8 +103,8 @@ public DivisionalDriver(String[] args) {
 
         writeOutFileLocations(manifestFiles, "Manifest");
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
-
         writeOutFileLocations(controlFiles, "Control");
+
     }
 
     public void removeUnusedControlFiles(){
@@ -396,6 +398,7 @@ public DivisionalDriver(String[] args) {
     }
     
     private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
+//        System.out.println(pathToFiles);
         if(fs.exists(pathToFiles)) {
             FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
             for (FileStatus status : fileStatuses) {
@@ -421,7 +424,10 @@ public DivisionalDriver(String[] args) {
     private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
+        System.out.println(divisionPart);
+
         for(FileStatus status : fileStatuses){
+
             if(status.isDirectory()) {
 
                 //Reads the directory and appends the date part
