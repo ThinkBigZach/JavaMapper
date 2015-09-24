@@ -81,7 +81,7 @@ public class TDConnector {
 		Map<String, List<SchemaRecord>> schemaInfo = null;
 		try {
 			schemaInfo = new HashMap<String, List<SchemaRecord>>();//c.columnname
-			String query = "SELECT c.tablename, c.columntitle, c.columnid, c.commentstring FROM dbc.columnsV c WHERE c.databasename = 'EDW_ATHENA_STAGE' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3";
+			String query = "SELECT c.tablename, c.columntitle, c.columnid, c.commentstring FROM dbc.columnsV c WHERE c.databasename = '" + database + "' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3";
 			Connection conn = getConnection();
 			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery(query);
