@@ -1,0 +1,37 @@
+<workflow-app name="${jobName}" xmlns="uri:oozie:workflow:0.4">
+<!-- We are looking for a CONTROL.TXT file in their ../finished directory -->
+<parameters>
+</parameters>
+
+<start to="check-control-file"/>
+	<!-- We are looking for a CONTROL.TXT file in their ../finished directory -->
+	<!-- if we see it we begin kicking off data ingestion workflows stage-1-->
+	<!-- if we DO NOT see it, end-->
+  <decision name="check-control-file">
+		<switch>
+			<case to="process-files">
+        ${fs:exists(controlFile)}
+			</case>
+			<default to="end"/>
+		</switch>
+	<end name="end"/>
+	<action name='process-files'>
+		 <java>
+		  <job-tracker>${jobTracker}</job-tracker>
+		 	<name-node>${nameNode}</name-node>
+	    <main-class>com.chs.drivers.Starter</main-class>
+	    <arg>${sourcePath}</arg>
+	    <arg>${entity}</arg>
+			<arg>${outputPath}</arg>
+			<arg>${practiceMap}</arg>
+			<arg>${entityMap}</arg>
+			<arg>${tdHost}</arg>
+			<arg>${tdUser}</arg>
+			<arg>${tdPswd}</arg>
+			<arg>${tdBase}</arg>
+			<arg>divisional</arg>
+		 </java>
+		 <ok to="ok"/>
+		 <error to="kill"/>
+  </action>
+</workflow-app> 
