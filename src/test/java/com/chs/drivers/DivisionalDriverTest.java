@@ -102,7 +102,10 @@ public class DivisionalDriverTest {
         return3[0] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/1113"));
         return3[1] = new FileStatus(0, true, 0, 0, 0, new Path("/user/financialDataFeed/data/3223"));
         FileStatus[] return4 = new FileStatus[2];
-        return4[0] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest"));
+       return4[0] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Control"));
+        return4[1] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest"));
+        FileStatus[] return5 = new FileStatus[2];
+        return4[0] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/3223/athena/finished/2015-09-01/Control"));
         return4[1] = new FileStatus(0, false, 0, 0, 0, new Path("/user/financialDataFeed/data/3223/athena/finished/2015-09-01/Manifest"));
         when(fs.listStatus((Path) anyObject())).thenReturn(return3).thenReturn(return4);
         when(fs.append((Path) anyObject())).thenReturn(out);
