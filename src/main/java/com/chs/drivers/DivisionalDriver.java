@@ -472,11 +472,6 @@ public DivisionalDriver(String[] args) {
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
-            try {
-                columnCounts = TDConnector.getColumnCounts();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
             mapping = new HashMap<String, ArrayList<String>>();
             this.getValidPracticeIds();
             this.getValidEntityNames();
