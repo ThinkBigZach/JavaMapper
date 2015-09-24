@@ -103,7 +103,6 @@ public DivisionalDriver(String[] args) {
         System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
 
         writeOutFileLocations(controlFiles, "Control");
-        return;
     }
 
     public void removeUnusedControlFiles(){
@@ -132,7 +131,7 @@ public DivisionalDriver(String[] args) {
             fs.createNewFile(new Path(outFileNameMili));
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
-        for(String path : paths){
+        for(String path : paths) {
 
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
@@ -339,7 +338,7 @@ public DivisionalDriver(String[] args) {
                 else if(type.equalsIgnoreCase("CONTROL")){
                 	String fixedLine = replaceCRandLF(line);
                 	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
-                    myFile += fixedLine;
+                    myFile += fixedLine + "\n";
                 }
                 current_line++;
             }
