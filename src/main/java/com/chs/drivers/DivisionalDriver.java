@@ -323,6 +323,7 @@ public DivisionalDriver(String[] args) {
         }
         String myFile = "";
     	for(Path p : files){
+    		String jobId = getJobIdFromPaths(p.toString());
             Scanner fileScanner = new Scanner(fs.open(p));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
             String line = "";
@@ -338,7 +339,7 @@ public DivisionalDriver(String[] args) {
                 else if(type.equalsIgnoreCase("CONTROL")){
                 	String fixedLine = replaceCRandLF(line);
                 	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
-                    myFile += fixedLine + "\n";
+                    myFile += fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
                 }
                 current_line++;
             }
