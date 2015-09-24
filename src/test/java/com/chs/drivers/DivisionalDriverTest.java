@@ -1,8 +1,10 @@
 package com.chs.drivers;
 
+import com.sun.org.apache.xpath.internal.operations.Div;
 import org.apache.hadoop.fs.Path;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,8 +14,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DivisionalDriverTest {
 
@@ -48,9 +49,46 @@ public class DivisionalDriverTest {
     }
 
 
+
+
+    @Test
+    public void testProcessLine() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        ArrayList<String> testingLines = new ArrayList<String>();
+        Path p = new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest");
+        testingLines.add("transaction_4.0_20150812090417_1562.asv\u001F16\u001Fcedba453ff7e04711c2de5a2781749a5c857ac647f09ac17b3d5ac9e7f8e5ac52db197d8e8fe63a4215b9d295abb10e6\u001F08/12/2015 09:08:22\u001F‑");
+        testingLines.add("allergy_4.0_20150812090417_3433.asv\u001F0\u001F­cedba453ff7e04711c2de5a2781749a5­c857ac647f09ac17b3d5ac9e7f8e5ac52db197d8e8fe63a4215b9d295abb10e6­08/12/2015 09:08:22-");
+        testingLines.add("allergy\u001F111\u001Fhfdhkflds");
+        String entity = "";
+        Method methodProcessLine = DivisionalDriver.class.getDeclaredMethod("processLine", Path.class, String.class);
+        Field entityField = divisionalDriverClass.getDeclaredField("entity");
+        entityField.setAccessible(true);
+        methodProcessLine.setAccessible(true);
+        //tests when data is there
+        methodProcessLine.invoke(divisionalDriver, p, testingLines.get(0));
+        entity = (String) entityField.get(divisionalDriver);
+        assertEquals(entity, "transaction");
+        entityField.set(divisionalDriver, "");
+        //Tests if no data second index equals zero
+        methodProcessLine.invoke(divisionalDriver, p, testingLines.get(1));
+        entity = (String) entityField.get(divisionalDriver);
+        assertEquals(entity, "");
+        //Tests bad data
+        try{
+            methodProcessLine.invoke(divisionalDriver, p, testingLines.get(2));
+            fail("Method should have thrown an exception");
+        }
+        catch (Exception e){
+
+        }
+
+    }
+
     @Test
     public void testGetManifestPaths() throws NoSuchMethodException,
-        InvocationTargetException, IllegalAccessException {
+            InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        String testDivisionalWildCard = "/user/financialDataFeed/data/*/athena/finished/2015-09-01";
+        String testDateWildCard = "/user/financialDataFeed/data/1111/athena/finished/2015-09*";
+        
 
     }
 
