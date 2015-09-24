@@ -334,12 +334,12 @@ public DivisionalDriver(String[] args) {
 
                 if (current_line > 3 && type.equalsIgnoreCase("MANIFEST")) {
                     processLine(p, line);
-                    myFile += replaceCRandLF(line) + "\n";
+                    myFile += replaceCRandLF(line) + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
                 }
                 else if(type.equalsIgnoreCase("CONTROL")){
                 	String fixedLine = replaceCRandLF(line);
                 	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
-                    myFile += fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
+                    myFile += fixedLine;
                 }
                 current_line++;
             }
