@@ -1,37 +1,760 @@
 <workflow-app name="${jobName}" xmlns="uri:oozie:workflow:0.4">
-<!-- We are looking for a CONTROL.TXT file in their ../finished directory -->
+<!-- We are looking for a CONTROL.TXT file in their ../raw directory -->
 <parameters>
+	<property>
+		<name>releaseLabel</name>
+	</property>
+	<property>
+		<name>tableDefFile</name>
+	</property>
+	<property>
+		<name>nameNode</name>
+	</property>
+	<property>
+		<name>jobTracker</name>
+	</property>
+	<property>
+		<name>jobName</name>
+	</property>
+	<property>
+		<name>sourceName</name>
+	</property>
+	<property>
+		<name>toEmailAddress</name>
+	</property>
+	<property>
+		<name>coordTimeInterval</name>
+	</property>
+	<property>
+		<name>tdStageDB</name>
+	</property>
+	<property>
+		<name>tdAuditDB</name>
+	</property>
+	<property>
+		<name>tdServer</name>
+	</property>
+	<property>
+		<name>tdUserID</name>
+	</property>
+	<property>
+		<name>tdUserIDPassword</name>
+	</property>
+	<property>
+		<name>sourceName</name>
+	</property>
+	<property>
+		<name>coordTimeInterval</name>
+	</property>
+	<property>
+		<name>stageOneDataPartition</name>
+	</property>
+	<property>
+		<name>stageOneFinishedDir</name>
+	</property>
+	<property>
+		<name>stageOneExtractedDir</name>
+	</property>
+	<property>
+		<name>stageOneOozieDir</name>
+	</property>
+	<property>
+		<name>stageOneRawDir</name>
+	</property>
+	<property>
+		<name>scriptsDir</name>
+	</property>
+	<property>
+		<name>sqoopConfDir</name>
+	</property>
+	<property>
+		<name>jobFile</name>
+	</property>
+	<property>
+		<name>controlFile</name>
+	</property>
+	<property>
+		<name>workingFile</name>
+	</property>
+	<property>
+		<name>failureFile</name>
+	</property>
+	<property>
+		<name>toEmailAddress</name>
+	</property>
 </parameters>
 
-<start to="check-control-file"/>
-	<!-- We are looking for a CONTROL.TXT file in their ../finished directory -->
-	<!-- if we see it we begin kicking off data ingestion workflows stage-1-->
-	<!-- if we DO NOT see it, end-->
+<start to="check-working-file"/>
+	<!-- We are looking for a WORKING.TXT file in their ../raw directory -->
+	<!-- If its there then goto END as we must already be working -->
+	<!-- If its not being by looking for the CONTROL.TXT file  -->
+  <decision name="check-working-file">
+		<switch>
+			<case to="end">
+        ${fs:exists(workingFile)}
+			</case>
+			<default to="check-control-file"/>
+		</switch>
+  </decision>
+	<!-- We are looking for a CONTROL.TXT file in their ../raw directory -->
+	<!-- if we see it we beigin kicking off data ingestion workflows satge-1-->
+	<!-- if we DO NOT see it, we look for a _FAILURE file telling us to clean up the dir so they can reattempt in 30 minutes -->
   <decision name="check-control-file">
 		<switch>
-			<case to="process-files">
+			<case to="prep-request">
         ${fs:exists(controlFile)}
+			</case>
+			<default to="check-failure-file"/>
+		</switch>
+  </decision>
+	<!-- We are looking for a _FAILURE  file in their ../raw directory -->
+	<!-- if we see it we begin deleting all files in the raw directory stage-1-->
+	<!-- if we DO NOT see it, we just end -->
+  <decision name="check-failure-file">
+		<switch>
+			<case to="clean-up-request">
+        ${fs:exists(failureFile)}
 			</case>
 			<default to="end"/>
 		</switch>
-	<end name="end"/>
-	<action name='process-files'>
-		 <java>
-		  <job-tracker>${jobTracker}</job-tracker>
-		 	<name-node>${nameNode}</name-node>
-	    <main-class>com.chs.drivers.Starter</main-class>
-	    <arg>${sourcePath}</arg>
-	    <arg>${entity}</arg>
-			<arg>${outputPath}</arg>
-			<arg>${practiceMap}</arg>
-			<arg>${entityMap}</arg>
-			<arg>${tdHost}</arg>
-			<arg>${tdUser}</arg>
-			<arg>${tdPswd}</arg>
-			<arg>${tdBase}</arg>
-			<arg>divisional</arg>
-		 </java>
-		 <ok to="ok"/>
-		 <error to="kill"/>
+  </decision>
+	<!-- We found a _FAILURE FILE -->
+	<!-- We have been requested to clean up all the files in the raw directory stage-1 -->
+	<action name="clean-up-request">
+		<fs>
+			<delete path="${stageOneRawDir}"/>
+      <mkdir  path='${stageOneRawDir}'/>
+      <chmod  path='${stageOneRawDir}' permissions='777' dir-files='false'/>
+		</fs>
+		<!-- We end normally because we succeeded in simply cleaning up -->
+		<ok to="end"/>
+		<error to="end"/>
+	</action>
+
+	<!-- We have been requested to go to work so move the CONTROL.TXT file to WORKING.TXT -->
+	<!-- This will ensure if we fire up again while working the second fire-up will       -->
+  <!-- simply exit inormally. -->
+  <!-- Do any other clean from previous job you need done here NOW -->
+	 <action name="prep-request">
+		<fs>
+			<move   source="${controlFile}" target="${workingFile}"/>
+      <chmod  path='${rawDataDir}/*'  permissions='777' dir-files='false'/>
+		</fs>
+		<!-- Even if this step is not needed, and it may not be, move to next step -->
+		<ok to="retrieveControlPath"/>
+		<error to="retrieveControlPath"/>
+	 </action>
+
+	<!-- Retrieve from the CONTROL.TXT now the WORKING.TXT where the controlpath is       -->
+	<!-- for this particular job  -->
+   <action name="retrieveControlPath">
+   	<shell xmlns="uri:oozie:shell-action:0.1">
+    	<job-tracker>${jobTracker}</job-tracker>
+    	<name-node>${nameNode}</name-node>
+    	<exec>/usr/bin/python</exec>
+    	<argument>chsSayControlPath.py</argument>
+    	<argument>-i</argument>
+    	<argument>${workingFile}</argument>
+    	<file>${scriptsDir}/chsSayControlPath.py#chsSayControlPath.py</file>
+    	<file>${scriptsDir}/chsHadoopUtils.py#chsHadoopUtils.py</file>
+    	<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
+    	<capture-output/>
+  	</shell>
+    <ok to="retrieveControlJob"/>
+		<!-- We call controll clean up here in order to clean the working file -->
+    <error to="control-cleanup"/>
+   </action>
+
+	<!-- We call controll clean up here in order to clean the working file -->
+   <action name="retrieveControlJob">
+    <shell xmlns="uri:oozie:shell-action:0.1">
+        <job-tracker>${jobTracker}</job-tracker>
+         <name-node>${nameNode}</name-node>
+         <exec>/usr/bin/python</exec>
+         <argument>chsSayControlJob.py</argument>
+         <argument>-i</argument>
+         <argument>${workingFile}</argument>
+         <file>${scriptsDir}/chsSayControlJob.py#chsSayControlJob.py</file>
+         <file>${scriptsDir}/chsHadoopUtils.py#chsHadoopUtils.py</file>
+         <file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
+         <capture-output/>
+   </shell>
+	 <ok to="validateControlPayload"/>
+   <error to="stage-1-notify-job-failed"/>
   </action>
+
+	<!-- we have failed so tell the scorecard and exist  -->
+	<action name="stage-1-notify-job-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<!-- we probably do not even have a job id at this point -->
+			<arg>unknown</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} Stage-1 control job checks failed workflow exiting ...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-early-failure-cleanup"/>
+	<error to="stage-1-early-failure-cleanup"/>
+	</action>
+
+	<!-- We call controll clean up here in order to clean the working file -->
+	<decision name="validateControlPayload">
+		<switch>
+			<case to="stage-1-notify-status-started">
+				${
+					wf:actionData('retrieveControlJob')  ['returnCode'] ne 'FAILURE' and
+					wf:actionData('retrieveControlPath') ['returnCode'] ne 'FAILURE'
+				}
+			</case>
+		<default to="stage-1-notify-control-failed"/>
+		</switch>
+	</decision>
+
+	<!-- we have failed so tell the scorecard and exist  -->
+	<action name="stage-1-notify-control-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<!-- we probably do not even have a job id at this point -->
+			<arg>unknown</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} Stage-1 control file checks failed workflow exiting ...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-early-failure-cleanup"/>
+	<error to="stage-1-early-failure-cleanup"/>
+	</action>
+
+	<!-- we have have everything we need to go, notity the SCoreCard we are now running -->
+	<action name="stage-1-notify-status-started">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>STARTED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} Stage-1 workflow started now moving to part-1'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-part1"/>
+	<error to="stage-1-part1"/>
+	</action>
+
+	<!-- FIRST SCRIPT TO DO STUFF BUT NOT HIVE STAFF IT HAS ITS OWN ACTION -->
+	<!-- Begin by firing off the following shell script located in /enterprise/scripts/athena -->
+	<!-- By default the script must not return anything not a zero or a one or it will be counted -->
+	<!-- as a job failure......so it must stdout a string like "returnCode=FAILURE" on fail -->
+	<!-- also should it need to return params used later return a string like "returnCode=PARAM!" -->
+  <action name="stage-1-part1">
+  	<shell xmlns="uri:oozie:shell-action:0.1">
+  		<job-tracker>${jobTracker}</job-tracker>
+  		<name-node>${nameNode}</name-node>
+  		<exec>garysCoolScript1.sh</exec>
+			<!-- Assuming arg 1 to script is the JOB_ID from CONTROL.TXT -->
+			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
+			<!-- Assuming arg 2 to script is the control_path from CONTROL.TXT -->
+			<argument>${wf:actionData('retrieveControlPath')['jobID']}</argument>
+			<!-- Assuming arg 3 to script is the location we want to use as a finished dir -->
+			<!-- Where we will store data for subsequent stages downstream -->
+  		<argument>${stageOneFinishedDir}</argument>
+			<!-- Assuming arg 4 to script is the temp space we should use to craft files -->
+			<!-- which are deleted after we succesfully complete the job  -->
+  		<argument>${stageOneExtractedDir}</argument>
+  		<file>${scriptsDir}/garysCoolScript1.sh#garysCoolScript1.sh</file>
+  		<file>${scriptsDir}/garysSCriptDepends.sh#garysSCriptDepends.sh</file>
+			<capture-output/>
+  	</shell>
+  	<ok to="validate-part-1-success"/>
+  	<error to="stage-1-notify-part-1-failed"/>
+  </action>
+	
+	<!-- If the shell script above was a success it WILL NOT have returned a string like -->
+	<!-- returnCode=FAILURE  so we test for it here before moving on, else cleanly exist -->
+	<decision name="validate-part-1-success">
+		<switch>
+			<case to="stage-1-notify-part-1-success">
+				${
+					wf:actionData('stage-1-part1') ['returnCode'] ne 'FAILURE'
+				}
+			</case>
+		<default to="stage-1-notify-part-1-failed"/>
+		</switch>
+	</decision>
+
+	<action name="stage-1-notify-part-1-success">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>RUNNING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} part 1 success moving to part 2'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-part2"/>
+	<error to="stage-1-part2"/>
+	</action>
+
+	<action name="stage-1-notify-part-1-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} failed on part one with [ ${ wf:actionData('stage-1-part1') ['returnCode']} ] exiting ...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-notify-early-failed"/>
+	<error to="stage-1-notify-early-failed"/>
+	</action>
+
+	<!-- SECOND SCRIPT TO DO STUFF BUT NOT HIVE STAFF IT HAS ITS OWN ACTION -->
+	<!-- Begin by firing off the following shell script located in /enterprise/scripts/athena -->
+	<!-- By default the script must not return anything not a zero or a one or it will be counted -->
+	<!-- as a job failure......so it must stdout a string like "returnCode=FAILURE" on fail -->
+	<!-- also should it need to return params used later return a string like "returnCode=PARAM!" -->
+  <action name="stage-1-part2">
+  	<shell xmlns="uri:oozie:shell-action:0.1">
+  		<job-tracker>${jobTracker}</job-tracker>
+  		<name-node>${nameNode}</name-node>
+  		<exec>garysCoolScript2.sh</exec>
+			<!-- Assuming arg 1 to script is the JOB_ID from CONTROL.TXT -->
+			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
+			<!-- Assuming arg 2 to script is the control_path from CONTROL.TXT -->
+			<argument>${wf:actionData('retrieveControlPath')['jobID']}</argument>
+			<!-- Assuming arg 3 to script is the location we want to use as a finished dir -->
+			<!-- Where we will store data for subsequent stages downstream -->
+  		<argument>${stageOneFinishedDir}</argument>
+			<!-- Assuming arg 4 to script is the temp space we should use to craft files -->
+			<!-- which are deleted after we succesfully complete the job  -->
+  		<argument>${stageOneExtractedDir}</argument>
+  		<file>${scriptsDir}/garysCoolScript2.sh#garysCoolScript2.sh</file>
+  		<file>${scriptsDir}/garysSCriptDepends.sh#garysSCriptDepends.sh</file>
+			<capture-output/>
+  	</shell>
+  	<ok to="validate-part-2-success"/>
+  	<error to="stage-1-notify-part-2-failed"/>
+  </action>
+	
+	<!-- If the shell script above was a success it WILL NOT have returned a string like -->
+	<!-- returnCode=FAILURE  so we test for it here before moving on, else cleanly exist -->
+	<decision name="validate-part-2-success">
+		<switch>
+			<case to="stage-1-notify-part-2-success">
+				${
+					wf:actionData('stage-1-part2') ['returnCode'] ne 'FAILURE'
+				}
+			</case>
+		<default to="stage-1-notify-part-2-failed"/>
+		</switch>
+	</decision>
+
+	<action name="stage-1-notify-part-2-success">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>RUNNING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} part 2 success moving to copyData'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-copyData"/>
+	<error to="stage-1-copyData"/>
+	</action>
+
+	<action name="stage-1-notify-part-2-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} failed on part two with [ ${ wf:actionData('stage-1-part2') ['returnCode']} ] exiting ...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-notify-early-failed"/>
+	<error to="stage-1-notify-early-failed"/>
+	</action>
+
+
+	<!-- LATE IN PROCESS AFTER THIS POINT YOU MAY SOME SERIOUS CLEAN UP IF FAILED -->
+	<!-- An example of moving data around on the hadoop to deep copy locations -->
+	<action name="stage-1-copyData">
+		<distcp xmlns="uri:oozie:distcp-action:0.1">
+		<job-tracker>${jobTracker}</job-tracker>
+		<name-node>${nameNode}</name-node>
+		<arg>-overwrite</arg>
+		<arg>${workingFile}/*</arg>
+		<arg>${controlFile}/</arg>
+		</distcp>
+		<ok to="stage-1-notify-copyData-success"/>
+		<error to="stage-1-notify-copyData-failed"/>
+	</action>
+
+	<!-- An example of moving data around on the hadoop to deep copy locations -->
+	<action name="stage-1-notify-copyData-success">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>RUNNING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} part 2 success moving to finished'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-finished"/>
+	<error to="stage-1-finished"/>
+	</action>
+
+	<!-- An example of moving data around on the hadoop to deep copy locations -->
+	<action name="stage-1-notify-copyData-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILING</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} failed on copyData exiting ...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-notify-late-failed"/>
+	<error to="stage-1-notify-late-failed"/>
+	</action>
+
+
+	<!-- We have succesfully completed, remove our WORKING.TXT file -->
+	<action name="stage-1-finished">
+    <fs>
+			<delete  path="${workingFile}"/>
+			<!--Do any other clean up here -->     
+			<!--<delete  path="${errorDataDir}"/>
+			<mkdir   path="${errorDataDir}"/>
+			<chmod   path='${errorDataDir}' permissions='755' dir-files='false'/>-->
+    </fs>
+    <ok to="stage-1-notify-completed"/>
+    <error to="stage-1-notify-completed"/>
+  </action>  
+
+	<action name="stage-1-notify-completed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>COMPLETED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} Done with stage-1'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="end"/>
+	<error to="end"/>
+	</action>
+
+	<!--Send status via email      -->     
+	<action name="email-failure">
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${toEmailAddress}</to>
+			<subject>Status of workflow ${wf:id()}</subject>
+			<body>The workflow ${wf:name()} with id -${wf:id()}, had issues and
+				will be kill; The error logged is:
+				${wf:errorMessage(wf:lastErrorNode()); }
+			</body>
+		</email>
+		<ok to="stage-1-notify-early-failed"/>
+		<error to="stage-1-notify-early-failed"/>
+	</action>
+
+	<action name="email-success">
+		<email xmlns="uri:oozie:email-action:0.1">
+			<to>${toEmailAddress}</to>
+			<subject>Status of workflow ${wf:id()}</subject>
+			<body>The workflow ${wf:name()} with id -${wf:id()}, completed successfully. 
+			</body>
+		</email>
+		<ok to="end"/>
+		<error to="end"/>
+	</action>
+
+	<action name="stage-1-notify-early-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>${fourDigitId}</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} workflow exiting ....'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-early-failure-cleanup"/>
+	<error to="stage-1-early-failure-cleanup"/>
+	</action>
+
+	<action name="stage-1-notify-late-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>${fourDigitId}</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-1</arg>
+			<arg>-x</arg>
+			<arg>FAILED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} workflow exiting ....'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output/>
+		</java>
+	<ok to="stage-1-late-failure-cleanup"/>
+	<error to="stage-1-late-failure-cleanup"/>
+	</action>
+
+	<!-- We have somehow failed early in the process, remove our WORKING.TXT file -->
+	<action name="stage-1-early-failure-cleanup">
+    <fs>
+			<delete  path="${workingFile}"/>
+			<!--Do any other clean up here -->     
+			<!--<delete  path="${errorDataDir}"/>
+			<mkdir   path="${errorDataDir}"/>
+			<chmod   path='${errorDataDir}' permissions='755' dir-files='false'/>-->
+    </fs>
+    <ok to="kill"/>
+    <error to="kill"/>
+  </action>  
+
+	<!-- We have somehow failed late in the process more clean up to do, remove our WORKING.TXT file -->
+	<action name="stage-1-late-failure-cleanup">
+    <fs>
+			<delete  path="${workingFile}"/>
+			<!--Do any other clean up here -->     
+			<!--<delete  path="${errorDataDir}"/>
+			<mkdir   path="${errorDataDir}"/>
+			<chmod   path='${errorDataDir}' permissions='755' dir-files='false'/>-->
+    </fs>
+    <ok to="kill"/>
+    <error to="kill"/>
+  </action>  
+
+	<!-- End the workflows as having failed -->
+	<kill name="kill">
+		<message>"Killed job due to error:
+			${wf:errorMessage(wf:lastErrorNode())}"</message>
+	</kill>
+
+	<end name="end"/>
+
 </workflow-app> 
