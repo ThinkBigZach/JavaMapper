@@ -1,17 +1,13 @@
 package com.chs.drivers;
-import static org.mockito.Mockito.*;
-import com.sun.org.apache.xpath.internal.operations.Div;
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
+
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.*;
-import org.junit.rules.ExpectedException;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class DivisionalDriverTest {
 
@@ -53,8 +50,6 @@ public class DivisionalDriverTest {
     @After
     public void tearDown() throws Exception {
     }
-
-
 
 
     @Test
@@ -223,12 +218,5 @@ public class DivisionalDriverTest {
         assertTrue(m.find());
     }
 
-    public void testStart() throws Exception {
 
-    }
-
-
-    public void testRemoveUnusedControlFiles1() throws Exception {
-
-    }
 }
