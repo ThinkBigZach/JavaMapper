@@ -1,0 +1,83 @@
+#!/bin/bash
+#  mfv
+#  Given four args MODE OF OPERATION PROD|QA, DATAPARTICIANNAME financialdatafeed|clinicaldatafeed, 
+#  as well as SOURCESYSTEMNAME medhost|dar|meditech|star ..., FACILITYID 0004
+#  We will check to see if the user is the coorect user for stage-0 workflows
+#  We will suspend the previoud job if it existed
+#  We will then kill this job and remove the JOBID artifact form disk
+#  We then remove all hdfs workflow artifacts for this facility and source system
+#  We then replace all hdfs workflow artifacts for this facility and source system
+#  We then enable all hdfs workflow artifacts for this facility and source system
+#  USAGE: syncit1 [MODE PROD|QA] [source system ID] [facility ID ]"
+if [ "$#" -ne 1 ]; then
+    echo "Error: ** Wrong number of arguments   ....**"
+    echo "USAGE: syncit1 [MODE PROD]"
+    echo "returnCode=FAILED"
+    exit 1
+else
+  uID=$USER
+	MODE=${1}
+  dataPartID=${2}
+  srcSystemID=${3}
+  facilityID=${4}
+	threeDigitID=${facilityID:1}
+	fourDigitID=${facilityID}
+	if [ ${uID} != "athena" ]; then
+    echo "Error: ** YOU MUST BE athena USER to run **"
+    echo "USAGE: syncit1 [MODE PROD]"
+    echo "returnCode=FAILED"
+    exit 1
+	else
+		if [ "${dataPartID}" != "financialdatafeed" ] && [ "${dataPartID}" != "clinicaldatafeed" ] ; then
+    	echo "Error: ** YOU data partician must be either [ clinicaldatafeed or financialdatafeed ] **"
+    	echo "USAGE: syncit1 [MODE PROD] [data partician ID] [source system ID] [facility ID ]"
+    	echo "returnCode=FAILED"
+    	exit 1
+		fi
+		COORD_FILE=CURRENT_OOZIE_COORDINATOR_${MODE}_${dataPartID}_${srcSystemID}_${fourDigitID}
+		if [  -f ./${COORD_FILE} ]; then
+			jobID=$(cat ./${COORD_FILE})
+			oozie job -oozie http://10.1.132.20:11000/oozie -suspend ${jobID} 
+			oozie job -oozie http://10.1.132.20:11000/oozie -kill  ${jobID}
+			rm -f ./${COORD_FILE}  ;
+		fi
+  	lowerMode="unset"
+		#Dynamically defined oozie workflow vars below
+		#sourceName
+		#userName
+		#stageOneDataPartition
+  	if [ "$MODE" ==  "QA" ]; then
+    	#echo "Error: INVALID MODE [ choice is only PROD for production, QA cannot land data**"
+    	#echo "USAGE: syncit1 [MODE PROD] [data partician ID] [source system ID] [facility ID ]"
+			echo "returnCode=NOOP"
+    	exit -1
+  	elif [ "$MODE" ==  "PROD" ]; then
+    	stage1UserID="informatica"
+    	lowerMode="prod"
+    	hiveDataDir=/user/hive/warehouse/${srcSystemID}_${fourDigitID}.db
+    	tdServer=prod.teradata.chs.net
+    	tdUserIDPassword=inf0rmt1prod3t1
+  	else
+    	#echo "Error: INVALID MODE [ choice is only PROD for production, QA cannot land data**"
+    	#echo "USAGE: syncit1 [MODE PROD] [data partician ID] [source system ID] [facility ID ]"
+			echo "returnCode=NOOP"
+    	exit -1
+  	fi
+		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/medhost_table_defs.csv
+		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/job.properties
+		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/coordinator.xml
+		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/workflow.xml
+		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/medhost_table_defs.csv
+		hadoop fs -put medhost_table_defs.csv /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+		hadoop fs -put coordinator.xml /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+		hadoop fs -put workflow.xml /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+		hadoop fs -put job.properties /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+		hadoop fs -put medhost_table_defs.csv /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+
+    rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/data/${fourDigitID}/${srcSystemID}/oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DthreeDigitId=${threeDigitID} -DfourDigitId=${fourDigitID} -DsourceName=${srcSystemID} -DuserName=${uID} -DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -DhiveDataDir=${hiveDataDir}  -submit)
+		newJobID=$( echo ${rawJobID} | awk '{ print $2 }')
+		echo $newJobID > ./${COORD_FILE}
+	fi
+fi
+echo "returnCode=${newJobID}"
+exit 0
