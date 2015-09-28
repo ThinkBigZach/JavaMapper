@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 public class DivisionalDriver implements Driver {
 
@@ -143,6 +144,7 @@ public DivisionalDriver(String[] args) {
             String line = "";
             int lineCount = 0;
             String headerInfo = null;
+            String regex = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
             boolean needsProcess = removePII(schemas.get(entity.toLowerCase()));
             while(fileScanner.hasNextLine()) {
@@ -150,11 +152,16 @@ public DivisionalDriver(String[] args) {
                 line = fileScanner.next();
                 if(lineCount == 0){
                     headerInfo = line;
+
                     if (!validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
                     	errorArray.add(path);
                     	break;
                     }
+                }
+                if(lineCount == 1){
+                       regex = getPatternMatch(line);
+
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                 	String cleanLine = replaceCRandLF(line);
@@ -162,7 +169,8 @@ public DivisionalDriver(String[] args) {
                 	{
                 		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
                 	}
-                	
+                	boolean isGoodLine = Pattern.matches(regex, cleanLine);
+
         			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
         			out.write((cleanLine + "\n").getBytes());
                 }
@@ -170,6 +178,31 @@ public DivisionalDriver(String[] args) {
             }
         }
         out.close();
+    }
+
+
+    private String getPatternMatch(String header){
+        String[] headerInfo = header.split(UNIT_SEPARATOR);
+        String varcharMatch = ".*";
+        String numberMatch = "\\d*";
+        String decimalMatch = "(\\+|-)?([0-9]*(\\.[0-9]*))*";
+        String pattern = "";
+        for(String s : headerInfo){
+            if(s.equalsIgnoreCase("NUMBER")){
+               if(s.contains(".")){
+                    pattern += decimalMatch + UNIT_SEPARATOR;
+               }
+               else{
+                    pattern += numberMatch + UNIT_SEPARATOR;
+               }
+            }
+            else{
+                pattern += varcharMatch + UNIT_SEPARATOR;
+            }
+
+        }
+        pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
+        return pattern;
     }
         
     private String piiProcess(String[] line, String[] headerInfo, List<SchemaRecord> schemarecords) 

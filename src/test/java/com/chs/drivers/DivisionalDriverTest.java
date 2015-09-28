@@ -106,15 +106,6 @@ public class DivisionalDriverTest {
     }
 
     @Test
-    public void testWriteOutFileLocation() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-        ArrayList<Path> paths = new ArrayList<Path>();
-        paths.add(new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/transaction"));
-        Method writeOutFiles = DivisionalDriver.class.getDeclaredMethod("writeOutFileLocations", ArrayList.class, String.class);
-        writeOutFiles.setAccessible(true);
-
-    }
-
-    @Test
     public void testProcessLine() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         ArrayList<String> testingLines = new ArrayList<String>();
         Path p = new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/Manifest");
@@ -145,6 +136,26 @@ public class DivisionalDriverTest {
         }
 
     }
+
+    @Test
+    public void testRegex() throws IOException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException{
+        String header = "NUMBER\u001FVARCHAR\u001FNUMBER\u001FNUMBER\u001FNUMBER\u001FVARCHAR\u001FDATETIME\u001FVARCHAR\u001FDATETIME\u001FVARCHAR\u001FVARCHAR";
+        String UNIT_SEPARATOR = "\037";
+        String[] headerInfo = header.split("\u001F");
+        String line = "1563\u001FGA - CHS Hidden Valley Medical Center\u001F8764\u001F629845\u001F1826756\u001Fmrobinson36\u001F08/08/2015 13:11:02\u001F\u001F\u001F\u001Ffollow up";
+
+
+        String lineBroken = "1563\u001FGA - CHS Hidden Valley Medical Center\u001F8g764\u001F629845\u001F1826756\u001Fmrobinson36\u001F08/08/2015 13:11:02\u001F\u001F\u001F\u001Ffollow up";
+
+        Method method = DivisionalDriver.class.getDeclaredMethod("getPatternMatch", String.class);
+        method.setAccessible(true);
+        String header2 = "NUMBER";
+        String line2 = "1563";
+        String pattern  = (String) method.invoke(divisionalDriver, header);
+        assertEquals(true, Pattern.matches(pattern, line));
+        assertEquals(false, Pattern.matches(pattern, lineBroken));
+    }
+
 
 
 
