@@ -149,11 +149,15 @@ public class DivisionalDriverTest {
 
         Method method = DivisionalDriver.class.getDeclaredMethod("getPatternMatch", String.class);
         method.setAccessible(true);
-        String header2 = "NUMBER";
-        String line2 = "1563";
+        String header2 = "NUMBER\u001FVARCHAR\u001FDATETIME";
+        String line2 = "1563.33\u001FF\u001F1-1-1";
+        String line3 =  "1563\u001FF\u001F1-1-1";
         String pattern  = (String) method.invoke(divisionalDriver, header);
+        String pattern2  = (String) method.invoke(divisionalDriver, header2);
         assertEquals(true, Pattern.matches(pattern, line));
         assertEquals(false, Pattern.matches(pattern, lineBroken));
+        assertEquals(true, Pattern.matches(pattern2, line2));
+        assertEquals(true, Pattern.matches(pattern2, line3));
     }
 
 

@@ -172,7 +172,9 @@ public DivisionalDriver(String[] args) {
                 	boolean isGoodLine = Pattern.matches(regex, cleanLine);
 
         			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-        			out.write((cleanLine + "\n").getBytes());
+
+
+                    out.write((cleanLine + "\n").getBytes());
                 }
                 lineCount++;
             }
@@ -184,22 +186,15 @@ public DivisionalDriver(String[] args) {
     private String getPatternMatch(String header){
         String[] headerInfo = header.split(UNIT_SEPARATOR);
         String varcharMatch = ".*";
-        String numberMatch = "\\d*";
-        String decimalMatch = "(\\+|-)?([0-9]*(\\.[0-9]*))*";
+        String numberMatch = "[+-]?(\\d+|\\d*\\.?\\d+)";
         String pattern = "";
         for(String s : headerInfo){
             if(s.equalsIgnoreCase("NUMBER")){
-               if(s.contains(".")){
-                    pattern += decimalMatch + UNIT_SEPARATOR;
-               }
-               else{
                     pattern += numberMatch + UNIT_SEPARATOR;
-               }
             }
             else{
                 pattern += varcharMatch + UNIT_SEPARATOR;
             }
-
         }
         pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
         return pattern;
