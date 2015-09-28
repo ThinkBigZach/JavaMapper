@@ -95,7 +95,7 @@ public class SchemaMatcherTest {
 		}
 	}
 		
-	@Test
+	@Test //General condition: Golden schema size is equal to file schema size
 	public void testSchemaMatch() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 //		when(con.getSchemas()).thenReturn(tdSchemaListMock);
@@ -113,7 +113,7 @@ public class SchemaMatcherTest {
 		assertTrue(testout);
 	}
 	
-	@Test
+	@Test //Generally unseen - early condition for map size should discard where golden schema size is bigger
 	public void testSchemaMatch_ForExtra() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException 
 	{
 		Method methodSchemaMatch = SchemaMatcher.class.getDeclaredMethod("schemaMatch", Map.class, Map.class, int.class, String.class);
@@ -127,24 +127,26 @@ public class SchemaMatcherTest {
 		testCompareMap.put("CONTEXT_ID", "0");
 		testCompareMap.put("CONTEXT_NAME", "0");
 		testCompareMap.put("Onset Date", "0");
-		boolean testout = (Boolean)methodSchemaMatch.invoke(schematch, testGoldenMap, testCompareMap, testCompareMap.size(), inputentity);
-		assertTrue(testout);
+		boolean testout = (Boolean)methodSchemaMatch.invoke(schematch, testGoldenMap, testCompareMap, testGoldenMap.size(), inputentity);
+		assertFalse(testout);
 	}
 	
-	@Test
+	@Test //for when File schema size is greater than the Teradata Golden Schema
 	public void testSchemaMatch_ForFewer() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		Method methodSchemaMatch = SchemaMatcher.class.getDeclaredMethod("schemaMatch", Map.class, Map.class, int.class, String.class);
 		methodSchemaMatch.setAccessible(true);
 		Map<String,String> testGoldenMap = new HashMap<String,String>();
 		testGoldenMap.put("context_id", "0");
+		testGoldenMap.put("context_name", "0");
 		testGoldenMap.put("onset_date", "0");
 		Map<String,String> testCompareMap = new HashMap<String,String>();
 		testCompareMap.put("CONTEXT_ID", "0");
 		testCompareMap.put("CONTEXT_NAME", "0");
 		testCompareMap.put("Onset Date", "0");
-		boolean testout = (Boolean)methodSchemaMatch.invoke(schematch, testGoldenMap, testCompareMap, testCompareMap.size(), inputentity);
-		assertFalse(testout);
+		testCompareMap.put("Allergy ID", "0");
+		boolean testout = (Boolean)methodSchemaMatch.invoke(schematch, testGoldenMap, testCompareMap, testGoldenMap.size(), inputentity);
+		assertTrue(testout);
 	}
 	
 	@Test

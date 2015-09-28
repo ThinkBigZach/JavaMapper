@@ -12,10 +12,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
-/**
- * @author cr186034
- */
-
 public class SchemaMatcher {
 	
 	private static String delimiter = "\036";
@@ -48,7 +44,7 @@ public class SchemaMatcher {
 			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
 			e.printStackTrace();
 		}
-        if ((goldenMap != null && compareMap != null))
+        if ((goldenMap != null && compareMap != null) && (compareMap.size() >= goldenMap.size()))
         {
         	if (schemaMatch(goldenMap, compareMap, goldenMap.size(), entity))
         	{
