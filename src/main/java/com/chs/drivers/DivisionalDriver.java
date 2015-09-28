@@ -174,6 +174,23 @@ public DivisionalDriver(String[] args) {
 
 
                     out.write((cleanLine + "\n").getBytes());
+                	if(cleanLine.split(UNIT_SEPARATOR).length == headerInfo.split(UNIT_SEPARATOR).length) {
+                		cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                		out.write((cleanLine + "\n").getBytes());
+                	}
+                	else {
+                		String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
+                		if(!fs.exists(new Path(errOutpath))){
+                            fs.mkdirs(new Path(errOutpath));
+                        }
+                		String errFileNameMili = appendTimeAndExtension(errOutpath + entity);
+                        if(!fs.exists(new Path(errFileNameMili))){
+                            fs.createNewFile(new Path(errFileNameMili));
+                        }
+                        FSDataOutputStream err = fs.append(new Path(errFileNameMili));
+                		cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                		err.write((cleanLine + "\n").getBytes());
+                	}
                 }
                 lineCount++;
             }
@@ -534,17 +551,19 @@ public DivisionalDriver(String[] args) {
         if (!fs.exists(new Path(tempOutpath))) {
             fs.mkdirs(new Path(tempOutpath));
         }
-        Date tempDate = new Date(System.currentTimeMillis());
-        String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
-        String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
-        if (!fs.exists(new Path(errorOutpath))) {
-            fs.createNewFile(new Path(errorOutpath));
+        if(errorArray.size() > 0) {
+	        Date tempDate = new Date(System.currentTimeMillis());
+	        String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
+	        String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
+	        if (!fs.exists(new Path(errorOutpath))) {
+	            fs.createNewFile(new Path(errorOutpath));
+	        }
+	        FSDataOutputStream out = fs.append(new Path(errorOutpath));
+			for (String line : errorArray) {
+				out.write((line).getBytes());
+			}       
+			out.close();
         }
-        FSDataOutputStream out = fs.append(new Path(errorOutpath));
-		for (String line : errorArray){
-			out.write((line).getBytes());
-		}
-		out.close();
 	}
 
 	private String appendTimeAndExtension(String s) {
