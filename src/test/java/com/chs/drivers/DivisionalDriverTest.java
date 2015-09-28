@@ -1,5 +1,6 @@
 package com.chs.drivers;
 
+import com.chs.utils.SchemaRecord;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,6 +52,67 @@ public class DivisionalDriverTest {
     public void tearDown() throws Exception {
     }
 
+
+
+    @Test
+    public void testProcessPii() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException{
+        //Tests when working correctly
+        String[] line = {"data", "data", "PIIDATA"};
+        String[] header = {"col1", "col2", "piiCol"};
+        String UNIT_SEPARATOR = "\037";
+        ArrayList<SchemaRecord> records = new ArrayList<SchemaRecord>();
+        records.add(new SchemaRecord("col1", "test", ""));
+        records.add(new SchemaRecord("col2", "test", ""));
+        records.add(new SchemaRecord("piiCol", "test", "remove"));
+        Method processPII = DivisionalDriver.class.getDeclaredMethod("piiProcess", String[].class, String[].class, List.class);
+        processPII.setAccessible(true);
+        String returnVal = processPII.invoke(divisionalDriver, line, header,records).toString();
+        assertEquals("data" + UNIT_SEPARATOR + "data", returnVal.trim());
+
+        //Tests when working correctly
+        String[] line2 = {"data", "data", "nullCol"};
+        String[] header2 = {"col1", "col2", null};
+        ArrayList<SchemaRecord> records2 = new ArrayList<SchemaRecord>();
+        records.add(new SchemaRecord("col1", "test", ""));
+        records.add(new SchemaRecord("col2", "test", ""));
+        records.add(new SchemaRecord("piiCol", "test", "remove"));
+        try {
+            String returnVal2 = processPII.invoke(divisionalDriver, line2, header2, records2).toString();
+            fail("Should have thrown an exception");
+        }
+        catch(Exception e){
+
+        }
+    }
+
+
+    @Test
+    public void testRemovePii()  throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException{
+        //Test if it does contain remove
+        ArrayList<SchemaRecord> records = new ArrayList<SchemaRecord>();
+        records.add(new SchemaRecord("test", "test", "remove"));
+        Method removePII = DivisionalDriver.class.getDeclaredMethod("removePII", List.class);
+        removePII.setAccessible(true);
+        Object o = removePII.invoke(divisionalDriver, records);
+        assertEquals("true", o.toString());
+
+        //Test if it doesn't containt remove
+        ArrayList<SchemaRecord> records2 = new ArrayList<SchemaRecord>();
+        records.add(new SchemaRecord("test", "test", ""));
+        records.add(null);
+        Object o2 = removePII.invoke(divisionalDriver, records2);
+        assertEquals("false", o2.toString());
+
+    }
+
+    @Test
+    public void testWriteOutFileLocation() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        ArrayList<Path> paths = new ArrayList<Path>();
+        paths.add(new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01/transaction"));
+        Method writeOutFiles = DivisionalDriver.class.getDeclaredMethod("writeOutFileLocations", ArrayList.class, String.class);
+        writeOutFiles.setAccessible(true);
+
+    }
 
     @Test
     public void testProcessLine() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
