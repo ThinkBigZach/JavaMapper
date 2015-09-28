@@ -160,8 +160,7 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 if(lineCount == 1){
-                       regex = getPatternMatch(line);
-
+                       regex = getPatternMatch(line.replaceAll(RECORD_SEPARATOR, ""));
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                 	String cleanLine = replaceCRandLF(line);
