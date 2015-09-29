@@ -305,6 +305,7 @@ public DivisionalDriver(String[] args) {
             }
         } catch (IOException e) {
 //            e.printStackTrace();
+        	System.out.println("returnCode=FAILURE");
         }
         return "";
 
@@ -496,7 +497,8 @@ public DivisionalDriver(String[] args) {
                             }
                         }
                     } catch (Exception e) {
-//                    System.out.println("PATH " + temp + "Does not exist!");
+//                    	System.out.println("PATH " + temp + "Does not exist!");
+                    	System.out.println("returnCode=FAILURE");
                     }
                 }
             }
@@ -534,6 +536,7 @@ public DivisionalDriver(String[] args) {
 
             } catch (Exception e) {
 //                e.printStackTrace();
+            	System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
 //            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
@@ -541,7 +544,7 @@ public DivisionalDriver(String[] args) {
         }
         catch(IOException e){
 //            System.out.println(e.getMessage());
-
+        	System.out.println("returnCode=FAILURE");
         }
     }
 

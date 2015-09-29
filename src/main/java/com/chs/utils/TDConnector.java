@@ -32,11 +32,13 @@ public class TDConnector {
 				if (!conn.isValid(0))
 				{
 //					throw new Exception("Connection to Teradata failed..");
+					System.out.println("returnCode=FAILURE");
 				}
 			} catch (Exception e)
 			{
 //				System.out.println("Exception caught: " + e.getMessage());
 //				e.printStackTrace();
+				System.out.println("returnCode=FAILURE");
 			}
 		}
 		return conn;
@@ -110,6 +112,7 @@ public class TDConnector {
 		} catch (Exception e) {
 //			e.printStackTrace();
 			//throw e;
+			System.out.println("returnCode=FAILURE");
 		}
 		return schemaInfo;
 	}

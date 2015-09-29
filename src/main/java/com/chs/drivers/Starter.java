@@ -16,6 +16,7 @@ public class Starter {
 	//divisional OR path as args[9]
 	public static void main(String[] args) throws Exception {
 		if(args.length != 10) {
+			System.out.println("returnCode=FAILURE");
 			throw new Exception("Expected 10 parameters, received " + args.length);
 		}
 		Driver driver;
@@ -26,6 +27,7 @@ public class Starter {
 			driver = new PathDriver(args);
 		}
 		else {
+			System.out.println("returnCode=FAILURE");
 			throw new Exception("you did not specify \"divisional\" or \"path\" load");
 		}
 		

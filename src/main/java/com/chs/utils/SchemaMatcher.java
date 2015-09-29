@@ -47,6 +47,7 @@ public class SchemaMatcher {
 //			LOG.info("====SCHEMA COULD NOT BE MATCHED====");
 //			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
 //			e.printStackTrace();
+			System.out.println("returnCode=FAILURE");
 		}
         if ((goldenMap != null && compareMap != null))
         {
