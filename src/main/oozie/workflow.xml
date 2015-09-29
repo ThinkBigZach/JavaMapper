@@ -62,6 +62,15 @@
             <name>stageOneRawDir</name>
         </property>
         <property>
+        	<name>stageOnePracticeMappingFile</name>
+        </property>
+        <property>
+                <name>stageOneDivisionMappingFile</name>
+        </property>
+        <property>
+                <name>stageOneEntityMappingFile</name>
+        </property>
+	<property>
             <name>scriptsDir</name>
         </property>
         <property>
@@ -90,12 +99,6 @@
         </property>
         <property>
             <name>outputPath</name>
-        </property>
-        <property>
-            <name>practiceMap</name>
-        </property>
-        <property>
-            <name>entityMap</name>
         </property>
         <property>
             <name>tdTargetDB</name>
@@ -299,23 +302,24 @@
     </action>
 
     <action name='process-stage-0-files'>
-        <java>
+        <shell xmlns="uri:oozie:shell-action:0.1">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
-            <main-class>com.chs.drivers.Starter</main-class>
-            <arg>${sourcePath}</arg>
-            <arg>${entity}</arg>
-            <arg>${outputPath}</arg>
-            <arg>${practiceMap}</arg>
-            <arg>${entityMap}</arg>
-            <arg>${tdServer}</arg>
-            <arg>${tdUserID}</arg>
-            <arg>${tdUserIDPassword}</arg>
-            <arg>${tdTargetDB}</arg>
-            <arg>divisional</arg>
-            <arg>${stageOneDivisionMappingFile}</arg>
-            <capture-output/>
-        </java>
+            <exec>/usr/bin/bash</exec>
+            <argument>${sourcePath}</argument>
+            <argument>${entity}</argument>
+            <argument>${outputPath}</argument>
+            <argument>${practiceMap}</argument>
+            <argument>${entityMap}</argument>
+            <argument>${tdServer}</argument>
+            <argument>${tdUserID}</argument>
+            <argument>${tdUserIDPassword}</argument>
+            <argument>${tdTargetDB}</argument>
+            <argument>divisional</argument>
+            <argument>${stageOneDivisionMappingFile}</argument>
+            <file>${scriptsDir}/AthenaStage1JarWrapper.sh#AthenaStage1JarWrapper.sh</file>
+	    <capture-output/>
+        </shell>
         <ok to="validate-process-stage-0-files-success"/>
         <error to="stage-1-notify-part-1-failed"/>
     </action>
