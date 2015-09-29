@@ -11,7 +11,7 @@
 #  USAGE: syncit1 [MODE PROD|QA] [source system ID] [facility ID ]"
 if [ "$#" -ne 1 ]; then
     echo "Error: ** Wrong number of arguments   ....**"
-    echo "USAGE: syncit1 [MODE PROD]"
+    echo "USAGE: syncit1 [MODE PROD] [ Partitian Indentity ] [ Division ID ]"
     echo "returnCode=FAILED"
     exit 1
 else
@@ -21,7 +21,7 @@ else
   srcSystemID=${3}
   facilityID=${4}
 	threeDigitID=${facilityID:1}
-	fourDigitID=${facilityID}
+	divisionID=${facilityID}
 	if [ ${uID} != "athena" ]; then
     echo "Error: ** YOU MUST BE athena USER to run **"
     echo "USAGE: syncit1 [MODE PROD]"
@@ -34,7 +34,7 @@ else
     	echo "returnCode=FAILED"
     	exit 1
 		fi
-		COORD_FILE=CURRENT_OOZIE_COORDINATOR_${MODE}_${dataPartID}_${srcSystemID}_${fourDigitID}
+		COORD_FILE=CURRENT_OOZIE_COORDINATOR_${MODE}_${dataPartID}_${srcSystemID}_${divisionID}
 		if [  -f ./${COORD_FILE} ]; then
 			jobID=$(cat ./${COORD_FILE})
 			oozie job -oozie http://10.1.132.20:11000/oozie -suspend ${jobID} 
@@ -49,12 +49,15 @@ else
   	if [ "$MODE" ==  "QA" ]; then
     	#echo "Error: INVALID MODE [ choice is only PROD for production, QA cannot land data**"
     	#echo "USAGE: syncit1 [MODE PROD] [data partician ID] [source system ID] [facility ID ]"
+    	stage1UserID="athena_qa"
+    	lowerMode="qa"
+    	tdServer=qa.teradata.chs.net
+    	tdUserIDPassword=inf0rmt1qa3t1
 			echo "returnCode=NOOP"
     	exit -1
   	elif [ "$MODE" ==  "PROD" ]; then
-    	stage1UserID="informatica"
+    	stage1UserID="athena"
     	lowerMode="prod"
-    	hiveDataDir=/user/hive/warehouse/${srcSystemID}_${fourDigitID}.db
     	tdServer=prod.teradata.chs.net
     	tdUserIDPassword=inf0rmt1prod3t1
   	else
@@ -63,18 +66,18 @@ else
 			echo "returnCode=NOOP"
     	exit -1
   	fi
-		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/medhost_table_defs.csv
-		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/job.properties
-		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/coordinator.xml
-		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/workflow.xml
-		hadoop fs -rm -skipTrash /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie/medhost_table_defs.csv
-		hadoop fs -put medhost_table_defs.csv /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
-		hadoop fs -put coordinator.xml /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
-		hadoop fs -put workflow.xml /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
-		hadoop fs -put job.properties /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
-		hadoop fs -put medhost_table_defs.csv /user/${uID}/data/$fourDigitID/${srcSystemID}/oozie
+		hadoop fs -rm -skipTrash /user/${uID}/mappings/athena_table_defs.csv
+		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/division.properties
+		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
-    rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/data/${fourDigitID}/${srcSystemID}/oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DthreeDigitId=${threeDigitID} -DfourDigitId=${fourDigitID} -DsourceName=${srcSystemID} -DuserName=${uID} -DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -DhiveDataDir=${hiveDataDir}  -submit)
+		hadoop fs -put athena_table_defs.csv  /user/${uID}/mappings/athena_table_defs.csv
+		hadoop fs -put division.properties /user/${uID}/data/${dataPartID}/oozie/division.properties
+		hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+		hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
+
+
+    rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/data/${divisionID}/${srcSystemID}/oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DthreeDigitId=${threeDigitID} -DfourDigitId=${divisionID} -DsourceName=${srcSystemID} -DuserName=${uID} -DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -DhiveDataDir=${hiveDataDir}  -submit)
 		newJobID=$( echo ${rawJobID} | awk '{ print $2 }')
 		echo $newJobID > ./${COORD_FILE}
 	fi
