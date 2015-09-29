@@ -318,6 +318,28 @@
 
     </action>
 
+    <action name='process-stage-0-files'>
+        <java>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <main-class>com.chs.drivers.Starter</main-class>
+            <arg>${sourcePath}</arg>
+            <arg>${entity}</arg>
+            <arg>${outputPath}</arg>
+            <arg>${practiceMap}</arg>
+            <arg>${entityMap}</arg>
+            <arg>${tdServer}</arg>
+            <arg>${tdUserID}</arg>
+            <arg>${tdUserIDPassword}</arg>
+            <arg>${tdTargetDB}</arg>
+            <arg>divisional</arg>
+        </java>
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+
+
+
     <!-- FIRST SCRIPT TO DO STUFF BUT NOT HIVE STAFF IT HAS ITS OWN ACTION -->
     <!-- Begin by firing off the following shell script located in /enterprise/scripts/athena -->
     <!-- By default the script must not return anything not a zero or a one or it will be counted -->
@@ -345,27 +367,9 @@
         <ok to="validate-part-1-success"/>
         <error to="stage-1-notify-part-1-failed"/>
     </action>
-    <!--DELETE ACTION ABOVE-->
 
-    <action name='process-stage-0-files'>
-        <java>
-            <job-tracker>${jobTracker}</job-tracker>
-            <name-node>${nameNode}</name-node>
-            <main-class>com.chs.drivers.Starter</main-class>
-            <arg>${sourcePath}</arg>
-            <arg>${entity}</arg>
-            <arg>${outputPath}</arg>
-            <arg>${practiceMap}</arg>
-            <arg>${entityMap}</arg>
-            <arg>${tdServer}</arg>
-            <arg>${tdUserID}</arg>
-            <arg>${tdUserIDPassword}</arg>
-            <arg>${tdTargetDB}</arg>
-            <arg>divisional</arg>
-        </java>
-        <ok to="ok"/>
-        <error to="kill"/>
-    </action>
+
+
 
 
 
