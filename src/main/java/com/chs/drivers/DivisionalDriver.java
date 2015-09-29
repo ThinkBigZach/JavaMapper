@@ -100,10 +100,10 @@ public DivisionalDriver(String[] args) {
             readDateWildCard(new Path(pathToControl), null, false);
         }
         removeUnusedControlFiles();
-        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
+//        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
 
         writeOutFileLocations(manifestFiles, "Manifest");
-        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
+//        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
         writeOutFileLocations(controlFiles, "Control");
 
     }
@@ -126,7 +126,7 @@ public DivisionalDriver(String[] args) {
     }
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
-        System.out.println("WRITING FILE FOR ENTITY " + entity);
+//        System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
         String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
@@ -304,7 +304,7 @@ public DivisionalDriver(String[] args) {
                 return line.split("~")[3];
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return "";
 
@@ -467,7 +467,7 @@ public DivisionalDriver(String[] args) {
     private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
-        System.out.println(divisionPart);
+//        System.out.println(divisionPart);
 
         for(FileStatus status : fileStatuses){
 
@@ -509,7 +509,7 @@ public DivisionalDriver(String[] args) {
      * core launch method. All logic for divisional load needs to be in or called from this method
      */
     public void start()  {
-        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
+//        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
         long startTime = System.currentTimeMillis();
         TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
         TDConnector.getConnection();
@@ -518,9 +518,9 @@ public DivisionalDriver(String[] args) {
             mapping = new HashMap<String, ArrayList<String>>();
             this.getValidPracticeIds();
             this.getValidEntityNames();
-            System.out.println("GOT ENTITIES AND PRACTICES");
+//            System.out.println("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
-            System.out.println("GOT MANIFEST PATHS");
+//            System.out.println("GOT MANIFEST PATHS");
             try {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
@@ -530,17 +530,17 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 long endWrite = System.currentTimeMillis();
-                System.out.println(((endWrite - startWrite)/1000) + " seconds to execute writing the files");
+//                System.out.println(((endWrite - startWrite)/1000) + " seconds to execute writing the files");
 
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             long endTime = System.currentTimeMillis();
-            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
+//            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
             writeErrorFiles();
         }
         catch(IOException e){
-            System.out.println(e.getMessage());
+//            System.out.println(e.getMessage());
 
         }
     }

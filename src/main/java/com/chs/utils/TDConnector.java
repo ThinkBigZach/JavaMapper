@@ -31,12 +31,12 @@ public class TDConnector {
 				conn = DriverManager.getConnection(url, user, password); //Connection w/user and password
 				if (!conn.isValid(0))
 				{
-					throw new Exception("Connection to Teradata failed..");
+//					throw new Exception("Connection to Teradata failed..");
 				}
 			} catch (Exception e)
 			{
-				System.out.println("Exception caught: " + e.getMessage());
-				e.printStackTrace();
+//				System.out.println("Exception caught: " + e.getMessage());
+//				e.printStackTrace();
 			}
 		}
 		return conn;
@@ -62,7 +62,7 @@ public class TDConnector {
 		String describeTable = "DESCRIBE dbc.tablesV";
 		String query =
 				"SELECT c.tablename, count(*) FROM dbc.columnsV c JOIN dbc.tablesV t ON c.databasename = t.databasename AND c.tablename = t.tablename WHERE UPPER(t.databasename) = 'dbc' AND t.commentstring NOT IN ('Ignore') AND c.commentstring NOT IN ('Ignore','ETL') GROUP BY c.tablename";
-		System.out.println("EXECUTING QUERY" + query);
+//		System.out.println("EXECUTING QUERY" + query);
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
 		ResultSet set = stmt.executeQuery(query);
@@ -92,7 +92,7 @@ public class TDConnector {
 			while (!set.isAfterLast())
 			{
 				String fixedTitle = set.getString(2).replace(" ", "_").toLowerCase();
-				//System.out.println("Tablename: " + set.getString(1) + "\n\tColumn title: " + set.getString(2) + "\n\tColumn type: " + set.getString(3));
+//				System.out.println("Tablename: " + set.getString(1) + "\n\tColumn title: " + set.getString(2) + "\n\tColumn type: " + set.getString(3));
 				if (schemaInfo.containsKey(set.getString(1).toLowerCase()))
 				{
 					schemaInfo.get(set.getString(1).toLowerCase()).add(new SchemaRecord(fixedTitle, set.getString(3), set.getString(4)));
@@ -108,7 +108,7 @@ public class TDConnector {
 				set.next();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			//throw e;
 		}
 		return schemaInfo;

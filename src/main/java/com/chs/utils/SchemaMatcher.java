@@ -20,7 +20,7 @@ public class SchemaMatcher {
 	
 	private static String delimiter = "\036";
 	private static String spacelimiter = "\037";
-	private static Logger LOG = Logger.getLogger(SchemaMatcher.class);
+//	private static Logger LOG = Logger.getLogger(SchemaMatcher.class);
 	public static Map<String, List<SchemaRecord>> goldenEntitySchemaMap = TDConnector.getSchemas();
 	
 	//Dynamic Schema Match change >> Checks to make sure column and column data type are equal. All must match to pass.
@@ -44,9 +44,9 @@ public class SchemaMatcher {
 	        compareFile = new Scanner(fs.open(new Path(compareURL))).useDelimiter(delimiter);
 	        compareMap = extractMapFromFile(cleanStringByColumn(compareFile.next()), cleanStringByColumn(compareFile.next()));
 		} catch (Exception e) {
-			LOG.info("====SCHEMA COULD NOT BE MATCHED====");
-			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
-			e.printStackTrace();
+//			LOG.info("====SCHEMA COULD NOT BE MATCHED====");
+//			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
+//			e.printStackTrace();
 		}
         if ((goldenMap != null && compareMap != null))
         {
@@ -57,10 +57,10 @@ public class SchemaMatcher {
         	}
         	else
         	{
-        		LOG.info("==========Schema match failed============");       
+//        		LOG.info("==========Schema match failed============");       
         	}
         } else {
-        	LOG.info("====SCHEMA COULD NOT BE MATCHED");
+//        	LOG.info("====SCHEMA COULD NOT BE MATCHED");
         }
         compareFile.close();
         return tripwire;
@@ -81,7 +81,7 @@ public class SchemaMatcher {
     	}
     	else
     	{
-    		LOG.info(String.format("ENTITY %s IS NULL", entity));
+//    		LOG.info(String.format("ENTITY %s IS NULL", entity));
     	}
     	return tempmap;
     }
