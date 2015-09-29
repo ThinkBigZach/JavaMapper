@@ -149,9 +149,6 @@ public class DivisionalDriverTest {
         String header2 = "NUMBER\u001FVARCHAR\u001FDATETIME";
         String decimalLine = "1563.33\u001FF\u001F1-1-1\036";
         String intLine =  "1563\u001FF\u001F1-1-1";
-        String tooBigLine = "1563434544544\u001FF\u001F1-1-1";
-        String tooManyDecimals = "154.234\u001FF\u001F1-1-1";
-        String tooBigAndDecimal = "1563434544544.233\u001FF\u001F1-1-1";
         String pattern  = (String) method.invoke(divisionalDriver, header);
         String pattern2  = (String) method.invoke(divisionalDriver, header2);
         String pattern3  = (String) method.invoke(divisionalDriver, header3);
@@ -159,9 +156,6 @@ public class DivisionalDriverTest {
         assertEquals(false, Pattern.matches(pattern, lineBroken));
         assertEquals(true, Pattern.matches(pattern2, decimalLine));
         assertEquals(true, Pattern.matches(pattern2, intLine));
-        assertEquals(false, Pattern.matches(pattern2, tooBigLine));
-        assertEquals(false, Pattern.matches(pattern2, tooManyDecimals));
-        assertEquals(false, Pattern.matches(pattern2, tooBigAndDecimal));
         assertEquals(true, Pattern.matches(pattern3, line3));
     }
 
