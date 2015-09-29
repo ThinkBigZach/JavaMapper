@@ -181,10 +181,10 @@ public DivisionalDriver(String[] args) {
                 		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
                 	}
                 	boolean isGoodLine = Pattern.matches(regex, cleanLine);
-                	cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
-                	if(cl_int == he_int + 3) {
+                	if(cl_int == he_int + 3 && isGoodLine) {
                 		out.write((cleanLine + "\n").getBytes());
                 	}
                 	else {                		
@@ -201,7 +201,7 @@ public DivisionalDriver(String[] args) {
     private String getPatternMatch(String header){
         String[] headerInfo = header.split(UNIT_SEPARATOR);
         String varcharMatch = ".*";
-        String numberMatch = "[+-]?(\\d+|\\d*\\.?\\d+)";
+        String numberMatch = "[+-]?(\\d*\\.?\\d*)";
         String pattern = "";
         for(String s : headerInfo){
             if(s.equalsIgnoreCase("NUMBER")){
