@@ -129,11 +129,23 @@ public DivisionalDriver(String[] args) {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
+        String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
+        String errFileNameMili = appendTimeAndExtension(errOutpath + entity);
 
+        if(!fs.exists(new Path(entityOutpath))){
+            fs.mkdirs(new Path(entityOutpath));
+        }
+        if(!fs.exists(new Path(errOutpath))){
+            fs.mkdirs(new Path(errOutpath));
+        }
+        if(!fs.exists(new Path(errFileNameMili))){
+            fs.createNewFile(new Path(errFileNameMili));
+        }
         if(!fs.exists(new Path(outFileNameMili))){
             fs.createNewFile(new Path(outFileNameMili));
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
+        FSDataOutputStream err = fs.append(new Path(errFileNameMili));
         for(String path : paths) {
 
             String jobId = getJobIdFromPaths(path);
@@ -169,26 +181,13 @@ public DivisionalDriver(String[] args) {
                 		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
                 	}
                 	boolean isGoodLine = Pattern.matches(regex, cleanLine);
-
-        			cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-
-
-                    out.write((cleanLine + "\n").getBytes());
-                	if(cleanLine.split(UNIT_SEPARATOR).length == headerInfo.split(UNIT_SEPARATOR).length) {
-                		cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                	cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
+                	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
+                	if(cl_int == he_int + 3) {
                 		out.write((cleanLine + "\n").getBytes());
                 	}
-                	else {
-                		String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
-                		if(!fs.exists(new Path(errOutpath))){
-                            fs.mkdirs(new Path(errOutpath));
-                        }
-                		String errFileNameMili = appendTimeAndExtension(errOutpath + entity);
-                        if(!fs.exists(new Path(errFileNameMili))){
-                            fs.createNewFile(new Path(errFileNameMili));
-                        }
-                        FSDataOutputStream err = fs.append(new Path(errFileNameMili));
-                		cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                	else {                		
                 		err.write((cleanLine + "\n").getBytes());
                 	}
                 }
