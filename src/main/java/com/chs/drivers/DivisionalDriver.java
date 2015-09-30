@@ -214,40 +214,22 @@ public DivisionalDriver(String[] args) {
     
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
-    	int colcounts = schemaColumns.length;
     	StringBuilder orderedScheme = new StringBuilder();
-    	Map<String, Integer> tempMap = new HashMap<String, Integer>();
-    	Map<Integer, String> outSchema = new TreeMap<Integer, String>();
-    	int count = 0;
-//    	System.out.println("COLUMN COUNT: " + colcounts + "\nCOLUMNS: " + schemaColumns.toString());
-    	if (!goldSchema.isEmpty())
+    	Map<Integer,String> columnMap = new HashMap<Integer,String>();
+    	Map<String,Integer> headerMap = new HashMap<String,Integer>();
+    	for (int i = 0; i < schemaColumns.length; i++)
     	{
-//	    	for (Entry<String,String> kv : goldSchema.entrySet())
-//	    	{
-//	    		tempSchema.put(kv.getKey(), count);
-//	    		count++;
-//	    	}
-    		for (String headerColumn : headerinfo)
-    		{
-    			tempMap.put(headerColumn.toLowerCase(), goldSchema.get(headerColumn.toLowerCase()));
-    		}
-//	    	int id = 0;
-//    		for (String col : schemaColumns)
-//    		{
-//				//id = goldSchema.get();
-//				outSchema.put(id, col);    	
-//    		}    		
+    		columnMap.put(i, schemaColumns[i]);
+    		headerMap.put(headerinfo[i].replaceAll(" ", "_").toLowerCase(), i);
     	}
-    	for (int i = 0; i < colcounts; i++)
+    	for (Entry<String,Integer> kv : goldSchema.entrySet())
     	{
-//    		goldSchema.get(tempMap.get(i));
-    		outSchema.put(tempMap.get(schemaColumns[i].toLowerCase()), schemaColumns[i]);
+    		int goldCol = headerMap.get(kv.getKey());
+    		String colValue = columnMap.get(goldCol);
+    		orderedScheme.append(colValue).append(UNIT_SEPARATOR);
     	}
-    	for (Entry<Integer, String> kv : outSchema.entrySet())
-    	{
-    		orderedScheme.append(kv.getValue()).append(UNIT_SEPARATOR);    		
-    	}
-    	return orderedScheme.toString();
+    	String schemaReorder = orderedScheme.substring(0, (orderedScheme.length() - 1));
+    	return schemaReorder;
     }
 
     private String getJobIdFromPaths(String path) {

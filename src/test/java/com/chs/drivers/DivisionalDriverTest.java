@@ -1,6 +1,7 @@
 package com.chs.drivers;
 
 import com.chs.utils.SchemaRecord;
+
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -13,7 +14,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +55,31 @@ public class DivisionalDriverTest {
     public void tearDown() throws Exception {
     }
 
+    @Test
+    public void testReorderAlongSchema() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+    	String UNIT_SEPARATOR = "\037";
+    	String header = "Allergy ID" + UNIT_SEPARATOR + "Type" + UNIT_SEPARATOR + "Patient ID" + UNIT_SEPARATOR + "Chart ID" + UNIT_SEPARATOR + 
+				"CONTEXT_ID" + UNIT_SEPARATOR + "CONTEXT_NAME" + UNIT_SEPARATOR + "CONTEXT_PARENTCONTEXTID" + UNIT_SEPARATOR + "Allergy Name" + UNIT_SEPARATOR + "Allergy Code";
+		String columns = "6574" + UNIT_SEPARATOR + "DT" + UNIT_SEPARATOR + "8928" + UNIT_SEPARATOR + "32" + UNIT_SEPARATOR + "24452" + UNIT_SEPARATOR + "LADIDADI"
+				 + UNIT_SEPARATOR + "DATSIK" + UNIT_SEPARATOR + "Gatorade" + UNIT_SEPARATOR + "520000";
+		String correctOutput = "24452" + UNIT_SEPARATOR + "LADIDADI" + UNIT_SEPARATOR + "DATSIK" + UNIT_SEPARATOR + "8928" + UNIT_SEPARATOR + "32" + UNIT_SEPARATOR + "DT"
+				 + UNIT_SEPARATOR + "6574" + UNIT_SEPARATOR + "Gatorade" + UNIT_SEPARATOR + "520000";
+		Map<String,Integer> goldMap = new LinkedHashMap<String,Integer>();
+		goldMap.put("context_id", 0);
+		goldMap.put("context_name", 1);
+		goldMap.put("context_parentcontextid", 2);
+		goldMap.put("patient_id", 3);
+		goldMap.put("chart_id", 4);
+		goldMap.put("type", 5);
+		goldMap.put("allergy_id", 6);
+		goldMap.put("allergy_name", 7);
+		goldMap.put("allergy_code", 8);
+    	Method methodReorderAlongSchema = DivisionalDriver.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
+    	methodReorderAlongSchema.setAccessible(true);
+    	String out = (String) methodReorderAlongSchema.invoke(divisionalDriver, goldMap, columns.split(UNIT_SEPARATOR), header.split(UNIT_SEPARATOR));
+    	assertTrue(correctOutput.equals(out));
+    }
 
 
     @Test

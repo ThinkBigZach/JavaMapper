@@ -3,6 +3,7 @@ package com.chs.utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,7 +65,7 @@ public class SchemaMatcher {
     
     public static Map<String, Integer> getOrderingSchema(String entity)
     {
-    	Map<String, Integer> tempmap = new HashMap<String, Integer>();
+    	Map<String, Integer> tempmap = new LinkedHashMap<String, Integer>();
     	List<SchemaRecord> recordList = goldenEntitySchemaMap.get(entity);
     	if(recordList != null)
     	{
