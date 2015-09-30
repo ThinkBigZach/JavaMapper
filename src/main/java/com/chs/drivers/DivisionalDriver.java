@@ -77,8 +77,6 @@ public DivisionalDriver(String[] args) {
 	validEntityNames = new ArrayList<String>();
 }
 
-
-
     private void getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if(pathToControl.contains("data/*")){
