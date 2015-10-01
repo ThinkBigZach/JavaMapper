@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DivisionalDriver implements Driver {
@@ -126,7 +127,7 @@ public DivisionalDriver(String[] args) {
     }
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
-//        System.out.println("WRITING FILE FOR ENTITY " + entity);
+        System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
         String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
@@ -135,17 +136,11 @@ public DivisionalDriver(String[] args) {
         if(!fs.exists(new Path(entityOutpath))){
             fs.mkdirs(new Path(entityOutpath));
         }
-        if(!fs.exists(new Path(errOutpath))){
-            fs.mkdirs(new Path(errOutpath));
-        }
-        if(!fs.exists(new Path(errFileNameMili))){
-            fs.createNewFile(new Path(errFileNameMili));
-        }
         if(!fs.exists(new Path(outFileNameMili))){
             fs.createNewFile(new Path(outFileNameMili));
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
-        FSDataOutputStream err = fs.append(new Path(errFileNameMili));
+        FSDataOutputStream err = null;
         for(String path : paths) {
 
             String jobId = getJobIdFromPaths(path);
@@ -156,9 +151,9 @@ public DivisionalDriver(String[] args) {
             String line = "";
             int lineCount = 0;
             String headerInfo = null;
-            String regex = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
             boolean needsProcess = removePII(schemas.get(entity.toLowerCase()));
+            Pattern validPattern = null;
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
@@ -172,7 +167,7 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 if(lineCount == 1){
-                       regex = getPatternMatch(line.replaceAll(RECORD_SEPARATOR, ""));
+                     validPattern = Pattern.compile(getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                 	String cleanLine = replaceCRandLF(line);
@@ -180,19 +175,34 @@ public DivisionalDriver(String[] args) {
                 	{
                 		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
                 	}
-                	boolean isGoodLine = Pattern.matches(regex, cleanLine);
+                    Matcher m = validPattern.matcher(cleanLine);
+                	boolean isGoodLine = m.matches();
                     cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
+
                 	if(cl_int == he_int + 3 && isGoodLine) {
-                		out.write((cleanLine + "\n").getBytes());
+                        out.write((cleanLine + "\n").getBytes());
                 	}
-                	else {                		
+                	else {
+                        if(!fs.exists(new Path(errOutpath))){
+                            fs.mkdirs(new Path(errOutpath));
+                        }
+                        if(!fs.exists(new Path(errFileNameMili))){
+                            fs.createNewFile(new Path(errFileNameMili));
+                            err = fs.append(new Path(errFileNameMili));
+                        }
+                        else if(err == null){
+                            err = fs.append(new Path(errFileNameMili));
+                        }
                 		err.write((cleanLine + "\n").getBytes());
                 	}
                 }
                 lineCount++;
             }
+        }
+        if(err != null){
+            err.close();
         }
         out.close();
     }
@@ -498,7 +508,7 @@ public DivisionalDriver(String[] args) {
                         }
                     } catch (Exception e) {
 //                    	System.out.println("PATH " + temp + "Does not exist!");
-                    	System.out.println("returnCode=FAILURE");
+//                    	System.out.println("returnCode=FAILURE");
                     }
                 }
             }
