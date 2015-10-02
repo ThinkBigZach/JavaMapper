@@ -1,5 +1,6 @@
 package com.chs.drivers;
 
+import com.chs.utils.PiiObfuscator;
 import com.chs.utils.SchemaMatcher;
 import com.chs.utils.SchemaRecord;
 import com.chs.utils.TDConnector;
@@ -152,7 +153,7 @@ public DivisionalDriver(String[] args) {
             int lineCount = 0;
             String headerInfo = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
-            boolean needsProcess = removePII(schemas.get(entity.toLowerCase()));
+            boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
             Pattern validPattern = null;
             while(fileScanner.hasNextLine()) {
 
@@ -173,7 +174,7 @@ public DivisionalDriver(String[] args) {
                 	String cleanLine = replaceCRandLF(line);
                 	if (needsProcess)
                 	{
-                		cleanLine = piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()));
+                		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                 	}
                     Matcher m = validPattern.matcher(cleanLine);
                 	boolean isGoodLine = m.matches();
@@ -227,45 +228,6 @@ public DivisionalDriver(String[] args) {
         }
         pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
         return pattern;
-    }
-        
-    private String piiProcess(String[] line, String[] headerInfo, List<SchemaRecord> schemarecords) 
-    {
-    	StringBuilder builder = new StringBuilder();
-		for(int i = 0; i < line.length; i++)
-		{
-			for(SchemaRecord sr : schemarecords)
-			{
-				if (sr.getColumn_name().equalsIgnoreCase(headerInfo[i].replaceAll(" ", "_")))
-				{
-					if (sr.getCommentstring() != null && sr.getCommentstring().equalsIgnoreCase("remove"))
-					{
-						builder.append("" + UNIT_SEPARATOR);
-					}
-					else
-					{
-						builder.append(line[i]).append(UNIT_SEPARATOR);
-					}
-				}
-			}
-		}
-        String val = builder.toString();
-        val = val.substring(0, val.lastIndexOf(UNIT_SEPARATOR));
-		return val;
-	}
-
-
-
-	private boolean removePII(List<SchemaRecord> records)
-    {
-    	for(SchemaRecord r : records)
-    	{
-    		if (r.getCommentstring() != null && r.getCommentstring().equalsIgnoreCase("remove"))
-    		{
-    			return true;
-    		}
-    	}
-    	return false;
     }
        
     
