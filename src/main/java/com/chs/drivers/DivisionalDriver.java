@@ -541,7 +541,7 @@ public DivisionalDriver(String[] args) {
 
             } catch (Exception e) {
 //                e.printStackTrace();
-//            	System.out.println("returnCode=FAILURE");
+            	System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
 //            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
@@ -549,7 +549,7 @@ public DivisionalDriver(String[] args) {
         }
         catch(IOException e){
 //            e.printStackTrace();
-//        	System.out.println("returnCode=FAILURE");
+        	System.out.println("returnCode=FAILURE");
         }
     }
 
