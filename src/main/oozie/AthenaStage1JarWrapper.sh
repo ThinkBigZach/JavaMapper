@@ -15,11 +15,14 @@ DIVISIONS_MAP=${10}
 Division_ids=`hadoop fs -cat $DIVISIONS_MAP`
 size=`echo "$Division_ids" | wc -l`
 newlist=()
+hadoop fs -copyToLocal hdfs:///user/athena/Athena1ETL.jar /home/athena/scripts/testing1/Athena1ETL.jar
 
 for id in $Division_ids 
 do
-
-newlist+=('`hadoop jar Athena1ETL.jar $SOURCE_PATH $ENTITY $OUT_PATH $PRACTICE_MAP $ENTITY_MAP $TD_HOST $TD_USER $TD_PASSWORD $TD_DATABASE $DIV_FLAG &`')
+TEMP_PATH1=`echo "$SOURCE_PATH" | cut -d"/" -f 1-4`
+TEMP_PATH2=`echo "$SOURCE_PATH" | cut -d"/" -f 6-`
+NEW_SOURCE="$TEMP_PATH1/$id/$TEMP_PATH2"
+newlist+=('`hadoop jar /user/athena/scripts/testing1/Athena1ETL.jar $NEW_SOURCE $ENTITY $OUT_PATH $PRACTICE_MAP $ENTITY_MAP $TD_HOST $TD_USER $TD_PASSWORD $TD_DATABASE $DIV_FLAG &`')
 
 done
 wait

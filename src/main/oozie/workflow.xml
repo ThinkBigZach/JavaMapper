@@ -41,12 +41,6 @@
             <name>tdUserIDPassword</name>
         </property>
         <property>
-            <name>sourceName</name>
-        </property>
-        <property>
-            <name>coordTimeInterval</name>
-        </property>
-        <property>
             <name>stageOneDataPartition</name>
         </property>
         <property>
@@ -68,9 +62,6 @@
                 <name>stageOneDivisionMappingFile</name>
         </property>
         <property>
-                <name>stageOneEntityMappingFile</name>
-        </property>
-	<property>
             <name>scriptsDir</name>
         </property>
         <property>
@@ -89,9 +80,6 @@
             <name>failureFile</name>
         </property>
         <property>
-            <name>toEmailAddress</name>
-        </property>
-        <property>
             <name>sourcePath</name>
         </property>
         <property>
@@ -99,9 +87,6 @@
         </property>
         <property>
             <name>outputPath</name>
-        </property>
-        <property>
-            <name>tdTargetDB</name>
         </property>
     </parameters>
 
@@ -130,7 +115,7 @@
     </decision>
     <!-- We are looking for a _FAILURE  file in their ../raw directory -->
     <!-- if we see it we begin deleting all files in the raw directory stage-1-->
-    <!-- if we DO NOT see it, we just end -->
+    <!-- if we DO NOT see it, we just egd -->
     <decision name="check-failure-file">
         <switch>
             <case to="clean-up-request">
@@ -160,7 +145,7 @@
         <fs>
     <!-- GARY CLEANS FOR TODAYS WORK    ....-->
             <move source="${controlFile}" target="${workingFile}"/>
-            <chmod path='${rawDataDir}/*' permissions='777' dir-files='false'/>
+            <chmod path='${stageOneRawDir}/*' permissions='777' dir-files='false'/>
         </fs>
         <!-- Even if this step is not needed, and it may not be, move to next step -->
         <ok to="retrieveControlJob"/>
@@ -294,7 +279,7 @@
             <file>job.properties#job.properties</file>
             <capture-output/>
         </java>
-<!--        <ok to="stage-1-part1"/>
+        <!--<ok to="stage-1-part1"/>
         <error to="stage-1-part1"/>-->
         <ok to="process-stage-0-files"/>
         <error to="process-stage-0-files"/>
@@ -306,22 +291,23 @@
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <exec>/usr/bin/bash</exec>
+            <argument>AthenaStage1JarWrapper.sh</argument>
             <argument>${sourcePath}</argument>
             <argument>${entity}</argument>
             <argument>${outputPath}</argument>
-            <argument>${practiceMap}</argument>
-            <argument>${entityMap}</argument>
+            <argument>${stageOnePracticeMappingFile}</argument>
+            <argument>${stageOneEntityMappingFile}</argument>
             <argument>${tdServer}</argument>
             <argument>${tdUserID}</argument>
             <argument>${tdUserIDPassword}</argument>
-            <argument>${tdTargetDB}</argument>
+            <argument>${tdStageDB}</argument>
             <argument>divisional</argument>
             <argument>${stageOneDivisionMappingFile}</argument>
             <file>${scriptsDir}/AthenaStage1JarWrapper.sh#AthenaStage1JarWrapper.sh</file>
 	    <capture-output/>
         </shell>
-        <ok to="validate-process-stage-0-files-success"/>
-        <error to="stage-1-notify-part-1-failed"/>
+        <ok to="end"/>
+        <error to="kill"/>
     </action>
 
     <!-- If the shell script above was a success it WILL NOT have returned a string like -->
