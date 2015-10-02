@@ -43,6 +43,7 @@ public class DivisionalDriver implements Driver {
 	private String out_path;
 	private String practiceMap_path;
 	private String entityMap_path;
+    private String divisional_path;
 	private String TD_Host;
 	private String TD_User;
 	private String TD_Password;
@@ -55,6 +56,7 @@ public class DivisionalDriver implements Driver {
     private ArrayList<Path> controlFiles;
     private ArrayList<String> errorArray;
     private ArrayList<String> validPracticeIDs;
+    private ArrayList<String> validDivisionIDs;
     private ArrayList<String> validEntityNames;
     private HashMap<String, ArrayList<String>> mapping;
     private Map<String, Integer> columnCounts;
@@ -68,16 +70,18 @@ public DivisionalDriver(String[] args) {
     inputParamEntity = args[1];
 	out_path = args[2];
 	practiceMap_path = args[3]; 
-	entityMap_path = args[4]; 
-	TD_Host = args[5];
-	TD_User = args[6]; 
-	TD_Password = args[7]; 
-	TD_Database = args[8];
+	entityMap_path = args[4];
+    divisional_path = args[5];
+	TD_Host = args[6];
+	TD_User = args[7];
+	TD_Password = args[8];
+	TD_Database = args[9];
 	manifestFiles = new ArrayList<Path>();
 	controlFiles = new ArrayList<Path>();
 	errorArray = new ArrayList<String>();
 	validPracticeIDs = new ArrayList<String>();
 	validEntityNames = new ArrayList<String>();
+    validDivisionIDs = new ArrayList<String>();
 }
 
 
@@ -143,12 +147,10 @@ public DivisionalDriver(String[] args) {
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         FSDataOutputStream err = null;
         for(String path : paths) {
-
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
             Scanner fileScanner = new Scanner(fs.open(new Path(path)));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
-
             String line = "";
             int lineCount = 0;
             String headerInfo = null;
@@ -187,7 +189,7 @@ public DivisionalDriver(String[] args) {
                 		String lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));
                 		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
-                		out.write((cleanLine + "\n").getBytes());
+                		out.write((lineclone + "\n").getBytes());
                 	}
                 	else {
                         if(!fs.exists(new Path(errOutpath))){
@@ -304,8 +306,21 @@ public DivisionalDriver(String[] args) {
         }
     }
 
+
+    private void getValidDivisionIds() throws IOException{
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(divisional_path))));
+        String line = "";
+        while((line = br.readLine()) != null){
+            validDivisionIDs.add(line.split("~")[0]);
+        }
+    }
+
     private  boolean isValidEntry(String practiceID, String entityName){
         return isValidPractice(practiceID) && isValidEntity(entityName);
+    }
+
+    private boolean isValidDivision(String divisionID){
+        return validDivisionIDs.contains(divisionID);
     }
 
     private  boolean isValidPractice(String practiceID){
@@ -432,6 +447,9 @@ public DivisionalDriver(String[] args) {
         }
     }
 
+
+
+
     private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
@@ -439,7 +457,7 @@ public DivisionalDriver(String[] args) {
 
         for(FileStatus status : fileStatuses){
 
-            if(status.isDirectory()) {
+            if(status.isDirectory() && isValidDivision(status.getPath().getName())) {
 
                 //Reads the directory and appends the date part
                 String temp = status.getPath().toString() + datePart;
@@ -487,6 +505,7 @@ public DivisionalDriver(String[] args) {
             mapping = new HashMap<String, ArrayList<String>>();
             this.getValidPracticeIds();
             this.getValidEntityNames();
+            this.getValidDivisionIds();
 //            System.out.println("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
 //            System.out.println("GOT MANIFEST PATHS");
@@ -502,7 +521,7 @@ public DivisionalDriver(String[] args) {
 //                System.out.println(((endWrite - startWrite)/1000) + " seconds to execute writing the files");
 
             } catch (Exception e) {
-//                e.printStackTrace();
+                e.printStackTrace();
             	System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
@@ -510,7 +529,7 @@ public DivisionalDriver(String[] args) {
             writeErrorFiles();
         }
         catch(IOException e){
-//            e.printStackTrace();
+            e.printStackTrace();
         	System.out.println("returnCode=FAILURE");
         }
     }

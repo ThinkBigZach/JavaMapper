@@ -1,5 +1,6 @@
 package com.chs.drivers;
 
+import com.chs.utils.PiiObfuscator;
 import com.chs.utils.SchemaRecord;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -31,6 +32,7 @@ public class DivisionalDriverTest {
             "/user/athena/data/financialdatafeed/finished/",
             "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv",
             "/enterprise/mappings/athena/athena_table_defs.csv",
+            "/enterprise/mappings/division_ids.csv",
             "dev.teradata.chs.net",
             "dbc",
             "dbc",
@@ -91,9 +93,8 @@ public class DivisionalDriverTest {
         records.add(new SchemaRecord("col1", "test", ""));
         records.add(new SchemaRecord("col2", "test", ""));
         records.add(new SchemaRecord("piiCol", "test", "remove"));
-        Method processPII = DivisionalDriver.class.getDeclaredMethod("piiProcess", String[].class, String[].class, List.class);
-        processPII.setAccessible(true);
-        String returnVal = processPII.invoke(divisionalDriver, line, header,records).toString();
+
+        String returnVal = PiiObfuscator.piiProcess(line, header, records, UNIT_SEPARATOR);
         assertEquals("data" + UNIT_SEPARATOR + "data", returnVal.trim());
 
         //Tests when working correctly
@@ -104,7 +105,7 @@ public class DivisionalDriverTest {
         records.add(new SchemaRecord("col2", "test", ""));
         records.add(new SchemaRecord("piiCol", "test", "remove"));
         try {
-            String returnVal2 = processPII.invoke(divisionalDriver, line2, header2, records2).toString();
+            String returnVal2 = PiiObfuscator.piiProcess(line2, header2, records2, UNIT_SEPARATOR);
             fail("Should have thrown an exception");
         }
         catch(Exception e){
@@ -118,16 +119,15 @@ public class DivisionalDriverTest {
         //Test if it does contain remove
         ArrayList<SchemaRecord> records = new ArrayList<SchemaRecord>();
         records.add(new SchemaRecord("test", "test", "remove"));
-        Method removePII = DivisionalDriver.class.getDeclaredMethod("removePII", List.class);
-        removePII.setAccessible(true);
-        Object o = removePII.invoke(divisionalDriver, records);
+
+        Object o = PiiObfuscator.hasRemoveComment(records);
         assertEquals("true", o.toString());
 
         //Test if it doesn't containt remove
         ArrayList<SchemaRecord> records2 = new ArrayList<SchemaRecord>();
         records.add(new SchemaRecord("test", "test", ""));
         records.add(null);
-        Object o2 = removePII.invoke(divisionalDriver, records2);
+        Object o2 = PiiObfuscator.hasRemoveComment(records2);
         assertEquals("false", o2.toString());
 
     }
