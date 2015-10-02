@@ -3,6 +3,7 @@ package com.chs.utils;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +32,8 @@ public class TDConnector {
 				conn = DriverManager.getConnection(url, user, password); //Connection w/user and password
 				if (!conn.isValid(0))
 				{
-//					throw new Exception("Connection to Teradata failed..");
 					System.out.println("returnCode=FAILURE");
+//					throw new Exception("Connection to Teradata failed..");
 				}
 			} catch (Exception e)
 			{
@@ -82,7 +83,7 @@ public class TDConnector {
 	{
 		Map<String, List<SchemaRecord>> schemaInfo = null;
 		try {
-			schemaInfo = new HashMap<String, List<SchemaRecord>>();//c.columnname
+			schemaInfo = new LinkedHashMap<String, List<SchemaRecord>>();//c.columnname
 			String query = String.format("SELECT c.tablename, c.columntitle, c.columnid, c.commentstring FROM dbc.columnsV c WHERE c.databasename = '%s' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3", database);
 			Connection conn = getConnection();
 			Statement stmt = conn.createStatement();

@@ -178,11 +178,15 @@ public DivisionalDriver(String[] args) {
                     Matcher m = validPattern.matcher(cleanLine);
                 	boolean isGoodLine = m.matches();
                     cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                    String cline = cleanLine;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
 
                 	if(cl_int == he_int + 3 && isGoodLine) {
-                        out.write((cleanLine + "\n").getBytes());
+                		String lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));
+                		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+//                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
+                		out.write((cleanLine + "\n").getBytes());
                 	}
                 	else {
                         if(!fs.exists(new Path(errOutpath))){
@@ -267,40 +271,31 @@ public DivisionalDriver(String[] args) {
     
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
-    	int colcounts = schemaColumns.length;
     	StringBuilder orderedScheme = new StringBuilder();
-    	Map<String, Integer> tempMap = new HashMap<String, Integer>();
-    	Map<Integer, String> outSchema = new TreeMap<Integer, String>();
-    	int count = 0;
-//    	System.out.println("COLUMN COUNT: " + colcounts + "\nCOLUMNS: " + schemaColumns.toString());
-    	if (!goldSchema.isEmpty())
-    	{
-//	    	for (Entry<String,String> kv : goldSchema.entrySet())
-//	    	{
-//	    		tempSchema.put(kv.getKey(), count);
-//	    		count++;
-//	    	}
-    		for (String headerColumn : headerinfo)
+    	Map<Integer,String> columnMap = new HashMap<Integer,String>();
+    	Map<String,Integer> headerMap = new HashMap<String,Integer>();
+//    	System.out.println(String.format("File column size: %s \n\tHeader column size: %s", schemaColumns.length, headerinfo.length));
+    	for (int i = 0; i < schemaColumns.length; i++)
+     	{
+//    		System.out.print("FILE: ");
+    		columnMap.put(i, schemaColumns[i]);
+//    		System.out.print(schemaColumns[i]);
+    		headerMap.put(headerinfo[i].replaceAll(" ", "_").toLowerCase(), i);
+//    		System.out.println(" <-> " + headerinfo[i]);
+//    		System.out.println(String.format("FILE: %s <-> %s", headerinfo[i], schemaColumns[i]));
+     	}
+    	for (Entry<String,Integer> kv : goldSchema.entrySet())
+     	{
+//    		System.out.println("GOLD KEY: " + kv.getKey());
+    		if (headerMap.containsKey(kv.getKey()))
     		{
-    			tempMap.put(headerColumn.toLowerCase(), goldSchema.get(headerColumn.toLowerCase()));
+    			int goldCol = headerMap.get(kv.getKey());
+    			String colValue = columnMap.get(goldCol);
+    			orderedScheme.append(colValue).append(UNIT_SEPARATOR);    			
     		}
-//	    	int id = 0;
-//    		for (String col : schemaColumns)
-//    		{
-//				//id = goldSchema.get();
-//				outSchema.put(id, col);    	
-//    		}    		
-    	}
-    	for (int i = 0; i < colcounts; i++)
-    	{
-//    		goldSchema.get(tempMap.get(i));
-    		outSchema.put(tempMap.get(schemaColumns[i].toLowerCase()), schemaColumns[i]);
-    	}
-    	for (Entry<Integer, String> kv : outSchema.entrySet())
-    	{
-    		orderedScheme.append(kv.getValue()).append(UNIT_SEPARATOR);    		
-    	}
-    	return orderedScheme.toString();
+     	}
+    	String schemaReorder = orderedScheme.substring(0, (orderedScheme.length() - 1));
+    	return schemaReorder;
     }
 
     private String getJobIdFromPaths(String path) {
@@ -315,7 +310,7 @@ public DivisionalDriver(String[] args) {
             }
         } catch (IOException e) {
 //            e.printStackTrace();
-        	System.out.println("returnCode=FAILURE");
+//        	System.out.println("returnCode=FAILURE");
         }
         return "";
 
@@ -546,15 +541,15 @@ public DivisionalDriver(String[] args) {
 
             } catch (Exception e) {
 //                e.printStackTrace();
-            	System.out.println("returnCode=FAILURE");
+//            	System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
 //            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
             writeErrorFiles();
         }
         catch(IOException e){
-//            System.out.println(e.getMessage());
-        	System.out.println("returnCode=FAILURE");
+//            e.printStackTrace();
+//        	System.out.println("returnCode=FAILURE");
         }
     }
 

@@ -3,6 +3,7 @@ package com.chs.utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -54,11 +55,13 @@ public class SchemaMatcher {
         	if (schemaMatch(goldenMap, compareMap, goldenMap.size(), entity))
         	{
         		//Successful match
-        		tripwire = true;        		
+        		tripwire = true;    
+//        		System.out.println("SCHEMA MATCHED");
         	}
         	else
         	{
 //        		LOG.info("==========Schema match failed============");       
+//        		System.out.println("SCHEMA NOT MATCHED");
         	}
         } else {
 //        	LOG.info("====SCHEMA COULD NOT BE MATCHED");
@@ -69,13 +72,14 @@ public class SchemaMatcher {
     
     public static Map<String, Integer> getOrderingSchema(String entity)
     {
-    	Map<String, Integer> tempmap = new HashMap<String, Integer>();
+    	Map<String, Integer> tempmap = new LinkedHashMap<String, Integer>();
     	List<SchemaRecord> recordList = goldenEntitySchemaMap.get(entity);
     	if(recordList != null)
     	{
     		int count = 0;
     		for (SchemaRecord sr : recordList)
     		{
+//    			System.out.println(String.format("GOLD MAPPING: %s <-> %s", sr.getColumn_name().toLowerCase(), count));
     			tempmap.put(sr.getColumn_name().toLowerCase(), count);
     			count++;
     		}

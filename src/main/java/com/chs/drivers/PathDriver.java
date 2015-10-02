@@ -92,8 +92,8 @@ public class PathDriver implements Driver {
     		}
     	}
     	if(!hasControl){
-//    		throw new FileNotFoundException("The input directory does not contain a control file");
     		System.out.println("returnCode=FAILURE");
+//    		throw new FileNotFoundException("The input directory does not contain a control file");
     	}
     	BufferedReader br=new BufferedReader(new InputStreamReader(fs.open(stat.getPath())));
         String line=br.readLine();
