@@ -178,8 +178,8 @@ public DivisionalDriver(String[] args) {
                 	}
                     Matcher m = validPattern.matcher(cleanLine);
                 	boolean isGoodLine = m.matches();
+                	String cline = cleanLine;
                     cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                    String cline = cleanLine;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
 
