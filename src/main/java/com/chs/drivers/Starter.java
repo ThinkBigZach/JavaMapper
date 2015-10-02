@@ -9,11 +9,12 @@ public class Starter {
 	//args[2] -- outpath like this -- /user/athena/financialdatafeed/extracted/finished
 	//args[3] -- valid practice map location like this --/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv
 	//args[4] -- valid entity map location like this -- /enterprise/mappings/athena/athena_table_defs.csv
-	//TD_HOST - args[5] -dev.teradata.chs.net
-	//TD_USER - args[6] - dbc
-	//TD_PSWD - args[7] - dbc
-	//TD_DATABASE - args[8] -- EDW_ATHENA_STAGE
-	//divisional OR path as args[9]
+	//args[5] -- valid division map location like -- /enterprise/mappings/athena/chs-division-id-mapping-athena.csv
+	//TD_HOST - args[6] -dev.teradata.chs.net
+	//TD_USER - args[7] - dbc
+	//TD_PSWD - args[8] - dbc
+	//TD_DATABASE - args[9] -- EDW_ATHENA_STAGE
+	//divisional OR path as args[10]
 	public static void main(String[] args) throws Exception {
 		if(args.length != 11) {
 			System.out.println("returnCode=FAILURE");
