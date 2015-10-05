@@ -83,6 +83,60 @@ public class DivisionalDriverTest {
     	String out = (String) methodReorderAlongSchema.invoke(divisionalDriver, goldMap, columns.split(UNIT_SEPARATOR), header.split(UNIT_SEPARATOR));
     	assertTrue(correctOutput.equals(out));
     }
+    
+    @Test
+    public void testReorderAlongSchema_ForMismatch() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+    	String UNIT_SEPARATOR = "\037";
+    	String header = "Allergy ID" + UNIT_SEPARATOR + "Type" + UNIT_SEPARATOR + "Patient ID";
+    	String columns = "6574" + UNIT_SEPARATOR + "DT" + UNIT_SEPARATOR + "000";
+    	String correctout = "000" + UNIT_SEPARATOR + "6574" + UNIT_SEPARATOR + "DT";
+    	Map<String,Integer> goldMap = new LinkedHashMap<String,Integer>();
+    	goldMap.put("patient_id", 0);
+    	goldMap.put("allergy_id", 1);
+    	goldMap.put("tyep", 2);
+    	Method methodReorderAlongSchema = DivisionalDriver.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
+    	methodReorderAlongSchema.setAccessible(true);
+    	String out = (String) methodReorderAlongSchema.invoke(divisionalDriver, goldMap, columns.split(UNIT_SEPARATOR), header.split(UNIT_SEPARATOR));
+    	assertNotEquals(out, correctout);
+    }
+    
+    @Test
+    public void testNeedsDynamicSchemaReorder() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+    	String UNIT_SEPARATOR = "\037";
+    	String header = "Allergy ID" + UNIT_SEPARATOR + "Type" + UNIT_SEPARATOR + "Patient ID" + UNIT_SEPARATOR + "Chart ID";
+    	String columns = "6574" + UNIT_SEPARATOR + "DT" + UNIT_SEPARATOR + "8928" + UNIT_SEPARATOR + "32";
+    	Map<String,Integer> goldMap = new LinkedHashMap<String,Integer>();
+    	goldMap.put("allergy_id", 0);
+		goldMap.put("type", 1);
+		goldMap.put("patient_id", 2);
+		goldMap.put("chart_id", 3);
+		//String[] cols = columns.split(UNIT_SEPARATOR);
+		String[] heads = header.split(UNIT_SEPARATOR);
+		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String[].class);
+		methodNeedsDynamicSchemaReorder.setAccessible(true);
+		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMap, heads);
+		assertFalse(out);
+    }
+    
+    @Test
+    public void testNeedsDynamicSchemaReorder_Needed() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+    	String UNIT_SEPARATOR = "\037";
+    	String header = "Allergy ID" + UNIT_SEPARATOR + "Type" + UNIT_SEPARATOR + "Patient ID" + UNIT_SEPARATOR + "Chart ID";
+    	String columns = "6574" + UNIT_SEPARATOR + "DT" + UNIT_SEPARATOR + "8928" + UNIT_SEPARATOR + "32";
+    	Map<String,Integer> goldMapReorder = new LinkedHashMap<String,Integer>();
+    	goldMapReorder.put("patient_id", 0);
+    	goldMapReorder.put("allergy_id", 1);
+    	goldMapReorder.put("type", 2);
+    	goldMapReorder.put("chart_id", 3);
+    	String[] heads = header.split(UNIT_SEPARATOR);
+		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String[].class);
+		methodNeedsDynamicSchemaReorder.setAccessible(true);
+		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMapReorder, heads);
+		assertTrue(out);
+    }
 
     @Test
     public void testProcessPii() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException{

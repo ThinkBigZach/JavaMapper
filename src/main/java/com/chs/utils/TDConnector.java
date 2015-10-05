@@ -102,7 +102,6 @@ public class TDConnector {
 				}
 				else
 				{
-					String types = set.getString(3);
 					SchemaRecord schema = new SchemaRecord(fixedTitle, set.getString(3), set.getString(4));
 					List<SchemaRecord> schemarec = new ArrayList<SchemaRecord>();
 					schemarec.add(schema);

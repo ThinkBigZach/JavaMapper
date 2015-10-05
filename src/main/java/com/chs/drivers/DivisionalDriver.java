@@ -185,7 +185,11 @@ public DivisionalDriver(String[] args) {
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
 
                 	if(cl_int == he_int + 3 && isGoodLine) {
-                		String lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));
+                		String lineclone = cline;
+                		if (needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR)))
+                		{
+                			lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
+                		}
                 		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
                 		out.write((lineclone + "\n").getBytes());
@@ -212,7 +216,20 @@ public DivisionalDriver(String[] args) {
         }
         out.close();
     }
-  
+
+    private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String[] headerinfo)
+    {
+    	for(int i = 0; i < headerinfo.length; i++)
+    	{
+    		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
+    		if (goldSchema.get(cleanhead) != i)
+    		{
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
     	StringBuilder orderedScheme = new StringBuilder();
@@ -221,23 +238,23 @@ public DivisionalDriver(String[] args) {
 //    	System.out.println(String.format("File column size: %s \n\tHeader column size: %s", schemaColumns.length, headerinfo.length));
     	for (int i = 0; i < schemaColumns.length; i++)
      	{
-//    		System.out.print("FILE: ");
     		columnMap.put(i, schemaColumns[i]);
-//    		System.out.print(schemaColumns[i]);
     		headerMap.put(headerinfo[i].replaceAll(" ", "_").toLowerCase(), i);
-//    		System.out.println(" <-> " + headerinfo[i]);
-//    		System.out.println(String.format("FILE: %s <-> %s", headerinfo[i], schemaColumns[i]));
      	}
     	for (Entry<String,Integer> kv : goldSchema.entrySet())
      	{
 //    		System.out.println("GOLD KEY: " + kv.getKey());
     		if (headerMap.containsKey(kv.getKey()))
     		{
-    			int goldCol = headerMap.get(kv.getKey());
+    			int goldCol = headerMap.remove(kv.getKey());//headerMap.get(kv.getKey());
     			String colValue = columnMap.get(goldCol);
     			orderedScheme.append(colValue).append(UNIT_SEPARATOR);    			
     		}
      	}
+    	if(!headerMap.isEmpty())
+    	{
+    		System.out.println("returnCode=FAILURE");
+    	}
     	String schemaReorder = orderedScheme.substring(0, (orderedScheme.length() - 1));
     	return schemaReorder;
     }

@@ -50,7 +50,7 @@ public class SchemaMatcher {
 //			e.printStackTrace();
 			System.out.println("returnCode=FAILURE");
 		}
-        if ((goldenMap != null && compareMap != null))
+        if ((goldenMap != null && compareMap != null))//compareMap.length >= goldenMap.length
         {
         	if (schemaMatch(goldenMap, compareMap, goldenMap.size(), entity))
         	{
