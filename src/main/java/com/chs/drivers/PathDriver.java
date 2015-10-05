@@ -48,7 +48,7 @@ public class PathDriver implements Driver {
 		FileSystem fs;
 		try {
 			fs = FileSystem.get(new Configuration());
-			FileStatus[] status = fs.listStatus(new Path("hdfs://" + input_path));
+			FileStatus[] status = fs.listStatus(new Path(input_path));
 			getJobID(fs, status);
 			for(FileStatus stat : status) {
 				if (stat.isFile()) {
