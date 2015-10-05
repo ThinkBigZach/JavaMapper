@@ -424,8 +424,9 @@ public DivisionalDriver(String[] args) {
     }
     
     private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
-//        System.out.println(pathToFiles);
-        if(fs.exists(pathToFiles)) {
+        String divisionId = pathToFiles.toString().substring( pathToFiles.toString().indexOf("/data/") + 6);
+        divisionId = divisionId.substring(0, divisionId.indexOf("/"));
+        if(fs.exists(pathToFiles) && isValidDivision(divisionId)) {
             FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
             for (FileStatus status : fileStatuses) {
                 if (status.isDirectory()) {
