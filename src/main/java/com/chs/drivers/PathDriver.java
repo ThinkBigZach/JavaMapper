@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import com.chs.utils.ChsUtils;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,10 +16,8 @@ import java.util.Scanner;
 
 public class PathDriver implements Driver {
 
-    private final String CR = "\r"; //carriage return
-    private final String LF = "\n"; //line feed
-    private final String UNIT_SEPARATOR = "\037";
-    private final String RECORD_SEPARATOR = "\036";
+    private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
+    private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
 	
 	private String input_path;
 	private String entity;
@@ -66,7 +66,7 @@ public class PathDriver implements Driver {
 //			                    TODO: Column Validation Method
 			                }
 			                if (lineCount > 3) {
-			                    String fixedLine = replaceCRandLF(line);
+			                    String fixedLine = ChsUtils.replaceCRandLF(line);
 			                    fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobID + UNIT_SEPARATOR + filename;
 			                    out.write((fixedLine + "\n").getBytes());
 			                }
@@ -102,10 +102,4 @@ public class PathDriver implements Driver {
         br.close();		
 	}
 
-	private  String replaceCRandLF(String line){
-        line = line.replaceAll(CR, "");
-        line = line.replaceAll(LF, "");
-        line = line.replaceAll(RECORD_SEPARATOR, "");
-        return line;
-    }
 }

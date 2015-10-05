@@ -1,5 +1,6 @@
 package com.chs.drivers;
 
+import com.chs.utils.ChsUtils;
 import com.chs.utils.PiiObfuscator;
 import com.chs.utils.SchemaMatcher;
 import com.chs.utils.SchemaRecord;
@@ -31,10 +32,8 @@ import java.util.regex.Pattern;
 public class DivisionalDriver implements Driver {
 
     //ascii replacement args
-    private final String CR = "\r"; //carriage return
-    private final String LF = "\n"; //line feed
-    private final String UNIT_SEPARATOR = "\037";
-    private static final String RECORD_SEPARATOR = "\036";
+    private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
+    private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
 	
 	//Constructor Args
 	private String input_path;
@@ -170,10 +169,10 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 if(lineCount == 1){
-                     validPattern = Pattern.compile(getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
+                     validPattern = Pattern.compile(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
-                	String cleanLine = replaceCRandLF(line);
+                	String cleanLine = ChsUtils.replaceCRandLF(line);
                 	if (needsProcess)
                 	{
                 		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
@@ -213,26 +212,7 @@ public DivisionalDriver(String[] args) {
         }
         out.close();
     }
-
-
-    private String getPatternMatch(String header){
-        String[] headerInfo = header.split(UNIT_SEPARATOR);
-        String varcharMatch = ".*";
-        String numberMatch = "[+-]?(\\d*\\.?\\d*)";
-        String pattern = "";
-        for(String s : headerInfo){
-            if(s.equalsIgnoreCase("NUMBER")){
-                    pattern += numberMatch + UNIT_SEPARATOR;
-            }
-            else{
-                pattern += varcharMatch + UNIT_SEPARATOR;
-            }
-        }
-        pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
-        return pattern;
-    }
-       
-    
+  
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
     	StringBuilder orderedScheme = new StringBuilder();
@@ -361,10 +341,10 @@ public DivisionalDriver(String[] args) {
 
                 if (current_line > 3 && type.equalsIgnoreCase("MANIFEST")) {
                     processLine(p, line);
-                    myFile += replaceCRandLF(line) + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
+                    myFile += ChsUtils.replaceCRandLF(line) + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
                 }
                 else if(type.equalsIgnoreCase("CONTROL")){
-                	String fixedLine = replaceCRandLF(line);
+                	String fixedLine = ChsUtils.replaceCRandLF(line);
                 	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
                     myFile += fixedLine + "\n";
                 }
@@ -380,7 +360,7 @@ public DivisionalDriver(String[] args) {
     	String practiceID;
 
         line = line.replaceFirst("^\\s+", "");
-        line =  replaceCRandLF(line);
+        line =  ChsUtils.replaceCRandLF(line);
         String splitValue[] = line.split(UNIT_SEPARATOR);
         if (splitValue.length > 1) {
 
@@ -414,13 +394,6 @@ public DivisionalDriver(String[] args) {
             newList.add(newPath + fileName);
             mapping.put(entity.toUpperCase(), newList);
         }
-    }
-
-    private  String replaceCRandLF(String line){
-        line = line.replaceAll(CR, " ");
-        line = line.replaceAll(LF, "");
-        line = line.replaceAll(RECORD_SEPARATOR, "");
-        return line;
     }
     
     private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
