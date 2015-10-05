@@ -17,10 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -329,12 +327,12 @@ public class DivisionalDriverTest {
     public void testRemoveUnusedControlFiles() throws NoSuchMethodException,
             InvocationTargetException, IllegalAccessException, NoSuchFieldException {
 
-        Set<Path> controlFiles = new LinkedHashSet<Path>();
+        List<Path> controlFiles = new ArrayList<Path>();
         controlFiles.add(new Path("/user/financialDataFeed/data/*/athena/finished/2015-09-01"));
         controlFiles.add(new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01"));
         controlFiles.add(new Path("/user/financialDataFeed/data/1122/athena/finished/2015-09-01"));
 
-        Set<Path> manifestFiles = new LinkedHashSet<Path>();
+        List<Path> manifestFiles = new ArrayList<Path>();
         manifestFiles.add(new Path("1111"));
         manifestFiles.add(new Path("*"));
 
@@ -350,7 +348,7 @@ public class DivisionalDriverTest {
         method.setAccessible(true);
         method.invoke(divisionalDriver);
 
-        Set<Path> expectedList = new LinkedHashSet<Path>();
+        List<Path> expectedList = new ArrayList<Path>();
         expectedList.add(new Path("/user/financialDataFeed/data/*/athena/finished/2015-09-01"));
         expectedList.add(new Path("/user/financialDataFeed/data/1111/athena/finished/2015-09-01"));
 

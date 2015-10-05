@@ -1,9 +1,5 @@
 package com.chs.utils;
 
-import java.util.List;
-
-import com.google.common.base.Splitter;
-
 public class ChsUtils {
     public static final String CR = "\r"; //carriage return
     public static final String LF = "\n"; //line feed
@@ -18,7 +14,7 @@ public class ChsUtils {
     }
     
     public static String getPatternMatch(String header){
-        List<String> headerInfo = Splitter.on(UNIT_SEPARATOR).splitToList(header);
+        String[] headerInfo = header.split(UNIT_SEPARATOR);
         String varcharMatch = ".*";
         String numberMatch = "[+-]?(\\d*\\.?\\d*)";
         String pattern = "";
