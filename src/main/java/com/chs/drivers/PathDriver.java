@@ -12,13 +12,16 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PathDriver implements Driver {
 
     private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
     private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
-	
+	private ArrayList<String> validPracticeIDs;
+	private ArrayList<String> validDivisionIDs;
+	private ArrayList<String> validEntityNames;
 	private String input_path;
 	private String entity;
 	private String inputParamEntity;
@@ -42,6 +45,18 @@ public class PathDriver implements Driver {
 			TD_User = args[6]; 
 			TD_Password = args[7]; 
 			TD_Database = args[8];
+		validPracticeIDs = new ArrayList<String>();
+		validEntityNames = new ArrayList<String>();
+		validDivisionIDs = new ArrayList<String>();
+		FileSystem fs = null;
+		try {
+			fs = FileSystem.newInstance(new Configuration());
+			ChsUtils.getValidEntityNames(entityMap_path, out_path, validEntityNames, fs);
+			ChsUtils.getValidPracticeIds(practiceMap_path, validPracticeIDs, fs);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void start() {
@@ -55,7 +70,7 @@ public class PathDriver implements Driver {
 					String filename = stat.getPath().getName();
 					if(!filename.equalsIgnoreCase("CONTROL.TXT")){
 						String current_entity = filename.split(".")[0];
-						FSDataOutputStream out = fs.append(new Path(out_path + "/" + current_entity + "/" + ".txt"));
+						FSDataOutputStream out = fs.append(new Path(out_path + "/" + ChsUtils.appendTimeAndExtension(current_entity)));
 						Scanner fileScanner = new Scanner(fs.open(stat.getPath()));
 			            fileScanner.useDelimiter(RECORD_SEPARATOR);
 			            String line = "";

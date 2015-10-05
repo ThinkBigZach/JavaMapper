@@ -7,6 +7,8 @@ import com.chs.utils.SchemaRecord;
 import com.chs.utils.TDConnector;
 import com.google.common.base.Splitter;
 
+import jregex.Matcher;
+import jregex.Pattern;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -29,8 +31,8 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 public class DivisionalDriver implements Driver {
 
@@ -136,9 +138,9 @@ public DivisionalDriver(String[] args) {
     private void readAndLoadEntities(Set<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
-        String outFileNameMili = appendTimeAndExtension(entityOutpath + entity);
+        String outFileNameMili = ChsUtils.appendTimeAndExtension(entityOutpath + entity);
         String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
-        String errFileNameMili = appendTimeAndExtension(errOutpath + entity);
+        String errFileNameMili = ChsUtils.appendTimeAndExtension(errOutpath + entity);
 
         if(!fs.exists(new Path(entityOutpath))){
             fs.mkdirs(new Path(entityOutpath));
@@ -148,6 +150,8 @@ public DivisionalDriver(String[] args) {
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         FSDataOutputStream err = null;
+        Pattern validPattern = null;
+        Matcher matcher = null;
         for(String path : paths) {
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
@@ -157,8 +161,11 @@ public DivisionalDriver(String[] args) {
             int lineCount = 0;
             String headerInfo = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
-            boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
-            Pattern validPattern = null;
+            boolean needsProcess = false;
+            if(schemas.containsKey(entity.toLowerCase())) {
+               needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
+            }
+
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
@@ -172,7 +179,11 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 if(lineCount == 1){
-                     validPattern = Pattern.compile(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
+
+                    if(validPattern == null) {
+                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
+                        matcher = validPattern.matcher("");
+                    }
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                 	String cleanLine = ChsUtils.replaceCRandLF(line);
@@ -180,10 +191,11 @@ public DivisionalDriver(String[] args) {
                 	{
                 		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                 	}
-                    Matcher m = validPattern.matcher(cleanLine);
-                	boolean isGoodLine = m.matches();
-                	int cl_int = Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
-                	int he_int = Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
+                	boolean isGoodLine = matcher.matches(cleanLine);
+                	String cline = cleanLine;
+                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                    int cl_int = Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
+                    int he_int = Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
                 	if(cl_int == he_int + 3 && isGoodLine) {
                 		String lineclone = cleanLine;
                 		if (needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR)))
@@ -341,7 +353,7 @@ public DivisionalDriver(String[] args) {
 
     private void writeOutFileLocations(Set<Path> files, String type) throws IOException {
         String manconOutpath = out_path +"/" +  type.toLowerCase() + "/"  + type;
-        String outFileNameMili = appendTimeAndExtension(manconOutpath);
+        String outFileNameMili = ChsUtils.appendTimeAndExtension(manconOutpath);
         if (!fs.exists(new Path(outFileNameMili))) {
             fs.createNewFile(new Path(outFileNameMili));
         }
@@ -375,7 +387,6 @@ public DivisionalDriver(String[] args) {
     
     private void processLine(Path p, String line) {
     	String practiceID;
-
         line = line.replaceFirst("^\\s+", "");
         line =  ChsUtils.replaceCRandLF(line);
         List<String> splitValue = Splitter.on(UNIT_SEPARATOR).splitToList(line);
@@ -414,7 +425,7 @@ public DivisionalDriver(String[] args) {
     }
     
     private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
-        String divisionId = pathToFiles.toString().substring( pathToFiles.toString().indexOf("/data/") + 6);
+        String divisionId = pathToFiles.toString().substring(pathToFiles.toString().indexOf("/data/") + 6);
         divisionId = divisionId.substring(0, divisionId.indexOf("/"));
         if(fs.exists(pathToFiles) && isValidDivision(divisionId)) {
             FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
@@ -494,8 +505,11 @@ public DivisionalDriver(String[] args) {
         try {
             fs = FileSystem.newInstance(new Configuration());
             mapping = new HashMap<String, Set<String>>();
-            this.getValidPracticeIds();
-            this.getValidEntityNames();
+            ChsUtils.getValidPracticeIds(practiceMap_path, validPracticeIDs, fs);
+            ChsUtils.getValidEntityNames(entityMap_path, out_path, validEntityNames, fs);
+//            this.getValidPracticeIds();
+//            this.getValidEntityNames();
+
             this.getValidDivisionIds();
             System.out.println("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
@@ -545,11 +559,5 @@ public DivisionalDriver(String[] args) {
         }
 	}
 
-	private String appendTimeAndExtension(String s) {
-
-        String time = "."+System.currentTimeMillis();
-        return s += time + ".txt";
-
-    }
 
 }

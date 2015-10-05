@@ -365,12 +365,10 @@ public class DivisionalDriverTest {
             InvocationTargetException, IllegalAccessException {
 
         String input = "filename";
-        Method method = DivisionalDriver.class.getDeclaredMethod("appendTimeAndExtension", String.class);
-        method.setAccessible(true);
-        String output = (String) method.invoke(divisionalDriver, input);
-
+//        Method method = DivisionalDriver.class.getDeclaredMethod("appendTimeAndExtension", String.class);
+//        method.setAccessible(true);
+        String output = ChsUtils.appendTimeAndExtension(input);
         assertNotNull(output);
-
         String pattern = "(filename)(\\.\\d{13})(\\.txt)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(output);

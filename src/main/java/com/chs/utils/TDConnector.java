@@ -85,6 +85,7 @@ public class TDConnector {
 		try {
 			schemaInfo = new LinkedHashMap<String, List<SchemaRecord>>();//c.columnname
 			String query = String.format("SELECT c.tablename, c.columntitle, c.columnid, c.commentstring FROM dbc.columnsV c WHERE c.databasename = '%s' and lower(tablename) = tablename (casespecific) and coalesce(commentstring,'') not in ('Ignore','ETL') and coalesce(columntitle,'') not in ('') order by 1,3", database);
+
 			Connection conn = getConnection();
 			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery(query);
