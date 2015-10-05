@@ -283,9 +283,27 @@
         <error to="stage-1-part1"/>-->
         <ok to="process-stage-0-files"/>
         <error to="process-stage-0-files"/>
-
     </action>
 
+    <action name='process-stage-0-files'>
+         <java>
+             <job-tracker>${jobTracker}</job-tracker>
+             <name-node>${nameNode}</name-node>
+             <configuration>
+                 <property>
+                     <name>mapred.queue.name</name>
+                     <value>default</value>
+                 </property>
+             </configuration>
+             <main-class>com.App</main-class>
+             <!--
+             <arg>arg1</arg>
+             <arg>arg2</arg> -->
+         </java>
+         <ok to="end"/>
+         <error to="kill"/>
+     </action>
+<!--
     <action name='process-stage-0-files'>
         <shell xmlns="uri:oozie:shell-action:0.1">
             <job-tracker>${jobTracker}</job-tracker>
@@ -309,6 +327,7 @@
         <ok to="end"/>
         <error to="kill"/>
     </action>
+    -->
 
     <!-- If the shell script above was a success it WILL NOT have returned a string like -->
     <!-- returnCode=FAILURE  so we test for it here before moving on, else cleanly exist -->
