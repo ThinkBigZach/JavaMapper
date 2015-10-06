@@ -37,7 +37,9 @@ public class DivisionalDriverTest {
             "dev.teradata.chs.net",
             "dbc",
             "dbc",
-            "EDW_ATHENA_STAGE divisional"};
+            "EDW_ATHENA_STAGE",
+            "divisional",
+            "standard"};
 
     private DivisionalDriver divisionalDriver = new DivisionalDriver(args);
     Class<?> divisionalDriverClass = divisionalDriver.getClass();
