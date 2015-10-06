@@ -170,7 +170,7 @@ public DivisionalDriver(String[] args) {
                 if(lineCount == 0){
                     headerInfo = line;
 
-                    needsReorder = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR));
+                    needsReorder = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo);
                     if (!validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
                     	errorArray.add(path);
@@ -231,17 +231,22 @@ public DivisionalDriver(String[] args) {
         out.close();
     }
 
-    private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String[] headerinfo)
+    private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String headerinfo)
     {
-    	for(int i = 0; i < headerinfo.length; i++)
-    	{
-    		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
-    		if (goldSchema.get(cleanhead) == null || goldSchema.get(cleanhead) != i)
-    		{
-    			return true;
-    		}
-    	}
-    	return false;
+    	headerinfo = headerinfo.replace(" ", "_");
+    	String goldSchemaHead = goldSchema.keySet().toString().replaceAll(", ", UNIT_SEPARATOR);
+    	goldSchemaHead = goldSchemaHead.substring(1, goldSchemaHead.length()-1);
+//    	System.out.println(headerinfo + "\n" + goldSchemaHead);
+    	return !headerinfo.equalsIgnoreCase(goldSchemaHead);
+//    	for(int i = 0; i < headerinfo.length; i++)
+//    	{
+//    		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
+//    		if (goldSchema.get(cleanhead) == null || goldSchema.get(cleanhead) != i)
+//    		{
+//    			return true;
+//    		}
+//    	}
+//    	return false;
     }
     
     private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)

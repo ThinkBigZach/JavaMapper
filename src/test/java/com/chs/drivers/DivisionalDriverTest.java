@@ -114,11 +114,11 @@ public class DivisionalDriverTest {
 		goldMap.put("type", 1);
 		goldMap.put("patient_id", 2);
 		goldMap.put("chart_id", 3);
-		//String[] cols = columns.split(UNIT_SEPARATOR);
-		String[] heads = header.split(UNIT_SEPARATOR);
-		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String[].class);
+//		String[] cols = columns.split(UNIT_SEPARATOR);
+//		String[] heads = header.split(UNIT_SEPARATOR);
+		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
 		methodNeedsDynamicSchemaReorder.setAccessible(true);
-		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMap, heads);
+		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMap, header);
 		assertFalse(out);
     }
     
@@ -133,10 +133,10 @@ public class DivisionalDriverTest {
     	goldMapReorder.put("allergy_id", 1);
     	goldMapReorder.put("type", 2);
     	goldMapReorder.put("chart_id", 3);
-    	String[] heads = header.split(UNIT_SEPARATOR);
-		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String[].class);
+//    	String[] heads = header.split(UNIT_SEPARATOR);
+		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
 		methodNeedsDynamicSchemaReorder.setAccessible(true);
-		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMapReorder, heads);
+		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMapReorder, header);
 		assertTrue(out);
     }
 
