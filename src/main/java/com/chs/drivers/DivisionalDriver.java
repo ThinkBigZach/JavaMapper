@@ -257,16 +257,15 @@ public DivisionalDriver(String[] args) {
 
         for(Integer i : numberCols){
             try {
-                if (matchLine[i].contains(".")) {
+                if (!matchLine[i].equals("") && matchLine[i].contains(".")) {
                     try {
-                        double d = Double.parseDouble(matchLine[i]);
+                        double d = Double.parseDouble(matchLine[i].trim());
                     } catch (NumberFormatException e) {
                         return false;
                     }
-
-                } else {
+                } else if(!matchLine[i].equals("")) {
                     try {
-                        int index = Integer.parseInt(matchLine[i]);
+                        int index = Integer.parseInt(matchLine[i].trim());
                     } catch (NumberFormatException e) {
                         return false;
                     }
@@ -274,6 +273,9 @@ public DivisionalDriver(String[] args) {
             }
             catch(IndexOutOfBoundsException e){
                 //Catches the nullpointer to make sure the data still writes if null
+            }
+            catch(NullPointerException e){
+
             }
             catch(Exception e){
                 return false;
