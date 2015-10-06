@@ -182,9 +182,9 @@ public DivisionalDriver(String[] args) {
                 if(lineCount == 1){
                     headerTypes = line;
                     numericColumnIndices = getNumberIndices(headerTypes);
-                    if(validPattern == null && regex_flag.equalsIgnoreCase("verbose")) {
-                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
-                        matcher = validPattern.matcher("");
+                    if(regex_flag.equalsIgnoreCase("validate")) {
+//                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
+//                        matcher = validPattern.matcher("");
                         needsRegex = true;
                     }
                 }
@@ -272,7 +272,7 @@ public DivisionalDriver(String[] args) {
                 }
             }
             catch(IndexOutOfBoundsException e){
-                //Catches the nullpointer to make sure the data still writes
+                //Catches the nullpointer to make sure the data still writes if null
             }
             catch(Exception e){
                 return false;
@@ -572,7 +572,7 @@ public DivisionalDriver(String[] args) {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("")) {
+                    if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("*")) {
                         this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
