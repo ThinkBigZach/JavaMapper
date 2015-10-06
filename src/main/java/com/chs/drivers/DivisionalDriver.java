@@ -111,10 +111,11 @@ public DivisionalDriver(String[] args) {
         }
         removeUnusedControlFiles();
 //        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
-
-        writeOutFileLocations(manifestFiles, "Manifest");
+//        if(inputParamEntity.equalsIgnoreCase("*")) {
+            writeOutFileLocations(manifestFiles, "Manifest");
 //        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
-        writeOutFileLocations(controlFiles, "Control");
+            writeOutFileLocations(controlFiles, "Control");
+//        }
 
     }
 
@@ -436,9 +437,12 @@ public DivisionalDriver(String[] args) {
                 current_line++;
             }
         }
-            FSDataOutputStream out = fs.append(new Path(outFileNameMili));
-            out.write(myFile.getBytes());
-            out.close();
+
+            if(inputParamEntity.equalsIgnoreCase("*")) {
+                FSDataOutputStream out = fs.append(new Path(outFileNameMili));
+                out.write(myFile.getBytes());
+                out.close();
+            }
     }
     
     private void processLine(Path p, String line) {
