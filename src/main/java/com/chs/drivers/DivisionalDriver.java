@@ -5,7 +5,6 @@ import com.chs.utils.PiiObfuscator;
 import com.chs.utils.SchemaMatcher;
 import com.chs.utils.SchemaRecord;
 import com.chs.utils.TDConnector;
-import com.google.common.base.Splitter;
 
 import jregex.Matcher;
 import jregex.Pattern;
@@ -24,12 +23,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.TreeMap;
 //import java.util.regex.Matcher;
 //import java.util.regex.Pattern;
@@ -56,13 +53,13 @@ public class DivisionalDriver implements Driver {
 	//unsorted Args
     private String fileName;
     private FileSystem fs;
-    private Set<Path> manifestFiles;
-    private Set<Path> controlFiles;
+    private ArrayList<Path> manifestFiles;
+    private ArrayList<Path> controlFiles;
     private ArrayList<String> errorArray;
     private ArrayList<String> validPracticeIDs;
     private ArrayList<String> validDivisionIDs;
     private ArrayList<String> validEntityNames;
-    private HashMap<String, Set<String>> mapping;
+    private HashMap<String, ArrayList<String>> mapping;
     private Map<String, Integer> columnCounts;
 
 
@@ -80,8 +77,8 @@ public DivisionalDriver(String[] args) {
 	TD_User = args[7];
 	TD_Password = args[8];
 	TD_Database = args[9];
-	manifestFiles = new LinkedHashSet<Path>(6, (float) 1);
-	controlFiles = new LinkedHashSet<Path>(200, (float) .91);
+	manifestFiles = new ArrayList<Path>();
+	controlFiles = new ArrayList<Path>();
 	errorArray = new ArrayList<String>();
 	validPracticeIDs = new ArrayList<String>();
 	validEntityNames = new ArrayList<String>();
@@ -135,7 +132,7 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-    private void readAndLoadEntities(Set<String> paths, String entity) throws IOException {
+    private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         System.out.println("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = ChsUtils.appendTimeAndExtension(entityOutpath + entity);
@@ -191,19 +188,20 @@ public DivisionalDriver(String[] args) {
                 	{
                 		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                 	}
-                	boolean isGoodLine = matcher.matches(cleanLine);
-                	String cline = cleanLine;
-                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                    int cl_int = Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
-                    int he_int = Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
+                    boolean isGoodLine = matcher.matches(cleanLine);
+                    String cline = cleanLine;
+//                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
+                	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
+
                 	if(cl_int == he_int + 3 && isGoodLine) {
-                		String lineclone = cleanLine;
+                		String lineclone = cline;
                 		if (needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR)))
                 		{
-                			lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
+                			lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
                 		}
                 		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
+//                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
                 		out.write((lineclone + "\n").getBytes());
                 	}
                 	else {
@@ -234,7 +232,7 @@ public DivisionalDriver(String[] args) {
     	for(int i = 0; i < headerinfo.length; i++)
     	{
     		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
-    		if (goldSchema.get(cleanhead) != i)
+    		if (goldSchema.get(cleanhead) == null || goldSchema.get(cleanhead) != i)
     		{
     			return true;
     		}
@@ -279,7 +277,7 @@ public DivisionalDriver(String[] args) {
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(temp))));
             String line = br.readLine();
             if (!line.isEmpty()) {
-                return Splitter.on('~').splitToList(line).get(3);
+                return line.split("~")[3];
             }
         } catch (IOException e) {
 //            e.printStackTrace();
@@ -320,7 +318,7 @@ public DivisionalDriver(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(divisional_path))));
         String line = "";
         while((line = br.readLine()) != null){
-            validDivisionIDs.add(Splitter.on('~').splitToList(line).get(0));
+            validDivisionIDs.add(line.split("~")[0]);
         }
     }
 
@@ -351,7 +349,7 @@ public DivisionalDriver(String[] args) {
         return newPath;
     }
 
-    private void writeOutFileLocations(Set<Path> files, String type) throws IOException {
+    private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         String manconOutpath = out_path +"/" +  type.toLowerCase() + "/"  + type;
         String outFileNameMili = ChsUtils.appendTimeAndExtension(manconOutpath);
         if (!fs.exists(new Path(outFileNameMili))) {
@@ -389,10 +387,10 @@ public DivisionalDriver(String[] args) {
     	String practiceID;
         line = line.replaceFirst("^\\s+", "");
         line =  ChsUtils.replaceCRandLF(line);
-        List<String> splitValue = Splitter.on(UNIT_SEPARATOR).splitToList(line);
-        if (splitValue.size() > 1) {
+        String splitValue[] = line.split(UNIT_SEPARATOR);
+        if (splitValue.length > 1) {
 
-            if (Integer.parseInt(splitValue.get(1)) > 0) {
+            if (Integer.parseInt(splitValue[1]) > 0) {
                 practiceID = line.substring(0, line.indexOf(".asv"));
                 fileName = line.substring(0, line.indexOf(".asv") + 4);
 
@@ -418,7 +416,7 @@ public DivisionalDriver(String[] args) {
         if (mapping.containsKey(entity.toUpperCase())) {
             mapping.get(entity.toUpperCase()).add(newPath + fileName);
         } else {
-            Set<String> newList = new LinkedHashSet<String>();
+            ArrayList<String> newList = new ArrayList<String>();
             newList.add(newPath + fileName);
             mapping.put(entity.toUpperCase(), newList);
         }
@@ -498,18 +496,16 @@ public DivisionalDriver(String[] args) {
      * core launch method. All logic for divisional load needs to be in or called from this method
      */
     public void start()  {
-        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
+//        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
         long startTime = System.currentTimeMillis();
         TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
-            mapping = new HashMap<String, Set<String>>();
-            ChsUtils.getValidPracticeIds(practiceMap_path, validPracticeIDs, fs);
-            ChsUtils.getValidEntityNames(entityMap_path, out_path, validEntityNames, fs);
-//            this.getValidPracticeIds();
-//            this.getValidEntityNames();
 
+            mapping = new HashMap<String, ArrayList<String>>();
+            this.getValidPracticeIds();
+            this.getValidEntityNames();
             this.getValidDivisionIds();
             System.out.println("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
