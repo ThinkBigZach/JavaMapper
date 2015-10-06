@@ -159,6 +159,8 @@ public DivisionalDriver(String[] args) {
             fileScanner.useDelimiter(RECORD_SEPARATOR);
             String line = "";
             int lineCount = 0;
+            String headerTypes = null;
+            ArrayList<Integer> numericColumnIndices = new ArrayList<Integer>();
             String headerInfo = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
             boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
@@ -178,7 +180,8 @@ public DivisionalDriver(String[] args) {
                     }
                 }
                 if(lineCount == 1){
-
+                    headerTypes = line;
+                    numericColumnIndices = getNumberIndices(headerTypes);
                     if(validPattern == null && regex_flag.equalsIgnoreCase("verbose")) {
                         validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
                         matcher = validPattern.matcher("");
@@ -193,9 +196,10 @@ public DivisionalDriver(String[] args) {
                 	}
                 	boolean isGoodLine = true;
                 	if(needsRegex){
-                		isGoodLine = matcher.matches(cleanLine);
+                		isGoodLine = matchNumberTypes(cleanLine, numericColumnIndices);
                 	}               	
                     String cline = cleanLine;
+                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
                 	if(cl_int == he_int + 3 && isGoodLine) {
@@ -231,6 +235,51 @@ public DivisionalDriver(String[] args) {
         out.close();
     }
 
+
+
+
+    private ArrayList<Integer> getNumberIndices(String header){
+        String[] line = header.split(UNIT_SEPARATOR);
+        ArrayList<Integer> arr = new ArrayList<Integer>();
+        int index = 0;
+        for(String s : line){
+            if(s.equalsIgnoreCase("NUMBER")){
+                arr.add(index);
+            }
+            index++;
+        }
+        return arr;
+    }
+
+    private boolean matchNumberTypes(String line, ArrayList<Integer> numberCols){
+        String[] matchLine = line.split(UNIT_SEPARATOR);
+
+        for(Integer i : numberCols){
+            try {
+                if (matchLine[i].contains(".")) {
+                    try {
+                        double d = Double.parseDouble(matchLine[i]);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+
+                } else {
+                    try {
+                        int index = Integer.parseInt(matchLine[i]);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+                }
+            }
+            catch(IndexOutOfBoundsException e){
+                //Catches the nullpointer to make sure the data still writes
+            }
+            catch(Exception e){
+                return false;
+            }
+        }
+        return true;
+    }
     private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String headerinfo)
     {
     	headerinfo = headerinfo.replace(" ", "_");
