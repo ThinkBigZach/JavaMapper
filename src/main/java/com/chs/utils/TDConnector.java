@@ -117,23 +117,6 @@ public class TDConnector {
 		}
 		return schemaInfo;
 	}
-	
-	private void translate(String key)
-	{
-		String pay = new String();
-		if(key.equalsIgnoreCase("I"))
-		{
-			pay = "INT";
-		}
-		else if (key.equalsIgnoreCase("N"))
-		{
-			pay = "DOUBLE";
-		}
-		else
-		{
-			pay = "STRING";
-		}
-	}
 
 	public void executeQuery(String sql) throws SQLException
 	{

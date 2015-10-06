@@ -158,17 +158,15 @@ public DivisionalDriver(String[] args) {
             int lineCount = 0;
             String headerInfo = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
-            boolean needsProcess = false;
-            if(schemas.containsKey(entity.toLowerCase())) {
-               needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
-            }
-
+            boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
+            boolean needsReorder = false;// = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR))
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
                 if(lineCount == 0){
                     headerInfo = line;
 
+                    needsReorder = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR));
                     if (!validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
                     	errorArray.add(path);
@@ -190,13 +188,11 @@ public DivisionalDriver(String[] args) {
                 	}
                     boolean isGoodLine = matcher.matches(cleanLine);
                     String cline = cleanLine;
-//                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                	int cl_int = cleanLine.split(UNIT_SEPARATOR).length;
-                	int he_int = headerInfo.split(UNIT_SEPARATOR).length;
-
+                	int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
+                	int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
                 	if(cl_int == he_int + 3 && isGoodLine) {
                 		String lineclone = cline;
-                		if (needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR)))
+                		if (needsReorder)
                 		{
                 			lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
                 		}
