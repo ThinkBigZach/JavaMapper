@@ -49,6 +49,7 @@ public class DivisionalDriver implements Driver {
 	private String TD_User;
 	private String TD_Password;
 	private String TD_Database;
+	private String regex_flag;
 	
 	//unsorted Args
     private String fileName;
@@ -61,6 +62,7 @@ public class DivisionalDriver implements Driver {
     private ArrayList<String> validEntityNames;
     private HashMap<String, ArrayList<String>> mapping;
     private Map<String, Integer> columnCounts;
+    
 
 
 
@@ -77,6 +79,7 @@ public DivisionalDriver(String[] args) {
 	TD_User = args[7];
 	TD_Password = args[8];
 	TD_Database = args[9];
+	regex_flag = args[11];
 	manifestFiles = new ArrayList<Path>();
 	controlFiles = new ArrayList<Path>();
 	errorArray = new ArrayList<String>();
@@ -160,6 +163,7 @@ public DivisionalDriver(String[] args) {
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
             boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
             boolean needsReorder = false;// = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR))
+            boolean needsRegex = false;
             while(fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
@@ -175,9 +179,10 @@ public DivisionalDriver(String[] args) {
                 }
                 if(lineCount == 1){
 
-                    if(validPattern == null) {
+                    if(validPattern == null && regex_flag.equalsIgnoreCase("verbose")) {
                         validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
                         matcher = validPattern.matcher("");
+                        needsRegex = true;
                     }
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
@@ -186,7 +191,10 @@ public DivisionalDriver(String[] args) {
                 	{
                 		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                 	}
-                    boolean isGoodLine = matcher.matches(cleanLine);
+                	boolean isGoodLine = true;
+                	if(needsRegex){
+                		isGoodLine = matcher.matches(cleanLine);
+                	}               	
                     String cline = cleanLine;
                 	int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
                 	int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();

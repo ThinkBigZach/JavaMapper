@@ -15,10 +15,11 @@ public class Starter {
 	//TD_PSWD - args[8] - dbc
 	//TD_DATABASE - args[9] -- EDW_ATHENA_STAGE
 	//divisional OR path as args[10]
+	//verbose OR standard as args[11]
 	public static void main(String[] args) throws Exception {
-		if(args.length != 11) {
+		if(args.length != 12) {
 			System.out.println("returnCode=FAILURE");
-			throw new Exception("Expected 10 parameters, received " + args.length);
+			throw new Exception("Expected 12 parameters, received " + args.length);
 		}
 		Driver driver;
 		if(args[10].equals("divisional")) {
