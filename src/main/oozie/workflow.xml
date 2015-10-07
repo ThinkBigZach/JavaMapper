@@ -35,6 +35,15 @@
             <name>tdServer</name>
         </property>
         <property>
+            <name>tdBase</name>
+        </property>
+        <property>
+            <name>tdUser</name>
+        </property>
+        <property>
+            <name>tdPswd</name>
+        </property>
+        <property>
             <name>tdUserID</name>
         </property>
         <property>
@@ -295,15 +304,43 @@
                      <value>default</value>
                  </property>
              </configuration>
+             <main-class>com.chs.drivers.Starter</main-class>
+		<arg>${sourcePath}</arg>
+		<arg>${entity}</arg>
+		<arg>${outputPath}</arg>
+            	<arg>${stageOnePracticeMappingFile}</arg>
+            	<arg>${stageOneEntityMappingFile}</arg>
+            	<arg>${stageOneDivisionMappingFile}</arg>
+		<arg>${tdServer}</arg>
+		<arg>${tdUser}</arg>
+		<arg>${tdPswd}</arg>
+		<arg>${tdBase}</arg>
+		<arg>divisional</arg>
+		<arg>validate</arg>
+         </java>
+         <ok to="end"/>
+         <error to="kill"/>
+     </action> 
+
+<!--
+    <action name='process-stage-0-files'>
+         <java>
+             <job-tracker>${jobTracker}</job-tracker>
+             <name-node>${nameNode}</name-node>
+             <configuration>
+                 <property>
+                     <name>mapred.queue.name</name>
+                     <value>default</value>
+                 </property>
+             </configuration>
              <main-class>com.App</main-class>
-             <!--
              <arg>arg1</arg>
-             <arg>arg2</arg> -->
+             <arg>arg2</arg>
          </java>
          <ok to="end"/>
          <error to="kill"/>
      </action>
-<!--
+
     <action name='process-stage-0-files'>
         <shell xmlns="uri:oozie:shell-action:0.1">
             <job-tracker>${jobTracker}</job-tracker>
