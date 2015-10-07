@@ -7,12 +7,18 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.chs.utils.ChsUtils;
+import com.chs.utils.PiiObfuscator;
+import com.chs.utils.SchemaMatcher;
+import com.chs.utils.SchemaRecord;
+import com.chs.utils.TDConnector;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class PathDriver implements Driver {
@@ -21,6 +27,7 @@ public class PathDriver implements Driver {
 	private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
 	private ArrayList<String> validPracticeIDs;
 	private ArrayList<String> validEntityNames;
+	private ArrayList<String> errorArray;
 	private String input_path;
 	private String entity;
 	private String inputParamEntity;
@@ -48,6 +55,7 @@ public class PathDriver implements Driver {
 		regex_flag = args[11];
 		validPracticeIDs = new ArrayList<String>();
 		validEntityNames = new ArrayList<String>();
+		errorArray = new ArrayList<String>();
 		FileSystem fs = null;
 		try {
 			fs = FileSystem.newInstance(new Configuration());
@@ -61,6 +69,8 @@ public class PathDriver implements Driver {
 
 	public void start() {
 		FileSystem fs;
+		TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
+        TDConnector.getConnection();
 		try {
 			fs = FileSystem.get(new Configuration());
 			FileStatus[] status = fs.listStatus(new Path(input_path));
@@ -69,25 +79,26 @@ public class PathDriver implements Driver {
 				if (stat.isFile()) {
 					String filename = stat.getPath().getName();
 					if(!filename.equalsIgnoreCase("CONTROL.TXT")){
-						String current_entity = filename.split(".")[0];
-						FSDataOutputStream out = fs.append(new Path(out_path + "/" + ChsUtils.appendTimeAndExtension(current_entity)));
-						Scanner fileScanner = new Scanner(fs.open(stat.getPath()));
-						fileScanner.useDelimiter(RECORD_SEPARATOR);
-						String line = "";
-						int lineCount = 0;
-						while(fileScanner.hasNextLine()) {
-							line = fileScanner.next();
-							if(lineCount == 0){
-								//			                    TODO: Column Validation Method
-							}
-							if (lineCount > 3) {
-								String fixedLine = ChsUtils.replaceCRandLF(line);
-								fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobID + UNIT_SEPARATOR + filename;
-								out.write((fixedLine + "\n").getBytes());
-							}
-							lineCount++;
-						}
-						out.close();
+						writeEntity(entity, fs, jobID, stat.getPath(), filename);
+						//						String current_entity = filename.split(".")[0];
+						//						FSDataOutputStream out = fs.append(new Path(out_path + "/" + ChsUtils.appendTimeAndExtension(current_entity)));
+						//						Scanner fileScanner = new Scanner(fs.open(stat.getPath()));
+						//						fileScanner.useDelimiter(RECORD_SEPARATOR);
+						//						String line = "";
+						//						int lineCount = 0;
+						//						while(fileScanner.hasNextLine()) {
+						//							line = fileScanner.next();
+						//							if(lineCount == 0){
+						//								//			                    TODO: Column Validation Method
+						//							}
+						//							if (lineCount > 3) {
+						//								String fixedLine = ChsUtils.replaceCRandLF(line);
+						//								fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobID + UNIT_SEPARATOR + filename;
+						//								out.write((fixedLine + "\n").getBytes());
+						//							}
+						//							lineCount++;
+						//						}
+						//						out.close();
 					}
 				}
 			}
@@ -95,6 +106,98 @@ public class PathDriver implements Driver {
 			//			e.printStackTrace();
 			System.out.println("returnCode=FAILURE");
 		} 
+	}
+
+	private void writeEntity(String entity, FileSystem fs, String jobId, Path path, String filename) throws IOException {
+		System.out.println("WRITING FILE FOR ENTITY " + entity);
+		String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
+		String outFileNameMili = ChsUtils.appendTimeAndExtension(entityOutpath + entity);
+		String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
+		String errFileNameMili = ChsUtils.appendTimeAndExtension(errOutpath + entity);
+
+		if(!fs.exists(new Path(entityOutpath))){
+			fs.mkdirs(new Path(entityOutpath));
+		}
+		if(!fs.exists(new Path(outFileNameMili))){
+			fs.createNewFile(new Path(outFileNameMili));
+		}
+		FSDataOutputStream out = fs.append(new Path(outFileNameMili));
+		FSDataOutputStream err = null;
+		Scanner fileScanner = new Scanner(fs.open(path));
+		fileScanner.useDelimiter(RECORD_SEPARATOR);
+		String line = "";
+		int lineCount = 0;
+		String headerTypes = null;
+		ArrayList<Integer> numericColumnIndices = new ArrayList<Integer>();
+		String headerInfo = null;
+		Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
+		boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
+		boolean needsReorder = false;// = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR))
+		boolean needsRegex = false;
+		while(fileScanner.hasNextLine()) {
+
+			line = fileScanner.next();
+			if(lineCount == 0){
+				headerInfo = line;
+
+				needsReorder = ChsUtils.needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo);
+				if (!ChsUtils.validateColumnCounts(entity, path.toString(), fs))
+				{
+					errorArray.add(path.toString());
+					break;
+				}
+			}
+			if(lineCount == 1){
+				headerTypes = line;
+				numericColumnIndices = ChsUtils.getNumberIndices(headerTypes);
+				if(regex_flag.equalsIgnoreCase("validate")) {
+					needsRegex = true;
+				}
+			}
+			if (lineCount > 3 && line.trim().length() > 0) {
+				String cleanLine = ChsUtils.replaceCRandLF(line);
+				if (needsProcess)
+				{
+					cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
+				}
+				boolean isGoodLine = true;
+				if(needsRegex){
+					isGoodLine = ChsUtils.matchNumberTypes(cleanLine, numericColumnIndices);
+				}               	
+				String cline = cleanLine;
+				cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + filename;
+				int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
+				int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
+				if(cl_int == he_int + 3 && isGoodLine) {
+					String lineclone = cline;
+					if (needsReorder)
+					{
+						lineclone = ChsUtils.reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
+					}
+					lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + filename;
+					//                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
+					out.write((lineclone + "\n").getBytes());
+				}
+				else {
+					if(!fs.exists(new Path(errOutpath))){
+						fs.mkdirs(new Path(errOutpath));
+					}
+					if(!fs.exists(new Path(errFileNameMili))){
+						fs.createNewFile(new Path(errFileNameMili));
+						err = fs.append(new Path(errFileNameMili));
+					}
+					else if(err == null){
+						err = fs.append(new Path(errFileNameMili));
+					}
+					err.write((cleanLine + "\n").getBytes());
+				}
+			}
+			lineCount++;
+		}
+		if(err != null){
+			err.close();
+		}
+		out.close();
 	}
 
 	private void getJobID(FileSystem fs, FileStatus[] status) throws IOException, FileNotFoundException {

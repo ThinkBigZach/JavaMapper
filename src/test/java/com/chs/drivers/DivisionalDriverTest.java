@@ -80,7 +80,7 @@ public class DivisionalDriverTest {
 		goldMap.put("allergy_id", 6);
 		goldMap.put("allergy_name", 7);
 		goldMap.put("allergy_code", 8);
-    	Method methodReorderAlongSchema = DivisionalDriver.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
+    	Method methodReorderAlongSchema = ChsUtils.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
     	methodReorderAlongSchema.setAccessible(true);
     	String out = (String) methodReorderAlongSchema.invoke(divisionalDriver, goldMap, columns.split(UNIT_SEPARATOR), header.split(UNIT_SEPARATOR));
     	assertTrue(correctOutput.equals(out));
@@ -97,7 +97,7 @@ public class DivisionalDriverTest {
     	goldMap.put("patient_id", 0);
     	goldMap.put("allergy_id", 1);
     	goldMap.put("tyep", 2);
-    	Method methodReorderAlongSchema = DivisionalDriver.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
+    	Method methodReorderAlongSchema = ChsUtils.class.getDeclaredMethod("reorderAlongSchema", Map.class, String[].class, String[].class);
     	methodReorderAlongSchema.setAccessible(true);
     	String out = (String) methodReorderAlongSchema.invoke(divisionalDriver, goldMap, columns.split(UNIT_SEPARATOR), header.split(UNIT_SEPARATOR));
     	assertNotEquals(out, correctout);
@@ -116,7 +116,7 @@ public class DivisionalDriverTest {
 		goldMap.put("chart_id", 3);
 //		String[] cols = columns.split(UNIT_SEPARATOR);
 //		String[] heads = header.split(UNIT_SEPARATOR);
-		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
+		Method methodNeedsDynamicSchemaReorder = ChsUtils.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
 		methodNeedsDynamicSchemaReorder.setAccessible(true);
 		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMap, header);
 		assertFalse(out);
@@ -134,7 +134,7 @@ public class DivisionalDriverTest {
     	goldMapReorder.put("type", 2);
     	goldMapReorder.put("chart_id", 3);
 //    	String[] heads = header.split(UNIT_SEPARATOR);
-		Method methodNeedsDynamicSchemaReorder = DivisionalDriver.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
+		Method methodNeedsDynamicSchemaReorder = ChsUtils.class.getDeclaredMethod("needsDynamicSchemaReorder", Map.class, String.class);
 		methodNeedsDynamicSchemaReorder.setAccessible(true);
 		boolean out = (Boolean) methodNeedsDynamicSchemaReorder.invoke(divisionalDriver, goldMapReorder, header);
 		assertTrue(out);

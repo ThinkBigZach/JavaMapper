@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.TreeMap;
 //import java.util.regex.Matcher;
 //import java.util.regex.Pattern;
 
@@ -173,8 +172,8 @@ public DivisionalDriver(String[] args) {
                 if(lineCount == 0){
                     headerInfo = line;
 
-                    needsReorder = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo);
-                    if (!validateColumnCounts(entity, new Path(path).toString(), fs))
+                    needsReorder = ChsUtils.needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo);
+                    if (!ChsUtils.validateColumnCounts(entity, new Path(path).toString(), fs))
                     {
                     	errorArray.add(path);
                     	break;
@@ -207,7 +206,7 @@ public DivisionalDriver(String[] args) {
                 		String lineclone = cline;
                 		if (needsReorder)
                 		{
-                			lineclone = reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
+                			lineclone = ChsUtils.reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
                 		}
                 		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
@@ -235,59 +234,7 @@ public DivisionalDriver(String[] args) {
         }
         out.close();
     }
-
-
-
-
-    
-    
-    private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String headerinfo)
-    {
-    	headerinfo = headerinfo.replace(" ", "_");
-    	String goldSchemaHead = goldSchema.keySet().toString().replaceAll(", ", UNIT_SEPARATOR);
-    	goldSchemaHead = goldSchemaHead.substring(1, goldSchemaHead.length()-1);
-//    	System.out.println(headerinfo + "\n" + goldSchemaHead);
-    	return !headerinfo.equalsIgnoreCase(goldSchemaHead);
-//    	for(int i = 0; i < headerinfo.length; i++)
-//    	{
-//    		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
-//    		if (goldSchema.get(cleanhead) == null || goldSchema.get(cleanhead) != i)
-//    		{
-//    			return true;
-//    		}
-//    	}
-//    	return false;
-    }
-    
-    private String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
-    {
-    	StringBuilder orderedScheme = new StringBuilder();
-    	Map<Integer,String> columnMap = new HashMap<Integer,String>();
-    	Map<String,Integer> headerMap = new HashMap<String,Integer>();
-//    	System.out.println(String.format("File column size: %s \n\tHeader column size: %s", schemaColumns.length, headerinfo.length));
-    	for (int i = 0; i < schemaColumns.length; i++)
-     	{
-    		columnMap.put(i, schemaColumns[i]);
-    		headerMap.put(headerinfo[i].replaceAll(" ", "_").toLowerCase(), i);
-     	}
-    	for (Entry<String,Integer> kv : goldSchema.entrySet())
-     	{
-//    		System.out.println("GOLD KEY: " + kv.getKey());
-    		if (headerMap.containsKey(kv.getKey()))
-    		{
-    			int goldCol = headerMap.remove(kv.getKey());//headerMap.get(kv.getKey());
-    			String colValue = columnMap.get(goldCol);
-    			orderedScheme.append(colValue).append(UNIT_SEPARATOR);    			
-    		}
-     	}
-    	if(!headerMap.isEmpty())
-    	{
-    		System.out.println("returnCode=FAILURE");
-    	}
-    	String schemaReorder = orderedScheme.substring(0, (orderedScheme.length() - 1));
-    	return schemaReorder;
-    }
-
+   
     private String getJobIdFromPaths(String path) {
         String temp = path.substring(0, path.lastIndexOf('/'));
         temp = temp+"/CONTROL.TXT";
@@ -304,10 +251,6 @@ public DivisionalDriver(String[] args) {
         }
         return "";
 
-    }
-
-    private boolean validateColumnCounts(String entity, String colFile2, FileSystem fs) throws FileNotFoundException{
-    	return SchemaMatcher.matchSchemas(entity, colFile2, fs);
     }
 
     private  void getValidPracticeIds() throws IOException {
