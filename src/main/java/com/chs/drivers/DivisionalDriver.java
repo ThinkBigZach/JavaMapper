@@ -182,7 +182,7 @@ public DivisionalDriver(String[] args) {
                 }
                 if(lineCount == 1){
                     headerTypes = line;
-                    numericColumnIndices = getNumberIndices(headerTypes);
+                    numericColumnIndices = ChsUtils.getNumberIndices(headerTypes);
                     if(regex_flag.equalsIgnoreCase("validate")) {
 //                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
 //                        matcher = validPattern.matcher("");
@@ -197,7 +197,7 @@ public DivisionalDriver(String[] args) {
                 	}
                 	boolean isGoodLine = true;
                 	if(needsRegex){
-                		isGoodLine = matchNumberTypes(cleanLine, numericColumnIndices);
+                		isGoodLine = ChsUtils.matchNumberTypes(cleanLine, numericColumnIndices);
                 	}               	
                     String cline = cleanLine;
                     cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
@@ -239,50 +239,8 @@ public DivisionalDriver(String[] args) {
 
 
 
-    private ArrayList<Integer> getNumberIndices(String header){
-        String[] line = header.split(UNIT_SEPARATOR);
-        ArrayList<Integer> arr = new ArrayList<Integer>();
-        int index = 0;
-        for(String s : line){
-            if(s.equalsIgnoreCase("NUMBER")){
-                arr.add(index);
-            }
-            index++;
-        }
-        return arr;
-    }
-
-    private boolean matchNumberTypes(String line, ArrayList<Integer> numberCols){
-        String[] matchLine = line.split(UNIT_SEPARATOR);
-
-        for(Integer i : numberCols){
-            try {
-                if (!matchLine[i].equals("") && matchLine[i].contains(".")) {
-                    try {
-                        double d = Double.parseDouble(matchLine[i].trim());
-                    } catch (NumberFormatException e) {
-                        return false;
-                    }
-                } else if(!matchLine[i].equals("")) {
-                    try {
-                        int index = Integer.parseInt(matchLine[i].trim());
-                    } catch (NumberFormatException e) {
-                        return false;
-                    }
-                }
-            }
-            catch(IndexOutOfBoundsException e){
-                //Catches the nullpointer to make sure the data still writes if null
-            }
-            catch(NullPointerException e){
-
-            }
-            catch(Exception e){
-                return false;
-            }
-        }
-        return true;
-    }
+    
+    
     private boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String headerinfo)
     {
     	headerinfo = headerinfo.replace(" ", "_");

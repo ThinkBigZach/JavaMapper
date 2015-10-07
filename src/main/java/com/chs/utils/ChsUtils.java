@@ -2,10 +2,10 @@ package com.chs.utils;
 
 import org.apache.hadoop.fs.Path;
 
-
 import java.util.List;
 
 import com.google.common.base.Splitter;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -72,4 +72,51 @@ public class ChsUtils {
         return s += time + ".txt";
 
     }
+    
+    public static ArrayList<Integer> getNumberIndices(String header){
+        String[] line = header.split(UNIT_SEPARATOR);
+        ArrayList<Integer> arr = new ArrayList<Integer>();
+        int index = 0;
+        for(String s : line){
+            if(s.equalsIgnoreCase("NUMBER")){
+                arr.add(index);
+            }
+            index++;
+        }
+        return arr;
+    }
+
+    public static boolean matchNumberTypes(String line, ArrayList<Integer> numberCols){
+        String[] matchLine = line.split(UNIT_SEPARATOR);
+
+        for(Integer i : numberCols){
+            try {
+                if (!matchLine[i].equals("") && matchLine[i].contains(".")) {
+                    try {
+                        double d = Double.parseDouble(matchLine[i].trim());
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+                } else if(!matchLine[i].equals("")) {
+                    try {
+                        int index = Integer.parseInt(matchLine[i].trim());
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+                }
+            }
+            catch(IndexOutOfBoundsException e){
+                //Catches the nullpointer to make sure the data still writes if null
+            }
+            catch(NullPointerException e){
+
+            }
+            catch(Exception e){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    
 }
