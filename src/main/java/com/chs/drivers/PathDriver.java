@@ -150,14 +150,14 @@ public class PathDriver implements Driver {
 					break;
 				}
 			}
-			if(lineCount == 1){
+			else if(lineCount == 1){
 				headerTypes = line;
 				numericColumnIndices = ChsUtils.getNumberIndices(headerTypes);
 				if(regex_flag.equalsIgnoreCase("validate")) {
 					needsRegex = true;
 				}
 			}
-			if (lineCount > 3 && line.trim().length() > 0) {
+			else if (lineCount > 3 && line.trim().length() > 0) {
 				String cleanLine = ChsUtils.replaceCRandLF(line);
 				if (needsProcess)
 				{
