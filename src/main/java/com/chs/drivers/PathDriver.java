@@ -56,7 +56,7 @@ public class PathDriver implements Driver {
 		validPracticeIDs = new ArrayList<String>();
 		validEntityNames = new ArrayList<String>();
 		errorArray = new ArrayList<String>();
-		FileSystem fs = null;
+		FileSystem fs;
 		try {
 			fs = FileSystem.newInstance(new Configuration());
 			ChsUtils.getValidEntityNames(entityMap_path, out_path, validEntityNames, fs);
@@ -125,9 +125,9 @@ public class PathDriver implements Driver {
 		FSDataOutputStream err = null;
 		Scanner fileScanner = new Scanner(fs.open(path));
 		fileScanner.useDelimiter(RECORD_SEPARATOR);
-		String line = "";
+		String line;
 		int lineCount = 0;
-		String headerTypes = null;
+		String headerTypes;
 		ArrayList<Integer> numericColumnIndices = new ArrayList<Integer>();
 		String headerInfo = null;
 		Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;

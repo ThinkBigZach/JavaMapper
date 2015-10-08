@@ -1,17 +1,11 @@
 package com.chs.utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author cr186034
@@ -38,7 +32,6 @@ public class SchemaMatcher {
         boolean tripwire = false;
         Map<String, String> goldenMap = getGoldenSchema(entity.toLowerCase());
         Map<String, String> compareMap = null;
-        Scanner goldenFile = null;
         Scanner compareFile = null;
         String line1 = null;
         try {

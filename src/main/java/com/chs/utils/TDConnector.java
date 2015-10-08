@@ -123,8 +123,5 @@ public class TDConnector {
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
 		ResultSet set = stmt.executeQuery(sql);
-
-
-
 	}
 }

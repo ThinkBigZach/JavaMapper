@@ -30,8 +30,6 @@ public class PiiObfuscator {
 		return val;
 	}
 
-
-
 	public static boolean hasRemoveComment(List<SchemaRecord> records)
     {
     	for(SchemaRecord r : records)

@@ -1,11 +1,6 @@
 package com.chs.drivers;
 
-import com.chs.utils.ChsUtils;
-import com.chs.utils.PiiObfuscator;
-import com.chs.utils.SchemaMatcher;
-import com.chs.utils.SchemaRecord;
-import com.chs.utils.TDConnector;
-
+import com.chs.utils.*;
 import jregex.Matcher;
 import jregex.Pattern;
 import org.apache.hadoop.conf.Configuration;
@@ -16,41 +11,31 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.lf5.util.DateFormatManager;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
-//import java.util.regex.Matcher;
-//import java.util.regex.Pattern;
+import java.util.*;
 
 public class DivisionalDriver implements Driver {
 
     //ascii replacement args
     private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
     private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
-	
-	//Constructor Args
-	private String input_path;
-	private String entity;
+
+    //Constructor Args
+    private String input_path;
+    private String entity;
     private String inputParamEntity;
-	private String out_path;
-	private String practiceMap_path;
-	private String entityMap_path;
+    private String out_path;
+    private String practiceMap_path;
+    private String entityMap_path;
     private String divisional_path;
-	private String TD_Host;
-	private String TD_User;
-	private String TD_Password;
-	private String TD_Database;
-	private String regex_flag;
-	
-	//unsorted Args
+    private String TD_Host;
+    private String TD_User;
+    private String TD_Password;
+    private String TD_Database;
+    private String regex_flag;
+
+    //unsorted Args
     private String fileName;
     private FileSystem fs;
     private ArrayList<Path> manifestFiles;
@@ -60,77 +45,71 @@ public class DivisionalDriver implements Driver {
     private ArrayList<String> validDivisionIDs;
     private ArrayList<String> validEntityNames;
     private HashMap<String, ArrayList<String>> mapping;
-    private Map<String, Integer> columnCounts;
-    
 
 
-
-
-public DivisionalDriver(String[] args) {
-	input_path = args[0];
-	entity = args[1];
-    inputParamEntity = args[1];
-	out_path = args[2];
-	practiceMap_path = args[3]; 
-	entityMap_path = args[4];
-    divisional_path = args[5];
-	TD_Host = args[6];
-	TD_User = args[7];
-	TD_Password = args[8];
-	TD_Database = args[9];
-	regex_flag = args[11];
-	manifestFiles = new ArrayList<Path>();
-	controlFiles = new ArrayList<Path>();
-	errorArray = new ArrayList<String>();
-	validPracticeIDs = new ArrayList<String>();
-	validEntityNames = new ArrayList<String>();
-    validDivisionIDs = new ArrayList<String>();
-}
-
+    public DivisionalDriver(String[] args) {
+        input_path = args[0];
+        entity = args[1];
+        inputParamEntity = args[1];
+        out_path = args[2];
+        practiceMap_path = args[3];
+        entityMap_path = args[4];
+        divisional_path = args[5];
+        TD_Host = args[6];
+        TD_User = args[7];
+        TD_Password = args[8];
+        TD_Database = args[9];
+        regex_flag = args[11];
+        manifestFiles = new ArrayList<Path>();
+        controlFiles = new ArrayList<Path>();
+        errorArray = new ArrayList<String>();
+        validPracticeIDs = new ArrayList<String>();
+        validEntityNames = new ArrayList<String>();
+        validDivisionIDs = new ArrayList<String>();
+    }
 
 
     private void getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
-        if(pathToControl.contains("data/*")){
+        if (pathToControl.contains("data/*")) {
             String tempPath = pathToControl.substring(0, pathToControl.indexOf("/*"));
             readDivisionalWildcard(tempPath, pathToControl.substring(pathToControl.indexOf("/*") + 2));
         }
         //FOR THE DATE WILD CARD USE CASE
-        else if(pathToControl.endsWith("*")){
+        else if (pathToControl.endsWith("*")) {
             String temp = pathToControl;
-            while(temp.contains("/")){
+            while (temp.contains("/")) {
                 temp = temp.substring(temp.indexOf("/") + 1);
             }
             String dateWildCard = temp.substring(0, temp.length() - 1);
             pathToControl = pathToControl.substring(0, pathToControl.indexOf(dateWildCard));
             readDateWildCard(new Path(pathToControl), dateWildCard, true);
-        }
-        else{
+        } else {
             readDateWildCard(new Path(pathToControl), null, false);
         }
         removeUnusedControlFiles();
 //        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
 //        if(inputParamEntity.equalsIgnoreCase("*")) {
-            writeOutFileLocations(manifestFiles, "Manifest");
+        writeOutFileLocations(manifestFiles, "Manifest");
 //        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
-            writeOutFileLocations(controlFiles, "Control");
+        writeOutFileLocations(controlFiles, "Control");
 //        }
 
     }
 
-    public void removeUnusedControlFiles(){
+    public void removeUnusedControlFiles() {
         ArrayList<Path> newControl = new ArrayList<Path>();
-        for(Path p : controlFiles){
+        for (Path p : controlFiles) {
             String id = p.toString().substring(p.toString().indexOf("data/") + 5, p.toString().indexOf("/athena"));
-            for(Path path : manifestFiles){
-                if(path.toString().contains(id)){
-                   newControl.add(p);
+            for (Path path : manifestFiles) {
+                if (path.toString().contains(id)) {
+                    newControl.add(p);
                     break;
                 }
             }
         }
         controlFiles.clear();
-        for(Path p : newControl){
+        for (Path p : newControl) {
             controlFiles.add(p);
         }
     }
@@ -142,102 +121,97 @@ public DivisionalDriver(String[] args) {
         String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
         String errFileNameMili = ChsUtils.appendTimeAndExtension(errOutpath + entity);
 
-        if(!fs.exists(new Path(entityOutpath))){
+        if (!fs.exists(new Path(entityOutpath))) {
             fs.mkdirs(new Path(entityOutpath));
         }
-        if(!fs.exists(new Path(outFileNameMili))){
+        if (!fs.exists(new Path(outFileNameMili))) {
             fs.createNewFile(new Path(outFileNameMili));
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         FSDataOutputStream err = null;
-        Pattern validPattern = null;
-        Matcher matcher = null;
-        for(String path : paths) {
+       // Pattern validPattern = null;
+        //Matcher matcher = null;
+        for (String path : paths) {
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
             Scanner fileScanner = new Scanner(fs.open(new Path(path)));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
-            String line = "";
+            String line;
             int lineCount = 0;
-            String headerTypes = null;
+            String headerTypes;
             ArrayList<Integer> numericColumnIndices = new ArrayList<Integer>();
             String headerInfo = null;
             Map<String, List<SchemaRecord>> schemas = SchemaMatcher.goldenEntitySchemaMap;
             boolean needsProcess = PiiObfuscator.hasRemoveComment(schemas.get(entity.toLowerCase()));
             boolean needsReorder = false;// = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR))
             boolean needsRegex = false;
-            while(fileScanner.hasNextLine()) {
+            while (fileScanner.hasNextLine()) {
 
                 line = fileScanner.next();
-                if(lineCount == 0){
+                if (lineCount == 0) {
                     headerInfo = line;
 
                     needsReorder = ChsUtils.needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo);
-                    if (!ChsUtils.validateColumnCounts(entity, new Path(path).toString(), fs))
-                    {
-                    	errorArray.add(path);
-                    	break;
+                    if (!ChsUtils.validateColumnCounts(entity, new Path(path).toString(), fs)) {
+                        errorArray.add(path);
+                        break;
                     }
                 }
-                if(lineCount == 1){
+                if (lineCount == 1) {
                     headerTypes = line;
                     numericColumnIndices = ChsUtils.getNumberIndices(headerTypes);
-                    if(regex_flag.equalsIgnoreCase("validate")) {
+                    if (regex_flag.equalsIgnoreCase("validate")) {
 //                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
 //                        matcher = validPattern.matcher("");
                         needsRegex = true;
                     }
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
-                	String cleanLine = ChsUtils.replaceCRandLF(line);
-                	if (needsProcess)
-                	{
-                		cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
-                	}
-                	boolean isGoodLine = true;
-                	if(needsRegex){
-                		isGoodLine = ChsUtils.matchNumberTypes(cleanLine, numericColumnIndices);
-                	}               	
+                    String cleanLine = ChsUtils.replaceCRandLF(line);
+                    if (needsProcess) {
+                        cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
+                    }
+                    boolean isGoodLine = true;
+                    if (needsRegex) {
+                        isGoodLine = ChsUtils.matchNumberTypes(cleanLine, numericColumnIndices);
+                    }
                     String cline = cleanLine;
                     cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-                	int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
-                	int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
-                	if(cl_int == he_int + 3 && isGoodLine) {
-                		String lineclone = cline;
-                		if (needsReorder)
-                		{
-                			lineclone = ChsUtils.reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));                			
-                		}
-                		lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
+                    int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
+                    int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
+                    if (cl_int == he_int + 3 && isGoodLine) {
+                        String lineclone = cline;
+                        if (needsReorder) {
+                            lineclone = ChsUtils.reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));
+                        }
+                        lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
-                		out.write((lineclone + "\n").getBytes());
-                	}
-                	else {
-                        if(!fs.exists(new Path(errOutpath))){
+                        out.write((lineclone + "\n").getBytes());
+                    } else {
+                        if (!fs.exists(new Path(errOutpath))) {
                             fs.mkdirs(new Path(errOutpath));
                         }
-                        if(!fs.exists(new Path(errFileNameMili))){
+                        if (!fs.exists(new Path(errFileNameMili))) {
                             fs.createNewFile(new Path(errFileNameMili));
                             err = fs.append(new Path(errFileNameMili));
-                        }
-                        else if(err == null){
+                        } else if (err == null) {
                             err = fs.append(new Path(errFileNameMili));
                         }
-                		err.write((cleanLine + "\n").getBytes());
-                	}
+                        err.write((cleanLine + "\n").getBytes());
+                    }
                 }
                 lineCount++;
             }
         }
-        if(err != null){
+        if (err != null) {
             err.close();
         }
         out.close();
     }
-   
+
     private String getJobIdFromPaths(String path) {
         String temp = path.substring(0, path.lastIndexOf('/'));
-        temp = temp+"/CONTROL.TXT";
+        temp = temp + "/CONTROL.TXT";
 
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(temp))));
@@ -253,10 +227,10 @@ public DivisionalDriver(String[] args) {
 
     }
 
-    private  void getValidPracticeIds() throws IOException {
+    private void getValidPracticeIds() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(practiceMap_path))));
-        String line = "";
-        while((line = br.readLine()) != null){
+        String line;
+        while ((line = br.readLine()) != null) {
             String validPractice = line.substring(0, line.indexOf("~"));
             validPracticeIDs.add(validPractice.toUpperCase());
         }
@@ -264,10 +238,10 @@ public DivisionalDriver(String[] args) {
 
     private void getValidEntityNames() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(entityMap_path))));
-        String line = "";
-        while((line = br.readLine()) != null){
-        	String currentValidName = line.toUpperCase();
-        	String tempWriteDir = out_path +"/" + currentValidName.toLowerCase() + "/";
+        String line;
+        while ((line = br.readLine()) != null) {
+            String currentValidName = line.toUpperCase();
+            String tempWriteDir = out_path + "/" + currentValidName.toLowerCase() + "/";
             if (!fs.exists(new Path(tempWriteDir))) {
                 fs.mkdirs(new Path(tempWriteDir));
             }
@@ -276,34 +250,33 @@ public DivisionalDriver(String[] args) {
     }
 
 
-    private void getValidDivisionIds() throws IOException{
+    private void getValidDivisionIds() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(divisional_path))));
         String line = "";
-        while((line = br.readLine()) != null){
+        while ((line = br.readLine()) != null) {
             validDivisionIDs.add(line.split("~")[0]);
         }
     }
 
-    private  boolean isValidEntry(String practiceID, String entityName){
+    private boolean isValidEntry(String practiceID, String entityName) {
         return isValidPractice(practiceID) && isValidEntity(entityName);
     }
 
-    private boolean isValidDivision(String divisionID){
+    private boolean isValidDivision(String divisionID) {
         return validDivisionIDs.contains(divisionID);
     }
 
-    private  boolean isValidPractice(String practiceID){
+    private boolean isValidPractice(String practiceID) {
         boolean isValid = validPracticeIDs.contains(practiceID.toUpperCase());
         return isValid;
     }
 
-    private  boolean isValidEntity(String entityName){
-    	boolean isValid = validEntityNames.contains(entityName.toUpperCase());
-    	return isValid;
+    private boolean isValidEntity(String entityName) {
+        boolean isValid = validEntityNames.contains(entityName.toUpperCase());
+        return isValid;
     }
 
-
-    private String generateNewPath(Path path, String practiceID){
+    private String generateNewPath(Path path, String practiceID) {
         String fixedPath = path.toString().substring(0, path.toString().indexOf("Manifest"));
         String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
         String testing3 = fixedPath.substring(fixedPath.indexOf("/athena/"));
@@ -312,46 +285,45 @@ public DivisionalDriver(String[] args) {
     }
 
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
-        String manconOutpath = out_path +"/" +  type.toLowerCase() + "/"  + type;
+        String manconOutpath = out_path + "/" + type.toLowerCase() + "/" + type;
         String outFileNameMili = ChsUtils.appendTimeAndExtension(manconOutpath);
         if (!fs.exists(new Path(outFileNameMili))) {
             fs.createNewFile(new Path(outFileNameMili));
         }
         String myFile = "";
-    	for(Path p : files){
-    		String jobId = getJobIdFromPaths(p.toString());
+        for (Path p : files) {
+            String jobId = getJobIdFromPaths(p.toString());
             Scanner fileScanner = new Scanner(fs.open(p));
             fileScanner.useDelimiter(RECORD_SEPARATOR);
             String line = "";
             int current_line = 0;
 
-            while(fileScanner.hasNextLine()) {
+            while (fileScanner.hasNextLine()) {
                 line = fileScanner.next();
 
                 if (current_line > 3 && type.equalsIgnoreCase("MANIFEST")) {
                     processLine(p, line);
                     myFile += ChsUtils.replaceCRandLF(line) + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + p.getName() + "\n";
-                }
-                else if(type.equalsIgnoreCase("CONTROL")){
-                	String fixedLine = ChsUtils.replaceCRandLF(line);
-                	fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
+                } else if (type.equalsIgnoreCase("CONTROL")) {
+                    String fixedLine = ChsUtils.replaceCRandLF(line);
+                    fixedLine = fixedLine.replaceAll("~", UNIT_SEPARATOR);
                     myFile += fixedLine + "\n";
                 }
                 current_line++;
             }
         }
 
-            if(inputParamEntity.equalsIgnoreCase("*")) {
-                FSDataOutputStream out = fs.append(new Path(outFileNameMili));
-                out.write(myFile.getBytes());
-                out.close();
-            }
+        if (inputParamEntity.equalsIgnoreCase("*")) {
+            FSDataOutputStream out = fs.append(new Path(outFileNameMili));
+            out.write(myFile.getBytes());
+            out.close();
+        }
     }
-    
+
     private void processLine(Path p, String line) {
-    	String practiceID;
+        String practiceID;
         line = line.replaceFirst("^\\s+", "");
-        line =  ChsUtils.replaceCRandLF(line);
+        line = ChsUtils.replaceCRandLF(line);
         String splitValue[] = line.split(UNIT_SEPARATOR);
         if (splitValue.length > 1) {
 
@@ -369,7 +341,7 @@ public DivisionalDriver(String[] args) {
 
                     //Creates a path for CONTROL.TXT in each Practice ID Folder
                     Path controlPath = new Path(newPath + "CONTROL.TXT");
-                    if(!controlFiles.contains(controlPath)){
+                    if (!controlFiles.contains(controlPath)) {
                         controlFiles.add(controlPath);
                     }
                 }
@@ -377,7 +349,7 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-    private  void addToMapping(String newPath){
+    private void addToMapping(String newPath) {
         if (mapping.containsKey(entity.toUpperCase())) {
             mapping.get(entity.toUpperCase()).add(newPath + fileName);
         } else {
@@ -386,11 +358,11 @@ public DivisionalDriver(String[] args) {
             mapping.put(entity.toUpperCase(), newList);
         }
     }
-    
-    private  void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
+
+    private void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
         String divisionId = pathToFiles.toString().substring(pathToFiles.toString().indexOf("/data/") + 6);
         divisionId = divisionId.substring(0, divisionId.indexOf("/"));
-        if(fs.exists(pathToFiles) && isValidDivision(divisionId)) {
+        if (fs.exists(pathToFiles) && isValidDivision(divisionId)) {
             FileStatus[] fileStatuses = fs.listStatus(pathToFiles);
             for (FileStatus status : fileStatuses) {
                 if (status.isDirectory()) {
@@ -412,17 +384,14 @@ public DivisionalDriver(String[] args) {
         }
     }
 
-
-
-
     private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
 //        System.out.println(divisionPart);
 
-        for(FileStatus status : fileStatuses){
+        for (FileStatus status : fileStatuses) {
 
-            if(status.isDirectory() && isValidDivision(status.getPath().getName())) {
+            if (status.isDirectory() && isValidDivision(status.getPath().getName())) {
 
                 //Reads the directory and appends the date part
                 String temp = status.getPath().toString() + datePart;
@@ -452,15 +421,15 @@ public DivisionalDriver(String[] args) {
                     }
                 }
             }
-            }
         }
+    }
 
     /*
      * (non-Javadoc)
      * @see com.chs.drivers.Driver#start()
      * core launch method. All logic for divisional load needs to be in or called from this method
      */
-    public void start()  {
+    public void start() {
 //        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
         long startTime = System.currentTimeMillis();
         TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
@@ -479,7 +448,7 @@ public DivisionalDriver(String[] args) {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
                 for (String s : mapping.keySet()) {
-                    if(s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("*")) {
+                    if (s.equalsIgnoreCase(inputParamEntity) || inputParamEntity.equalsIgnoreCase("*")) {
                         this.readAndLoadEntities(mapping.get(s), s);
                     }
                 }
@@ -488,37 +457,35 @@ public DivisionalDriver(String[] args) {
 
             } catch (Exception e) {
                 e.printStackTrace();
-            	System.out.println("returnCode=FAILURE");
+                System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
-            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
+            System.out.println(((endTime - startTime) / 1000) + " seconds to execute entire request");
             writeErrorFiles();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-        	System.out.println("returnCode=FAILURE");
+            System.out.println("returnCode=FAILURE");
         }
     }
 
     private void writeErrorFiles() throws IllegalArgumentException, IOException {
-    	String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/";
+        String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/";
         if (!fs.exists(new Path(tempOutpath))) {
             fs.mkdirs(new Path(tempOutpath));
         }
-        if(errorArray.size() > 0) {
-	        Date tempDate = new Date(System.currentTimeMillis());
-	        String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
-	        String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
-	        if (!fs.exists(new Path(errorOutpath))) {
-	            fs.createNewFile(new Path(errorOutpath));
-	        }
-	        FSDataOutputStream out = fs.append(new Path(errorOutpath));
-			for (String line : errorArray) {
-				out.write((line).getBytes());
-			}       
-			out.close();
+        if (errorArray.size() > 0) {
+            Date tempDate = new Date(System.currentTimeMillis());
+            String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
+            String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
+            if (!fs.exists(new Path(errorOutpath))) {
+                fs.createNewFile(new Path(errorOutpath));
+            }
+            FSDataOutputStream out = fs.append(new Path(errorOutpath));
+            for (String line : errorArray) {
+                out.write((line).getBytes());
+            }
+            out.close();
         }
-	}
-
+    }
 
 }

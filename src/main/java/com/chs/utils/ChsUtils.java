@@ -1,13 +1,5 @@
 package com.chs.utils;
 
-import org.apache.hadoop.fs.Path;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.base.Splitter;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -16,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class ChsUtils {
