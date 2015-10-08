@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.lf5.util.DateFormatManager;
 
 import com.chs.utils.ChsUtils;
 import com.chs.utils.PiiObfuscator;
@@ -17,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -102,6 +104,7 @@ public class PathDriver implements Driver {
 					}
 				}
 			}
+			writeErrorFiles(fs);
 		} catch (Exception e) {
 			//			e.printStackTrace();
 			System.out.println("returnCode=FAILURE");
@@ -220,4 +223,23 @@ public class PathDriver implements Driver {
 		br.close();		
 	}
 
+	private void writeErrorFiles(FileSystem fs) throws IllegalArgumentException, IOException {
+    	String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/";
+        if (!fs.exists(new Path(tempOutpath))) {
+            fs.mkdirs(new Path(tempOutpath));
+        }
+        if(errorArray.size() > 0) {
+	        Date tempDate = new Date(System.currentTimeMillis());
+	        String yyyymmddhhmmss = new DateFormatManager().format(tempDate, "yyyy-MM-dd-hh-mm-ss");
+	        String errorOutpath = tempOutpath + "error-" + yyyymmddhhmmss + ".txt";
+	        if (!fs.exists(new Path(errorOutpath))) {
+	            fs.createNewFile(new Path(errorOutpath));
+	        }
+	        FSDataOutputStream out = fs.append(new Path(errorOutpath));
+			for (String line : errorArray) {
+				out.write((line).getBytes());
+			}       
+			out.close();
+        }
+	}
 }
