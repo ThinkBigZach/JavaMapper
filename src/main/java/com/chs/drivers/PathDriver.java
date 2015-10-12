@@ -80,27 +80,8 @@ public class PathDriver implements Driver {
 			for(FileStatus stat : status) {
 				if (stat.isFile()) {
 					String filename = stat.getPath().getName();
-					if(!filename.equalsIgnoreCase("CONTROL.TXT")){
+					if(!filename.equalsIgnoreCase("CONTROL.TXT") && (filename.contains(entity.toLowerCase()) || entity.equals("*"))){
 						writeEntity(entity, fs, jobID, stat.getPath(), filename);
-						//						String current_entity = filename.split(".")[0];
-						//						FSDataOutputStream out = fs.append(new Path(out_path + "/" + ChsUtils.appendTimeAndExtension(current_entity)));
-						//						Scanner fileScanner = new Scanner(fs.open(stat.getPath()));
-						//						fileScanner.useDelimiter(RECORD_SEPARATOR);
-						//						String line = "";
-						//						int lineCount = 0;
-						//						while(fileScanner.hasNextLine()) {
-						//							line = fileScanner.next();
-						//							if(lineCount == 0){
-						//								//			                    TODO: Column Validation Method
-						//							}
-						//							if (lineCount > 3) {
-						//								String fixedLine = ChsUtils.replaceCRandLF(line);
-						//								fixedLine = fixedLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobID + UNIT_SEPARATOR + filename;
-						//								out.write((fixedLine + "\n").getBytes());
-						//							}
-						//							lineCount++;
-						//						}
-						//						out.close();
 					}
 				}
 			}
