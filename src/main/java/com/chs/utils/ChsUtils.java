@@ -2,6 +2,7 @@ package com.chs.utils;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class ChsUtils {
+	private static Logger LOG = Logger.getLogger("CHS_Utils");
     public static final String CR = "\r"; //carriage return
     public static final String LF = "\n"; //line feed
     public static final String UNIT_SEPARATOR = "\037";
@@ -61,7 +63,7 @@ public class ChsUtils {
             }
         }
         pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
-        System.out.println(pattern);
+//        System.out.println(pattern);
         return pattern;
     }
     public static String appendTimeAndExtension(String s) {
@@ -110,6 +112,7 @@ public class ChsUtils {
 
             }
             catch(Exception e){
+            	LOG.warn(e.getMessage());
                 return false;
             }
         }
@@ -121,17 +124,7 @@ public class ChsUtils {
     	headerinfo = headerinfo.replace(" ", "_");
     	String goldSchemaHead = goldSchema.keySet().toString().replaceAll(", ", UNIT_SEPARATOR);
     	goldSchemaHead = goldSchemaHead.substring(1, goldSchemaHead.length()-1);
-//    	System.out.println(headerinfo + "\n" + goldSchemaHead);
     	return !headerinfo.equalsIgnoreCase(goldSchemaHead);
-//    	for(int i = 0; i < headerinfo.length; i++)
-//    	{
-//    		String cleanhead = headerinfo[i].replace(" ", "_").toLowerCase();
-//    		if (goldSchema.get(cleanhead) == null || goldSchema.get(cleanhead) != i)
-//    		{
-//    			return true;
-//    		}
-//    	}
-//    	return false;
     }
     
     public static String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
@@ -157,6 +150,7 @@ public class ChsUtils {
      	}
     	if(!headerMap.isEmpty())
     	{
+    		LOG.fatal("Header contains column title not found in golden copy; reorder not possible");
     		System.out.println("returnCode=FAILURE");
     	}
     	String schemaReorder = orderedScheme.substring(0, (orderedScheme.length() - 1));

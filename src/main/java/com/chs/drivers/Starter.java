@@ -1,7 +1,13 @@
 package com.chs.drivers;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.net.SyslogAppender;
+import org.apache.log4j.Logger;
+
 public class Starter {
 
+	private static Logger LOG = Logger.getLogger("Starter");
 
 
 	//args[0] -- INPUT PATH LIKE THIS - /user/financialDataFeed/data/*/finished/yyyy-mm-dd[-yyyy-mm-dd]
@@ -17,8 +23,11 @@ public class Starter {
 	//divisional OR path as args[10]
 	//verbose OR standard as args[11]
 	public static void main(String[] args) throws Exception {
+//		BasicConfigurator.configure(new SyslogAppender());
+		PropertyConfigurator.configure("/src/log4j.properties");
 		if(args.length != 12) {
 			System.out.println("returnCode=FAILURE");
+			LOG.info("Expected 12 parameters, received " + args.length);
 			throw new Exception("Expected 12 parameters, received " + args.length);
 		}
 		Driver driver;
@@ -30,9 +39,11 @@ public class Starter {
 		}
 		else {
 			System.out.println("returnCode=FAILURE");
+			LOG.info("did not specify \"divisional\" or \"path\" load");
 			throw new Exception("you did not specify \"divisional\" or \"path\" load");
 		}
-		
+		LOG.info("LOG -> JAR INITIALIZED; PROGRAM STARTING.");
+		System.out.println("CONSOLE -> JAR INITIALIZED; PROGRAM STARTING");
 		driver.start();
 	}
 

@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.log4j.lf5.util.DateFormatManager;
 
 import com.chs.utils.ChsUtils;
@@ -25,6 +26,7 @@ import java.util.Scanner;
 
 public class PathDriver implements Driver {
 
+	private static Logger LOG = Logger.getLogger("PathDriver");
 	private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
 	private static final String RECORD_SEPARATOR = ChsUtils.RECORD_SEPARATOR;
 	private ArrayList<String> validPracticeIDs;
@@ -65,6 +67,7 @@ public class PathDriver implements Driver {
 			ChsUtils.getValidPracticeIds(practiceMap_path, validPracticeIDs, fs);
 		} catch (IOException e) {
 			e.printStackTrace();
+			LOG.fatal(e.getMessage());
 		}
 
 	}
@@ -88,12 +91,13 @@ public class PathDriver implements Driver {
 			writeErrorFiles(fs);
 		} catch (Exception e) {
 			//			e.printStackTrace();
+			LOG.fatal(e.getMessage());
 			System.out.println("returnCode=FAILURE");
 		} 
 	}
 
 	private void writeEntity(String entity, FileSystem fs, String jobId, Path path, String filename) throws IOException {
-		System.out.println("WRITING FILE FOR ENTITY " + entity);
+		LOG.info("WRITING FILE FOR ENTITY " + entity);
 		String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
 		String outFileNameMili = ChsUtils.appendTimeAndExtension(entityOutpath + entity);
 		String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
@@ -194,6 +198,7 @@ public class PathDriver implements Driver {
 			}
 		}
 		if(!hasControl){
+			LOG.warn("The input directory does not contain a control file");
 			System.out.println("returnCode=FAILURE");
 			//    		throw new FileNotFoundException("The input directory does not contain a control file");
 		}

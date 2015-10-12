@@ -7,8 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TDConnector {
+import org.apache.log4j.Logger;
 
+public class TDConnector {
+	
+	private static Logger LOG = Logger.getLogger("TDConnector");			
 	private static String host;
 	private static String user;
 	private static String password;
@@ -32,6 +35,7 @@ public class TDConnector {
 				conn = DriverManager.getConnection(url, user, password); //Connection w/user and password
 				if (!conn.isValid(0))
 				{
+					LOG.fatal("Connection to Teradata failed.");
 					System.out.println("returnCode=FAILURE");
 //					throw new Exception("Connection to Teradata failed..");
 				}
@@ -39,6 +43,7 @@ public class TDConnector {
 			{
 //				System.out.println("Exception caught: " + e.getMessage());
 //				e.printStackTrace();
+				LOG.fatal("Connection to Teradata could not be established: " + e.getMessage());
 				System.out.println("returnCode=FAILURE");
 			}
 		}
@@ -113,6 +118,7 @@ public class TDConnector {
 		} catch (Exception e) {
 //			e.printStackTrace();
 			//throw e;
+			LOG.fatal("Schemas could not be retrieved: " + e.getMessage());
 			System.out.println("returnCode=FAILURE");
 		}
 		return schemaInfo;

@@ -3,11 +3,13 @@ package com.chs.drivers;
 import com.chs.utils.*;
 import jregex.Matcher;
 import jregex.Pattern;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.log4j.lf5.util.DateFormatManager;
 
 import java.io.BufferedReader;
@@ -16,6 +18,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class DivisionalDriver implements Driver {
+	
+	private static Logger LOG = Logger.getLogger("DivisionalDriver");
 
     //ascii replacement args
     private static final String UNIT_SEPARATOR = ChsUtils.UNIT_SEPARATOR;
@@ -115,7 +119,7 @@ public class DivisionalDriver implements Driver {
     }
 
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
-        System.out.println("WRITING FILE FOR ENTITY " + entity);
+        LOG.info("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
         String outFileNameMili = ChsUtils.appendTimeAndExtension(entityOutpath + entity);
         String errOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/" + entity.toLowerCase() + "/";
@@ -186,6 +190,7 @@ public class DivisionalDriver implements Driver {
                         }
                         lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
 //                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
+                        
                         out.write((lineclone + "\n").getBytes());
                     } else {
                         if (!fs.exists(new Path(errOutpath))) {
@@ -220,6 +225,7 @@ public class DivisionalDriver implements Driver {
                 return line.split("~")[3];
             }
         } catch (IOException e) {
+        	LOG.warn(e.getMessage());
 //            e.printStackTrace();
 //        	System.out.println("returnCode=FAILURE");
         }
@@ -416,6 +422,7 @@ public class DivisionalDriver implements Driver {
                             }
                         }
                     } catch (Exception e) {
+                    	LOG.warn("PATH " + temp + " does not exist!");
 //                    	System.out.println("PATH " + temp + "Does not exist!");
 //                    	System.out.println("returnCode=FAILURE");
                     }
@@ -431,6 +438,7 @@ public class DivisionalDriver implements Driver {
      */
     public void start() {
 //        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
+    	LOG.info("CURRENT TIME IN MILLIS IS: " + System.currentTimeMillis());
         long startTime = System.currentTimeMillis();
         TDConnector.init(TD_Host, TD_User, TD_Password, TD_Database);
         TDConnector.getConnection();
@@ -441,9 +449,9 @@ public class DivisionalDriver implements Driver {
             this.getValidPracticeIds();
             this.getValidEntityNames();
             this.getValidDivisionIds();
-            System.out.println("GOT ENTITIES AND PRACTICES");
+            LOG.info("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
-            System.out.println("GOT MANIFEST PATHS");
+            LOG.info("GOT MANIFEST PATHS");
             try {
                 long startWrite = System.currentTimeMillis();
                 //TODO: This can be threaded to somehow work with the readAndLoadEntities
@@ -457,13 +465,16 @@ public class DivisionalDriver implements Driver {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                LOG.fatal(e.getMessage());
                 System.out.println("returnCode=FAILURE");
             }
             long endTime = System.currentTimeMillis();
-            System.out.println(((endTime - startTime) / 1000) + " seconds to execute entire request");
+//            System.out.println(((endTime - startTime)/1000) + " seconds to execute entire request");
+            LOG.info(((endTime - startTime)/1000) + " seconds to execute entire request");
             writeErrorFiles();
         } catch (IOException e) {
             e.printStackTrace();
+            LOG.fatal(e.getMessage());
             System.out.println("returnCode=FAILURE");
         }
     }
