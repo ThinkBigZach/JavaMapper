@@ -8,10 +8,6 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.Map.Entry;
 
-/**
- * @author cr186034
- */
-
 public class SchemaMatcher {
 	
 	private static String delimiter = "\036";
@@ -19,14 +15,12 @@ public class SchemaMatcher {
 	private static Logger LOG = Logger.getLogger("SchemaMatcher");
 	public static Map<String, List<SchemaRecord>> goldenEntitySchemaMap = TDConnector.getSchemas();
 	
-	//Dynamic Schema Match change >> Checks to make sure column and column data type are equal. All must match to pass.
-	
 	/**
 	 * Dynamic Schema Matcher used to match against a Golden Schema for a given entity
 	 * @param entity 
 	 * @param compareURL
 	 * @param fs
-	 * @return
+	 * @return true if the schema from compareURL file matches golden schema, false otherwise
 	 * @throws FileNotFoundException
 	 */
     public static boolean matchSchemas(String entity, String compareURL, FileSystem fs) throws FileNotFoundException {
@@ -39,9 +33,6 @@ public class SchemaMatcher {
 	        compareFile = new Scanner(fs.open(new Path(compareURL))).useDelimiter(delimiter);
 	        compareMap = extractMapFromFile(cleanStringByColumn(compareFile.next()), cleanStringByColumn(compareFile.next()));
 		} catch (Exception e) {
-//			LOG.info("====SCHEMA COULD NOT BE MATCHED====");
-//			System.out.println(String.format("CompareFile: %s \nLine: %s", compareURL, line1));
-//			e.printStackTrace();
 			LOG.fatal("SCHEMA COULD NOT BE MATCHED; " + e.getMessage());
 			System.out.println("returnCode=FAILURE");
 		}
@@ -50,17 +41,14 @@ public class SchemaMatcher {
         	if (schemaMatch(goldenMap, compareMap, goldenMap.size(), entity))
         	{
         		//Successful match
-        		tripwire = true;    
-//        		System.out.println("SCHEMA MATCHED");
+        		tripwire = true;
         	}
         	else
         	{
-//        		LOG.info("==========Schema match failed============");       
-//        		System.out.println("SCHEMA NOT MATCHED");
+        		//Failed to match
         		LOG.warn("SCHEMA NOT MATCHED FOR ENTITY " + entity);
         	}
         } else {
-//        	LOG.info("====SCHEMA COULD NOT BE MATCHED");
         	LOG.warn("SCHEMA COULD NOT BE MATCHED");
         }
         compareFile.close();
@@ -76,7 +64,6 @@ public class SchemaMatcher {
     		int count = 0;
     		for (SchemaRecord sr : recordList)
     		{
-//    			System.out.println(String.format("GOLD MAPPING: %s <-> %s", sr.getColumn_name().toLowerCase(), count));
     			tempmap.put(sr.getColumn_name().toLowerCase(), count);
     			count++;
     		}
@@ -88,6 +75,11 @@ public class SchemaMatcher {
     	return tempmap;
     }
     
+    /**
+     * Retrieves golden schema for given entity
+     * @param entity
+     * @return Map containing golden schema for entity
+     */
     public static Map<String, String> getGoldenSchema(String entity)
     {
     	Map<String,String> tempmap = new HashMap<String,String>();
@@ -102,6 +94,14 @@ public class SchemaMatcher {
     	return tempmap;
     }
     
+    /**
+     * Schema matching logic, matches column titles against golden copy
+     * @param file1Map
+     * @param file2map
+     * @param mapSize
+     * @param entity
+     * @return true if every column title from file matches a title in the golden schema, false otherwise
+     */
     private static boolean schemaMatch(Map<String,String> file1Map, Map<String,String> file2map, int mapSize, String entity)
 	{
 		int ticket = 0;
@@ -127,6 +127,12 @@ public class SchemaMatcher {
                 .replaceAll(spacelimiter, ",").split(",");
     }
     
+    /**
+     * Creates map-schema from file
+     * @param column_Names
+     * @param column_Types
+     * @return Map-schema of file 
+     */
     private static Map<String,String> extractMapFromFile(String[] column_Names, String[] column_Types)
 	{
 		Map<String, String> map = new HashMap<String, String>();

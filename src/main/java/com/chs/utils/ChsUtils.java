@@ -119,6 +119,12 @@ public class ChsUtils {
         return true;
     }
     
+    /**
+     * Determines if file needs reordering
+     * @param goldSchema
+     * @param headerinfo
+     * @return true if needs reordering, false otherwise
+     */
     public static boolean needsDynamicSchemaReorder(Map<String,Integer> goldSchema, String headerinfo)
     {
     	headerinfo = headerinfo.replace(" ", "_");
@@ -127,12 +133,18 @@ public class ChsUtils {
     	return !headerinfo.equalsIgnoreCase(goldSchemaHead);
     }
     
+    /**
+     * Reorders file content along gold schema
+     * @param goldSchema
+     * @param schemaColumns
+     * @param headerinfo
+     * @return string representing content in corrected order
+     */
     public static String reorderAlongSchema(Map<String, Integer> goldSchema, String[] schemaColumns, String[] headerinfo)
     {
     	StringBuilder orderedScheme = new StringBuilder();
     	Map<Integer,String> columnMap = new HashMap<Integer,String>();
     	Map<String,Integer> headerMap = new HashMap<String,Integer>();
-//    	System.out.println(String.format("File column size: %s \n\tHeader column size: %s", schemaColumns.length, headerinfo.length));
     	for (int i = 0; i < schemaColumns.length; i++)
      	{
     		columnMap.put(i, schemaColumns[i]);
@@ -140,10 +152,9 @@ public class ChsUtils {
      	}
     	for (Entry<String,Integer> kv : goldSchema.entrySet())
      	{
-//    		System.out.println("GOLD KEY: " + kv.getKey());
     		if (headerMap.containsKey(kv.getKey()))
     		{
-    			int goldCol = headerMap.remove(kv.getKey());//headerMap.get(kv.getKey());
+    			int goldCol = headerMap.remove(kv.getKey());
     			String colValue = columnMap.get(goldCol);
     			orderedScheme.append(colValue).append(UNIT_SEPARATOR);    			
     		}

@@ -20,8 +20,8 @@ public class TDConnector {
 	
 	private TDConnector() {/* Empty private constructor just because */}
 	
-	/***
-	 * Must call init() before attempting to query/connect
+	/**
+	 * Starts Teradata Connection; must call init() before attempting to query/connect
 	 * @return
 	 */
 	public static Connection getConnection()
@@ -37,12 +37,9 @@ public class TDConnector {
 				{
 					LOG.fatal("Connection to Teradata failed.");
 					System.out.println("returnCode=FAILURE");
-//					throw new Exception("Connection to Teradata failed..");
 				}
 			} catch (Exception e)
 			{
-//				System.out.println("Exception caught: " + e.getMessage());
-//				e.printStackTrace();
 				LOG.fatal("Connection to Teradata could not be established: " + e.getMessage());
 				System.out.println("returnCode=FAILURE");
 			}
@@ -50,7 +47,7 @@ public class TDConnector {
 		return conn;
 	}
 	
-	/***
+	/**
 	 * Sets the connection parameters
 	 * @param _host
 	 * @param _user
@@ -84,6 +81,10 @@ public class TDConnector {
 		return map;
 	}
 	
+	/**
+	 * Queries Teradata for schemas regarding entities available (MUST call init() and getConnection() FIRST)
+	 * @return Map populated with schemas from Teradata for available entities
+	 */
 	public static Map<String, List<SchemaRecord>> getSchemas()
 	{
 		Map<String, List<SchemaRecord>> schemaInfo = null;
@@ -101,7 +102,6 @@ public class TDConnector {
 			while (!set.isAfterLast())
 			{
 				String fixedTitle = set.getString(2).replace(" ", "_").toLowerCase();
-//				System.out.println("Tablename: " + set.getString(1) + "\n\tColumn title: " + set.getString(2) + "\n\tColumn type: " + set.getString(3));
 				if (schemaInfo.containsKey(set.getString(1).toLowerCase()))
 				{
 					schemaInfo.get(set.getString(1).toLowerCase()).add(new SchemaRecord(fixedTitle, set.getString(3), set.getString(4)));
@@ -116,14 +116,17 @@ public class TDConnector {
 				set.next();
 			}
 		} catch (Exception e) {
-//			e.printStackTrace();
-			//throw e;
 			LOG.fatal("Schemas could not be retrieved: " + e.getMessage());
 			System.out.println("returnCode=FAILURE");
 		}
 		return schemaInfo;
 	}
 
+	/**
+	 * Executes given SQL query
+	 * @param sql
+	 * @throws SQLException
+	 */
 	public void executeQuery(String sql) throws SQLException
 	{
 		Connection conn = getConnection();
