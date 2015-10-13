@@ -18,7 +18,7 @@ else
 	uID=$USER
 	MODE=${1}
 	dataPartID=${2}
-	entity="allergy"
+	entity="*"
 	if [ ${uID} != "athena" ]; then
     echo "Error: ** YOU MUST BE athena USER to run **"
     echo "USAGE: syncit1 [MODE PROD]"
@@ -64,11 +64,15 @@ else
     	exit -1
   	fi
 		hadoop fs -rm -skipTrash /user/${uID}/mappings/athena_table_defs.csv
+		hadoop fs -rm -skipTrash /user/${uID}/mappings/chs-division-id-mapping-athena.csv
+		hadoop fs -rm -skipTrash /user/${uID}/mappings/chs-practice-id-mapping-athena.csv
 		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/job.properties
 		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
 		hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
 		hadoop fs -put athena_table_defs.csv  /user/${uID}/mappings/athena_table_defs.csv
+		hadoop fs -put athena_table_defs.csv  /user/${uID}/mappings/chs-division-id-mapping-athena.csv
+		hadoop fs -put athena_table_defs.csv  /user/${uID}/mappings/chs-practice-id-mapping-athena.csv
 		hadoop fs -put job.properties /user/${uID}/data/${dataPartID}/oozie/job.properties
 		hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
 		hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
