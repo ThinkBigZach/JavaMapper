@@ -52,18 +52,18 @@ public class DivisionalDriver implements Driver {
 
 
     public DivisionalDriver(String[] args) {
-        input_path = args[0];
+        input_path = args[0] + "/" + args[2];
         entity = args[1];
         inputParamEntity = args[1];
-        out_path = args[2];
-        practiceMap_path = args[3];
-        entityMap_path = args[4];
-        divisional_path = args[5];
-        TD_Host = args[6];
-        TD_User = args[7];
-        TD_Password = args[8];
-        TD_Database = args[9];
-        regex_flag = args[11];
+        out_path = args[3];
+        practiceMap_path = args[4];
+        entityMap_path = args[5];
+        divisional_path = args[6];
+        TD_Host = args[7];
+        TD_User = args[8];
+        TD_Password = args[9];
+        TD_Database = args[10];
+        regex_flag = args[12];
         manifestFiles = new ArrayList<Path>();
         controlFiles = new ArrayList<Path>();
         errorArray = new ArrayList<String>();

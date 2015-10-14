@@ -10,31 +10,32 @@ public class Starter {
 	private static Logger LOG = Logger.getLogger("Starter");
 
 
-	//args[0] -- INPUT PATH LIKE THIS - /user/financialDataFeed/data/*/finished/yyyy-mm-dd[-yyyy-mm-dd]
+	//args[0] -- INPUT PATH LIKE THIS - /user/financialDataFeed/data/*/finished
 	//args[1] -- entity like this - allergy or "" "" will give you all entities
-	//args[2] -- outpath like this -- /user/athena/financialdatafeed/extracted/finished
-	//args[3] -- valid practice map location like this --/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv
-	//args[4] -- valid entity map location like this -- /enterprise/mappings/athena/athena_table_defs.csv
-	//args[5] -- valid division map location like -- /enterprise/mappings/athena/chs-division-id-mapping-athena.csv
-	//TD_HOST - args[6] -dev.teradata.chs.net
-	//TD_USER - args[7] - dbc
-	//TD_PSWD - args[8] - dbc
-	//TD_DATABASE - args[9] -- EDW_ATHENA_STAGE
-	//divisional OR path as args[10]
-	//verbose OR standard as args[11]
+	//args[2] -- date for which it is run over yyyy-mm-dd[-yyyy-mm-dd]
+	//args[3] -- outpath like this -- /user/athena/financialdatafeed/extracted/finished
+	//args[4] -- valid practice map location like this --/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv
+	//args[5] -- valid entity map location like this -- /enterprise/mappings/athena/athena_table_defs.csv
+	//args[6] -- valid division map location like -- /enterprise/mappings/athena/chs-division-id-mapping-athena.csv
+	//TD_HOST - args[7] -dev.teradata.chs.net
+	//TD_USER - args[8] - dbc
+	//TD_PSWD - args[9] - dbc
+	//TD_DATABASE - args[10] -- EDW_ATHENA_STAGE
+	//divisional OR path as args[11]
+	//verbose OR standard as args[12]
 	public static void main(String[] args) throws Exception {
 //		BasicConfigurator.configure(new SyslogAppender());
 		PropertyConfigurator.configure("/src/log4j.properties");
-		if(args.length != 12) {
+		if(args.length != 13) {
 			System.out.println("returnCode=FAILURE");
-			LOG.info("Expected 12 parameters, received " + args.length);
-			throw new Exception("Expected 12 parameters, received " + args.length);
+			LOG.info("Expected 13 parameters, received " + args.length);
+			throw new Exception("Expected 13 parameters, received " + args.length);
 		}
 		Driver driver;
-		if(args[10].equals("divisional")) {
+		if(args[11].equals("divisional")) {
 			driver = new DivisionalDriver(args);
 		}
-		else if (args[10].equals("path")) {
+		else if (args[11].equals("path")) {
 			driver = new PathDriver(args);
 		}
 		else {
