@@ -28,8 +28,9 @@ import static org.mockito.Mockito.*;
 public class DivisionalDriverTest {
 
 
-    private String[] args = {"/user/financialDataFeed/data/*/athena/finished/2015-09-01",
+    private String[] args = {"/user/financialDataFeed/data/*/athena/finished",
             "allergy",
+            "2015-09-01",
             "/user/athena/data/financialdatafeed/finished/",
             "/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv",
             "/enterprise/mappings/athena/athena_table_defs.csv",
