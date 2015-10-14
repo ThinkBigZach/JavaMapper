@@ -19,7 +19,13 @@ public class ChsUtils {
     public static final String LF = "\n"; //line feed
     public static final String UNIT_SEPARATOR = "\037";
     public static final String RECORD_SEPARATOR = "\036";
-    
+
+
+    /**
+     * Replaces all carriage returns, line feeds, and record separators
+     * @param line
+     * @return
+     */
     public static String replaceCRandLF(String line){
         line = line.replaceAll(CR, " ");
         line = line.replaceAll(LF, "");
@@ -27,7 +33,27 @@ public class ChsUtils {
         return line;
     }
 
-
+    /**
+     * Reads in valid division ids from path
+     * @param path
+     * @param validDivisionIDs
+     * @param fs
+     * @throws IOException
+     */
+    public static void getValidDivisionIds(String path, ArrayList<String> validDivisionIDs, FileSystem fs) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
+        String line = "";
+        while ((line = br.readLine()) != null) {
+            validDivisionIDs.add(line.split("~")[0]);
+        }
+    }
+    /**
+     * Reads in the valid practice ids from path
+     * @param path -- path to valid practice ids
+     * @param validPracticeIDs -- list of valid practices
+     * @param fs -- file system to read in file
+     * @throws IOException
+     */
     public static void getValidPracticeIds(String path, ArrayList<String> validPracticeIDs, FileSystem fs) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(path))));
         String line = "";
@@ -37,6 +63,14 @@ public class ChsUtils {
         }
     }
 
+    /**
+     * Reads in all the valid entities from pathToMap
+     * @param pathToMap --
+     * @param out_path -- out path for entities
+     * @param validEntityNames -- List of valid entity names
+     * @param fs -- file system to read in the map
+     * @throws IOException
+     */
     public static void getValidEntityNames(String pathToMap, String out_path, ArrayList<String> validEntityNames, FileSystem fs) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(pathToMap))));
         String line = "";
@@ -49,30 +83,23 @@ public class ChsUtils {
             validEntityNames.add(currentValidName);
         }
     }
-    public static String getPatternMatch(String header){
-        String[] headerInfo = header.split(UNIT_SEPARATOR);
-        String varcharMatch = ".*";
-        String numberMatch = "[+-]?(\\d+\\.?\\d*)";
-        String pattern = "";
-        for(String s : headerInfo){
-            if(s.equalsIgnoreCase("NUMBER")){
-                    pattern += numberMatch + UNIT_SEPARATOR;
-            }
-            else{
-                pattern += varcharMatch + UNIT_SEPARATOR;
-            }
-        }
-        pattern = pattern.substring(0, pattern.lastIndexOf(UNIT_SEPARATOR));
-//        System.out.println(pattern);
-        return pattern;
-    }
-    public static String appendTimeAndExtension(String s) {
 
+    /**
+     * Appends a timestamp to a file name
+     * @param s
+     * @return
+     */
+    public static String appendTimeAndExtension(String s) {
         String time = "."+System.currentTimeMillis();
         return s += time + ".txt";
-
     }
-    
+
+
+    /**
+     * Finds all the indices for NUMBER fields in the header of a given file
+     * @param header
+     * @return a list of all the indices
+     */
     public static ArrayList<Integer> getNumberIndices(String header){
         String[] line = header.split(UNIT_SEPARATOR);
         ArrayList<Integer> arr = new ArrayList<Integer>();
@@ -86,6 +113,13 @@ public class ChsUtils {
         return arr;
     }
 
+
+    /**
+     * Returns if a given line matches all the data types from its header
+     * @param line
+     * @param numberCols
+     * @return true if all the data types match, false otherwise
+     */
     public static boolean matchNumberTypes(String line, ArrayList<Integer> numberCols){
         String[] matchLine = line.split(UNIT_SEPARATOR);
 

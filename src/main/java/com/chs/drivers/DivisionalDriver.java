@@ -72,7 +72,11 @@ public class DivisionalDriver implements Driver {
         validDivisionIDs = new ArrayList<String>();
     }
 
-
+    /**
+     * Reads in a wildcardable path. The division id, pratice id, and date are wildcardable
+     * @param pathToControl -- This is the path to the CONTROL or the MANIFEST file
+     * @throws IOException
+     */
     private void getManifestPaths(String pathToControl) throws IOException {
         //MEANS A DIVISION WILDCARD
         if (pathToControl.contains("data/*")) {
@@ -92,15 +96,16 @@ public class DivisionalDriver implements Driver {
             readDateWildCard(new Path(pathToControl), null, false);
         }
         removeUnusedControlFiles();
-//        System.out.println("NUM MANIFEST FILES TO PROCESS " + manifestFiles.size());
-//        if(inputParamEntity.equalsIgnoreCase("*")) {
         writeOutFileLocations(manifestFiles, "Manifest");
-//        System.out.println("NUM CONTROL FILES TO PROCESS " + controlFiles.size());
+
         writeOutFileLocations(controlFiles, "Control");
-//        }
 
     }
 
+    /**
+     * Get Manifest Paths adds too many Control.txt files. This removes all the Control.txt files that don't have a
+     * corresponding Manifest file
+     */
     public void removeUnusedControlFiles() {
         ArrayList<Path> newControl = new ArrayList<Path>();
         for (Path p : controlFiles) {
@@ -118,6 +123,14 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+
+    /**
+     * Reads in all the entity.asv files and consolidates them into 1 entity file
+     * It also removes carriage returns and line feed characters and nulls out personally identifiable information
+     * @param paths -- List of paths for a given entity
+     * @param entity -- The entity that the method is writing a file for
+     * @throws IOException
+     */
     private void readAndLoadEntities(ArrayList<String> paths, String entity) throws IOException {
         LOG.info("WRITING FILE FOR ENTITY " + entity);
         String entityOutpath = out_path + "/" + entity.toLowerCase() + "/";
@@ -133,8 +146,6 @@ public class DivisionalDriver implements Driver {
         }
         FSDataOutputStream out = fs.append(new Path(outFileNameMili));
         FSDataOutputStream err = null;
-       // Pattern validPattern = null;
-        //Matcher matcher = null;
         for (String path : paths) {
             String jobId = getJobIdFromPaths(path);
             String myFileName = path.substring(path.lastIndexOf("/") + 1);
@@ -165,8 +176,6 @@ public class DivisionalDriver implements Driver {
                     headerTypes = line;
                     numericColumnIndices = ChsUtils.getNumberIndices(headerTypes);
                     if (regex_flag.equalsIgnoreCase("validate")) {
-//                        validPattern = new Pattern(ChsUtils.getPatternMatch(line.replaceAll(RECORD_SEPARATOR, "").trim()));
-//                        matcher = validPattern.matcher("");
                         needsRegex = true;
                     }
                 }
@@ -189,8 +198,6 @@ public class DivisionalDriver implements Driver {
                             lineclone = ChsUtils.reorderAlongSchema(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), cline.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR));
                         }
                         lineclone = lineclone + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
-//                		System.out.println(String.format("BEFORE: \n\t%s \nAFTER: \n\t%s", cleanLine, lineclone));
-                        
                         out.write((lineclone + "\n").getBytes());
                     } else {
                         if (!fs.exists(new Path(errOutpath))) {
@@ -214,6 +221,12 @@ public class DivisionalDriver implements Driver {
         out.close();
     }
 
+
+    /**
+     * Gets the JobID for a given path
+     * @param path -- The path to look for
+     * @return
+     */
     private String getJobIdFromPaths(String path) {
         String temp = path.substring(0, path.lastIndexOf('/'));
         temp = temp + "/CONTROL.TXT";
@@ -233,55 +246,58 @@ public class DivisionalDriver implements Driver {
 
     }
 
-    private void getValidPracticeIds() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(practiceMap_path))));
-        String line;
-        while ((line = br.readLine()) != null) {
-            String validPractice = line.substring(0, line.indexOf("~"));
-            validPracticeIDs.add(validPractice.toUpperCase());
-        }
-    }
-
-    private void getValidEntityNames() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(entityMap_path))));
-        String line;
-        while ((line = br.readLine()) != null) {
-            String currentValidName = line.toUpperCase();
-            String tempWriteDir = out_path + "/" + currentValidName.toLowerCase() + "/";
-            if (!fs.exists(new Path(tempWriteDir))) {
-                fs.mkdirs(new Path(tempWriteDir));
-            }
-            validEntityNames.add(currentValidName);
-        }
-    }
 
 
-    private void getValidDivisionIds() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(new Path(divisional_path))));
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            validDivisionIDs.add(line.split("~")[0]);
-        }
-    }
-
+    /**
+     * Checks if the practice id is valid and the entity is valid
+     * @param practiceID
+     * @param entityName
+     * @return
+     */
     private boolean isValidEntry(String practiceID, String entityName) {
         return isValidPractice(practiceID) && isValidEntity(entityName);
     }
 
+
+    /**
+     * Checks if the division is valid
+     * @param divisionID
+     * @return
+     */
     private boolean isValidDivision(String divisionID) {
         return validDivisionIDs.contains(divisionID);
     }
 
+
+    /**
+     * Checks if the practice id is valid
+     * @param practiceID
+     * @return
+     */
     private boolean isValidPractice(String practiceID) {
         boolean isValid = validPracticeIDs.contains(practiceID.toUpperCase());
         return isValid;
     }
 
+
+    /**
+     * Checks if the entity is valid
+     * @param entityName
+     * @return
+     */
     private boolean isValidEntity(String entityName) {
         boolean isValid = validEntityNames.contains(entityName.toUpperCase());
         return isValid;
     }
 
+
+    /**
+     * Takes in the path for a Manifest file. It replaces the division id with the practice id
+     * Which is the new path for the entities
+     * @param path -- Path to the Manifest file
+     * @param practiceID -- Practice id to switch
+     * @return
+     */
     private String generateNewPath(Path path, String practiceID) {
         String fixedPath = path.toString().substring(0, path.toString().indexOf("Manifest"));
         String testing2 = fixedPath.substring(0, fixedPath.indexOf("/data/") + 6);
@@ -290,6 +306,14 @@ public class DivisionalDriver implements Driver {
         return newPath;
     }
 
+
+    /**
+     * Loads all the entity files into a map at processLine(p, line)
+     * Writes out the Manifest and Control files if the input entity is *
+     * @param files
+     * @param type
+     * @throws IOException
+     */
     private void writeOutFileLocations(ArrayList<Path> files, String type) throws IOException {
         String manconOutpath = out_path + "/" + type.toLowerCase() + "/" + type;
         String outFileNameMili = ChsUtils.appendTimeAndExtension(manconOutpath);
@@ -326,6 +350,14 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+    /**
+     * Takes a path and a line
+     * Get the practice id from the line
+     * replaces the division id in the path with the practice id from the line
+     * Adds the new path to the entity mapping
+     * @param p
+     * @param line
+     */
     private void processLine(Path p, String line) {
         String practiceID;
         line = line.replaceFirst("^\\s+", "");
@@ -336,7 +368,6 @@ public class DivisionalDriver implements Driver {
             if (Integer.parseInt(splitValue[1]) > 0) {
                 practiceID = line.substring(0, line.indexOf(".asv"));
                 fileName = line.substring(0, line.indexOf(".asv") + 4);
-
                 entity = line.substring(0, line.indexOf("_"));
                 while (practiceID.contains("_")) {
                     practiceID = practiceID.substring(practiceID.indexOf("_") + 1);
@@ -355,6 +386,11 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+
+    /**
+     * Takes a new path and adds it to the mapping for later processing
+     * @param newPath
+     */
     private void addToMapping(String newPath) {
         if (mapping.containsKey(entity.toUpperCase())) {
             mapping.get(entity.toUpperCase()).add(newPath + fileName);
@@ -365,6 +401,14 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+
+    /**
+     * Takes in a path that ends with a date wildcard, it then recursively walks down the path
+     * @param pathToFiles -- the path up to the date wildcard (e.g /user/financialDataFeed/data/athena/finished/)
+     * @param dateWildCard -- the piece of the date wildcard (e.g. 2015-08-1*)
+     * @param wildCarded -- indicator if it's wildcarded or not
+     * @throws IOException
+     */
     private void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
         String divisionId = pathToFiles.toString().substring(pathToFiles.toString().indexOf("/data/") + 6);
         divisionId = divisionId.substring(0, divisionId.indexOf("/"));
@@ -390,6 +434,13 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+
+    /**
+     * Reads a path with a divisional wildcard (e.g. /user/financialDataFeed/data/* athena/finished/2015-09-01
+     * @param divisionPart -- the part before the wildcard  /user/financialDataFeed/data/*
+     * @param datePart -- the part after the wildcard /athena/finished/2015-09-01
+     * @throws IOException
+     */
     private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
         //FIRST READ IN ALL DIVISION FOLDERS
         FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
@@ -436,6 +487,10 @@ public class DivisionalDriver implements Driver {
      * @see com.chs.drivers.Driver#start()
      * core launch method. All logic for divisional load needs to be in or called from this method
      */
+
+    /**
+     * The start method from the Driver interface used to execute a given job
+     */
     public void start() {
 //        System.out.println("CURRENT TIME IN MILLIS IS:" + System.currentTimeMillis());
     	LOG.info("CURRENT TIME IN MILLIS IS: " + System.currentTimeMillis());
@@ -444,11 +499,10 @@ public class DivisionalDriver implements Driver {
         TDConnector.getConnection();
         try {
             fs = FileSystem.newInstance(new Configuration());
-
             mapping = new HashMap<String, ArrayList<String>>();
-            this.getValidPracticeIds();
-            this.getValidEntityNames();
-            this.getValidDivisionIds();
+            ChsUtils.getValidEntityNames(entityMap_path, out_path, validEntityNames, fs);
+            ChsUtils.getValidPracticeIds(practiceMap_path, validPracticeIDs, fs);
+            ChsUtils.getValidDivisionIds(divisional_path, validDivisionIDs, fs);
             LOG.info("GOT ENTITIES AND PRACTICES");
             this.getManifestPaths(input_path);
             LOG.info("GOT MANIFEST PATHS");
@@ -479,6 +533,12 @@ public class DivisionalDriver implements Driver {
         }
     }
 
+
+    /**
+     * Writes out all the files that had errors in them
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
     private void writeErrorFiles() throws IllegalArgumentException, IOException {
         String tempOutpath = out_path.substring(0, out_path.lastIndexOf('/')) + "/error/";
         if (!fs.exists(new Path(tempOutpath))) {

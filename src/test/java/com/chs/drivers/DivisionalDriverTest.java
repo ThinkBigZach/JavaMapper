@@ -221,29 +221,6 @@ public class DivisionalDriverTest {
 
     }
 
-    @Test
-    public void testRegex() throws IOException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException{
-        String header = "NUMBER\u001FVARCHAR\u001FNUMBER\u001FNUMBER\u001FNUMBER\u001FVARCHAR\u001FDATETIME\u001FVARCHAR\u001FDATETIME\u001FVARCHAR\u001FVARCHAR\036";
-        String line = "1563\u001FGA - CHS Hidden Valley Medical Center\u001F8764\u001F629845\u001F1826756\u001Fmrobinson36\u001F08/08/2015 13:11:02\u001F\u001F\u001F\u001Ffollow up";
-        String lineBroken = "1563\u001FGA - CHS Hidden Valley Medical Center\u001F8g764\u001F629845\u001F1826756\u001Fmrobinson36\u001F08/08/2015 13:11:02\u001F\u001F\u001F\u001Ffollow up";
-
-        String header3 = "NUMBER\u001FVARCHAR\u001FDATETIME\u001FNUMBER\036";
-        String line3 = "1563.33\u001FF\u001F1-1-1\u001F111";
-        String header2 = "NUMBER\u001FVARCHAR\u001FDATETIME";
-        String decimalLine = "1563.33\u001FF\u001F1-1-1\036";
-        String intLine =  "1563\u001FF\u001F1-1-1";
-        String pattern  =  ChsUtils.getPatternMatch(header);
-        String pattern2  =  ChsUtils.getPatternMatch(header2);
-        String pattern3  =  ChsUtils.getPatternMatch(header3);
-        assertEquals(true, Pattern.matches(pattern, line));
-        assertEquals(false, Pattern.matches(pattern, lineBroken));
-        assertEquals(true, Pattern.matches(pattern2, decimalLine));
-        assertEquals(true, Pattern.matches(pattern2, intLine));
-        assertEquals(true, Pattern.matches(pattern3, line3));
-    }
-
-
-
 
     @Test
     public void testGetManifestPaths2() throws IOException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {

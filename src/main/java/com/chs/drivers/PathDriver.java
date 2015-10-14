@@ -123,7 +123,6 @@ public class PathDriver implements Driver {
 		boolean needsReorder = false;// = needsDynamicSchemaReorder(SchemaMatcher.getOrderingSchema(entity.toLowerCase()), headerInfo.split(UNIT_SEPARATOR))
 		boolean needsRegex = false;
 		while(fileScanner.hasNextLine()) {
-
 			line = fileScanner.next();
 			if(lineCount == 0){
 				headerInfo = line;
