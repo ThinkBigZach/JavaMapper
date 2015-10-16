@@ -65,12 +65,6 @@
 			<name>stageOneRawDir</name>
 		</property>
 		<property>
-			<name>stageOnePracticeMappingFile</name>
-		</property>
-		<property>
-			<name>stageOneDivisionMappingFile</name>
-		</property>
-		<property>
 			<name>scriptsDir</name>
 		</property>
 		<property>
@@ -90,9 +84,6 @@
 		</property>
 		<property>
 			<name>sourcePath</name>
-		</property>
-		<property>
-			<name>outputPath</name>
 		</property>
 	</parameters>
 
@@ -178,7 +169,7 @@
 			<capture-output />
 		</shell>
 		<ok to="validateControlPayload" />
-		<error to="stage-3-notify-job-failed" />
+		<error to="stage-3-notify-control-failed" />
 	</action>
 
 	<!-- We verify the job id was properly grabbed -->
@@ -192,41 +183,6 @@
 			<default to="stage-3-notify-control-failed" />
 		</switch>
 	</decision>
-
-	<!-- we have failed so tell the scorecard and exit -->
-	<action name="stage-3-notify-job-failed">
-		<java>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
-			<arg>-h</arg>
-			<arg>${tdServer}</arg>
-			<arg>-d</arg>
-			<arg>${tdAuditDB}</arg>
-			<arg>-u</arg>
-			<arg>${tdUserID}</arg>
-			<arg>-p</arg>
-			<arg>${tdUserIDPassword}</arg>
-			<arg>-j</arg>
-			<!-- we probably do not even have a job id at this point -->
-			<arg>unknown</arg>
-			<arg>-f</arg>
-			<arg>0000</arg>
-			<arg>-s</arg>
-			<arg>${sourceName}</arg>
-			<arg>-z</arg>
-			<arg>STAGE-1</arg>
-			<arg>-x</arg>
-			<arg>FAILED</arg>
-			<arg>-m</arg>
-			<arg>'${wf:id()} Stage-3 control job checks failed workflow exiting
-				...'</arg>
-			<file>job.properties#job.properties</file>
-			<capture-output />
-		</java>
-		<ok to="stage-3-early-failure-cleanup" />
-		<error to="stage-3-early-failure-cleanup" />
-	</action>
 
 	<action name="stage-3-notify-control-failed">
 		<java>
