@@ -43,7 +43,6 @@ public class Starter {
 			throw new Exception("you did not specify \"divisional\" or \"path\" load");
 		}
 		LOG.info("LOG -> JAR INITIALIZED; PROGRAM STARTING.");
-		System.out.println("CONSOLE -> JAR INITIALIZED; PROGRAM STARTING");
 		driver.start();
 	}
 
