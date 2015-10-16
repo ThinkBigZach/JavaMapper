@@ -24,8 +24,7 @@ public class Starter {
 	//divisional OR path as args[11]
 	//verbose OR standard as args[12]
 	public static void main(String[] args) throws Exception {
-//		BasicConfigurator.configure(new SyslogAppender());
-		PropertyConfigurator.configure("/src/log4j.properties");
+//		PropertyConfigurator.configure("/src/log4j.properties");
 		if(args.length != 13) {
 			System.out.println("returnCode=FAILURE");
 			LOG.info("Expected 13 parameters, received " + args.length);
