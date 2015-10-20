@@ -182,11 +182,7 @@ public class DivisionalDriver implements Driver {
                 if (lineCount > 3 && line.trim().length() > 0) {
                     String cleanLine = ChsUtils.replaceCRandLF(line);
                     if (needsProcess) {
-                    	if(cleanLine.endsWith(UNIT_SEPARATOR))
-                    	{
-                    		cleanLine=cleanLine+UNIT_SEPARATOR;
-                    	}
-                        cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
+                        cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR, -1), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                     }
                     boolean isGoodLine = true;
                     if (needsRegex) {
