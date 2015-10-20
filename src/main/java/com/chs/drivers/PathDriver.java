@@ -208,7 +208,7 @@ public class PathDriver implements Driver {
 			readInputPath(input_path);
 			for(String filename: mapping.keySet()){
 				System.out.println("Entity=" + filename);
-				if(filename.contains(entity.toLowerCase()) || entity.equals("*")){
+				if(filename.equals(entity.toLowerCase()) || entity.equals("*")){
 						System.out.println("PATH=" + mapping.get(filename).get(0).toString());
 						writeEntity(filename, fs, jobID, mapping.get(filename));
 				}
