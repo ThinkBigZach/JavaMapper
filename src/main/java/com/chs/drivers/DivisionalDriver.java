@@ -181,15 +181,19 @@ public class DivisionalDriver implements Driver {
                 }
                 if (lineCount > 3 && line.trim().length() > 0) {
                     String cleanLine = ChsUtils.replaceCRandLF(line);
-                    String cline = cleanLine;
-                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                     if (needsProcess) {
+                    	if(cleanLine.endsWith(UNIT_SEPARATOR))
+                    	{
+                    		cleanLine=cleanLine+UNIT_SEPARATOR;
+                    	}
                         cleanLine = PiiObfuscator.piiProcess(cleanLine.split(UNIT_SEPARATOR), headerInfo.split(UNIT_SEPARATOR), schemas.get(entity.toLowerCase()), UNIT_SEPARATOR);
                     }
                     boolean isGoodLine = true;
                     if (needsRegex) {
                         isGoodLine = ChsUtils.matchNumberTypes(cleanLine, numericColumnIndices);
                     }
+                    String cline = cleanLine;
+                    cleanLine = cleanLine + UNIT_SEPARATOR + "0" + UNIT_SEPARATOR + jobId + UNIT_SEPARATOR + myFileName;
                     int cl_int = cleanLine.split(UNIT_SEPARATOR).length; //Splitter.on(UNIT_SEPARATOR).splitToList(cleanLine).size();
                     int he_int = headerInfo.split(UNIT_SEPARATOR).length;//Splitter.on(UNIT_SEPARATOR).splitToList(headerInfo).size();
                     if (cl_int == he_int + 3 && isGoodLine) {
