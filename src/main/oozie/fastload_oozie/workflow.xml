@@ -50,19 +50,13 @@
 			<name>tdUserIDPassword</name>
 		</property>
 		<property>
-			<name>stageOneDataPartition</name>
+			<name>stageThreeDataPartition</name>
 		</property>
 		<property>
-			<name>stageOneFinishedDir</name>
+			<name>stageThreeOozieDir</name>
 		</property>
 		<property>
-			<name>stageOneExtractedDir</name>
-		</property>
-		<property>
-			<name>stageOneOozieDir</name>
-		</property>
-		<property>
-			<name>stageOneRawDir</name>
+			<name>stageThreeRawDir</name>
 		</property>
 		<property>
 			<name>scriptsDir</name>
@@ -81,9 +75,6 @@
 		</property>
 		<property>
 			<name>failureFile</name>
-		</property>
-		<property>
-			<name>sourcePath</name>
 		</property>
 	</parameters>
 
@@ -127,9 +118,9 @@
 		stage-3 -->
 	<action name="clean-up-request">
 		<fs>
-			<delete path="${stageOneRawDir}" />
-			<mkdir path='${stageOneRawDir}' />
-			<chmod path='${stageOneRawDir}' permissions='777' dir-files='false' />
+			<delete path="${stageThreeRawDir}" />
+			<mkdir path='${stageThreeRawDir}' />
+			<chmod path='${stageThreeRawDir}' permissions='777' dir-files='false' />
 		</fs>
 		<!-- We end normally because we succeeded in simply cleaning up -->
 		<ok to="end" />
@@ -146,7 +137,7 @@
 		<fs>
 			<!-- GARY CLEANS FOR TODAYS WORK .... -->
 			<move source="${controlFile}" target="${workingFile}" />
-			<chmod path='${stageOneRawDir}/*' permissions='777' dir-files='false' />
+			<chmod path='${stageThreeRawDir}/*' permissions='777' dir-files='false' />
 		</fs>
 		<!-- Even if this step is not needed, and it may not be, move to next step -->
 		<ok to="retrieveControlJob" />
