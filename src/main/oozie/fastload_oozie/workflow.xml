@@ -251,8 +251,13 @@
 			<exec>/usr/bin/bash</exec>
 			<argument>athena_load.sh</argument>
 			<argument>-i</argument>
-			<argument>${workingFile}</argument>
-			<file>${scriptsDir}/athena_load.sh#athena_load.shy</file>
+			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
+			<argument>${stageThreeFinishedDir}</argument>
+			<argument>${tdServer}</argument>
+			<argument>${tdUserID}</argument>
+			<argument>${tdUserIDPassword}</argument>
+			<argument>${tdStageDB}</argument>
+			<file>${scriptsDir}/athena_load.sh#athena_load.sh</file>
 			<capture-output />
 		</shell>
 		<ok to="validateJump" />
