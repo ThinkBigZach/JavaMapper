@@ -46,6 +46,7 @@ public class ChsUtils {
         while ((line = br.readLine()) != null) {
             validDivisionIDs.add(line.split("~")[0]);
         }
+        br.close();
     }
     /**
      * Reads in the valid practice ids from path
@@ -61,6 +62,7 @@ public class ChsUtils {
             String validPractice = line.substring(0, line.indexOf("~"));
             validPracticeIDs.add(validPractice.toUpperCase());
         }
+        br.close();
     }
 
     /**
@@ -82,6 +84,7 @@ public class ChsUtils {
             }
             validEntityNames.add(currentValidName);
         }
+        br.close();
     }
 
     /**
