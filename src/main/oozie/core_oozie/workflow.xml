@@ -220,13 +220,26 @@
 	<!-- We verify the date was properly grabbed -->
 	<decision name="validateControlDatePayload">
 		<switch>
-			<case to="stage-1-notify-status-started">
+			<case to="stage-1-pre-cleanup">
 				${wf:actionData('retrieveControlDate') ['returnCode']
 				ne 'FAILURE'}
 			</case>
 			<default to="stage-1-notify-control-failed" />
 		</switch>
 	</decision>
+
+	<action name="stage-1-pre-cleanup">
+		<fs>
+			<delete path="${outPath}" />
+			<mkdir path="${outPath}"/> 
+			<chmod path='${outPath}' permissions='755' dir-files='false'/>
+			<!--Do any other clean up here -->
+			<!--<delete path="${errorDataDir}"/> <mkdir path="${errorDataDir}"/> <chmod 
+				path='${errorDataDir}' permissions='755' dir-files='false'/> -->
+		</fs>
+		<ok to="stage-1-notify-status-started" />
+		<error to="stage-1-notify-status-started" />
+	</action>	
 
 	<!-- we have failed so tell the scorecard and exit -->
 	<action name="stage-1-notify-job-failed">
