@@ -358,7 +358,7 @@
 			<main-class>com.chs.drivers.Starter</main-class>
 			<arg>${sourcePath}</arg>
 			<arg>${entity}</arg>
-			<arg>${wf:actionData('retrieveControlDate')['returnCode']</arg>
+			<arg>${wf:actionData('retrieveControlDate')['returnCode']}</arg>
 			<arg>${outputPath}</arg>
 			<arg>${stageOnePracticeMappingFile}</arg>
 			<arg>${stageOneEntityMappingFile}</arg>
