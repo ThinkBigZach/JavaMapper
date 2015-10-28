@@ -205,10 +205,9 @@
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/python</exec>
 			<argument>sayControlExtractFromDate.py</argument>
-			<argument>-i</argument>
+			<argument>-f</argument>
 			<argument>${workingFile}</argument>
-			<file>${scriptsDir}/sayControlExctractFromDate.py#sayControlExtractFromDate.py
-			</file>
+			<file>${scriptsDir}/sayControlExtractFromDate.py#sayControlExtractFromDate.py</file>
 			<file>${scriptsDir}/chsHadoopUtils.py#chsHadoopUtils.py</file>
 			<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
 			<capture-output />
@@ -230,9 +229,9 @@
 
 	<action name="stage-1-pre-cleanup">
 		<fs>
-			<delete path="${outPath}" />
-			<mkdir path="${outPath}"/> 
-			<chmod path='${outPath}' permissions='755' dir-files='false'/>
+			<delete path="${outputPath}" />
+			<mkdir path="${outputPath}"/> 
+			<chmod path='${outputPath}' permissions='755' dir-files='false'/>
 			<!--Do any other clean up here -->
 			<!--<delete path="${errorDataDir}"/> <mkdir path="${errorDataDir}"/> <chmod 
 				path='${errorDataDir}' permissions='755' dir-files='false'/> -->
