@@ -185,7 +185,7 @@
 			<arg>-x</arg>
 			<arg>FAILED</arg>
 			<arg>-m</arg>
-			<arg>'${wf:id()} Stage 3 CustomMap failed retrieving jobIDs; workflow exiting...'</arg>
+			<arg>'${wf:id()} Stage 3 Custom Map control checks failed; workflow exiting...'</arg>
 			<file>job.properties#job.properties</file>
 			<capture-output />
 		</java>
@@ -322,6 +322,38 @@
 			<arg>WORKING</arg>
 			<arg>-m</arg>
 			<arg>'${wf:id()} Stage 3 CustomMap success on stage3-process-init'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output />
+		</java>
+		<!-- Below flow should go to custommap-process-notify-success to update
+			 server -->
+		<ok to="successful-process-cleanup" />
+		<error to="successful-process-cleanup" />
+	</action>
+
+	<action name="custommap-process-notify-success">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraWorkQue</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword</arg>
+			<arg>-j</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
+			<arg>-f</arg>
+			<arg>${divisionID}</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>noop</arg>
+			<arg>-x</arg>
+			<arg>CUSTOM_MAP_COMPLETE</arg>
 			<file>job.properties#job.properties</file>
 			<capture-output />
 		</java>

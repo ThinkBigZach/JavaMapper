@@ -27,23 +27,28 @@ else
 		lowermode="prod"
 		tdServer=prod.teradata.chs.net
 		tdUserIDPassword=inf0rmt1prod3t1
+	elif [ "$MODE" ==  "DEV" ]; then
+    	stage1UserID="athena"
+    	lowerMode="dev"
+    	tdServer=dev.teradata.chs.net
+    	tdUserIDPassword=dbc
 	else
 		echo "returnCode=NOOP"
 		exit -1
 	fi
 
-	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/job.properties
-	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
-	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
+#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/job.properties
+#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
-	hadoop fs -put job.properties /user/${uID}/data/${dataPartID}/oozie/job.properties
-	hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
-	hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
+#	hadoop fs -put job.properties /user/${uID}/data/${dataPartID}/oozie/job.properties
+#	hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+#	hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
 	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/data/${dataPartID}/oozie/job.properties"
 	-DcoordStart='date -u "+%Y-%m-%dT%H:00Z"' -DuserName=${uID}
 	-DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID}
-	-DtdServer=${tdServer} -DtdUserIDPassword${tdUserIDPassword}
+	-DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword}
 	-Dentity=${entity} -submit)
 
 	newJobID=$( echo ${rawJobID} | awk '{print 2}')
