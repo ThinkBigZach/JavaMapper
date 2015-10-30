@@ -22,7 +22,7 @@ else
 		fi
 	#fi
 	lowermode="unset"
-	if [ "$MODE" == "PROD"]; then
+	if [ "$MODE" == "PROD" ]; then
 		stage1UserID="athena"
 		lowermode="prod"
 		tdServer=prod.teradata.chs.net
