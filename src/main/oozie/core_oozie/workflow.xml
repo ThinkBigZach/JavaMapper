@@ -86,6 +86,9 @@
 			<name>workingFile</name>
 		</property>
 		<property>
+			<name>stageThreeControlFile</name>
+		</property>
+		<property>
 			<name>failureFile</name>
 		</property>
 		<property>
@@ -424,7 +427,10 @@
 
 	<action name="stage-1-success-cleanup">
 		<fs>
-			<delete path="${workingFile}" />
+
+			<move source="${workingFile}" target="${stageThreeControlFile}" />
+			<chmod path='${stageOneFinishedDir}/*' permissions='777' dir-files='false' />
+			<!--<delete path="${workingFile}" />-->
 			<!--Do any other clean up here -->
 			<!--<delete path="${errorDataDir}"/> <mkdir path="${errorDataDir}"/> <chmod 
 				path='${errorDataDir}' permissions='755' dir-files='false'/> -->
