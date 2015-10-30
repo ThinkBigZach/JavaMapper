@@ -153,12 +153,25 @@
 	<!-- validates the JobID retrieved by retrieveControlJob -->
 	<decision name="validate-control-payload">
 		<switch>
-			<case to="notify-stage3-starting">
+			<case to="retrieveSourcePath">
 				${wf:actionData('retrieveControlJob') ['returnCode'] ne 'FAILURE'}
 			</case>
 			<default to="notify-stage3-control-failed" />
 		</switch>
 	</decision>
+
+	<action name="retrieveSourcePath">
+		<shell>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<exec>/usr/bin/bash</exec>
+			<argument>extractPathFromCMControl.sh</argument>
+			<argument>${controlFile}</argument>
+			<file>${scriptsDir}/extractPathFromCMControl.sh#extractPathFromCMControl.sh</file>
+		</shell>
+		<ok to="notify-stage3-starting" />
+		<error to="notify-stage3-failed" />
+	</action>
 
 	<action name="notify-stage3-control-failed">
 		<java>
@@ -241,15 +254,17 @@
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/bash</exec>
-			<argument>athena_custommap_load.sh</argument>
+			<argument>athena_cm_load.sh</argument>
 			<argument>-i</argument>
 			<argument>${wf:actionData('retrieveControlJob') ['jobID']}</argument>
+			<argument>${wf:actionData('retrieveSourcePath')</argument>
 			<argument>${customMapFinishedDir}</argument>
 			<argument>${tdServer}</argument>
 			<argument>${tdUserID}</argument>
 			<argument>${tdUserIDPassword}</argument>
-			<argument>${tdStageDB}</argument>
-			<file>${scriptsDir}/athena_custommap_load.sh#athena_custommap_load.sh</file>
+			<!-- <argument>${tdStageDB}</argument> -->
+			<argument>${tdBase}</argument>
+			<file>${scriptsDir}/athena_cm_load.sh#athena_cm_load.sh</file>
 			<capture-output />
 		</shell>
 		<ok to="validate-success" />
