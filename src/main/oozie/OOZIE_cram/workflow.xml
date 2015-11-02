@@ -127,7 +127,7 @@
 	<action name="control-file-prep">
 		<fs>
 			<move source="${controlFile}" target="${workingFile}" />
-			<chmod path="${stageOneRawDir}/*" permissions="777" dir-files="false" />
+			<chmod path="${customMapRawDir}/*" permissions="777" dir-files="false" />
 		</fs>
 		<ok to="retrieveControlJob"/>
 		<error to="retrieveControlJob"/>
@@ -145,6 +145,7 @@
 			<file>${scriptsDir}/chsSayControlJob.py#chsSayControlJob.py</file>
 			<file>${scriptsDir}/chsHadoopUtils.py#chsHadoopUtils.py</file>
 			<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
+			<capture-output />
 		</shell>
 		<ok to="validate-control-payload" />
 		<error to="notify-stage3-control-failed" />
@@ -154,7 +155,7 @@
 	<decision name="validate-control-payload">
 		<switch>
 			<case to="retrieveSourcePath">
-				${wf:actionData('retrieveControlJob') ['returnCode'] ne 'FAILURE'}
+				${wf:actionData('retrieveControlJob')['returnCode'] ne 'FAILURE'}
 			</case>
 			<default to="notify-stage3-control-failed" />
 		</switch>
@@ -265,7 +266,7 @@
 			<arg>-p</arg>
 			<arg>${tdUserIDPassword}</arg>
 			<arg>-j</arg>
-			<arg>${wf:actionData('retrieveControlJob') ['jobID']}</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
 			<arg>0000</arg>
 			<arg>-s</arg>
@@ -290,7 +291,7 @@
 			<exec>/usr/bin/bash</exec>
 			<argument>athena_cm_load.sh</argument>
 			<argument>-i</argument>
-			<argument>${wf:actionData('retrieveControlJob') ['jobID']}</argument>
+			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
 			<argument>${wf:actionData('retrieveSourcePath')</argument>
 			<argument>${customMapFinishedDir}</argument>
 			<argument>${tdServer}</argument>
@@ -308,7 +309,7 @@
 	<decision name="validate-success">
 		<switch>
 			<case to="notify-process-success">
-				${wf:actionData('stage3-process-init') ['returnCode'] ne 'FAILURE'}
+				${wf:actionData('stage3-process-init')['returnCode'] ne 'FAILURE'}
 			</case>
 			<default to="notify-process-failed" />
 		</switch>
@@ -328,7 +329,7 @@
 			<arg>-p</arg>
 			<arg>${tdUserIDPassword}</arg>
 			<arg>-j</arg>
-			<arg>${wf:actionData('retrieveControlJob') ['jobID']}</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
 			<arg>0000</arg>
 			<arg>-s</arg>
@@ -360,7 +361,7 @@
 			<arg>-p</arg>
 			<arg>${tdUserIDPassword}</arg>
 			<arg>-j</arg>
-			<arg>${wf:actionData('retrieveControlJob') ['jobID']}</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
 			<arg>0000</arg>
 			<arg>-s</arg>
@@ -432,7 +433,7 @@
 			<arg>-p</arg>
 			<arg>${tdUserIDPassword}</arg>
 			<arg>-j</arg>
-			<arg>${wf:actionData('retrieveControlJob') ['jobID']}</arg>
+			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
 			<arg>0000</arg>
 			<arg>-s</arg>
