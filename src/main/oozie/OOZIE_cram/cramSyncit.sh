@@ -23,12 +23,12 @@ else
 	#fi
 	lowermode="unset"
 	if [ "$MODE" == "PROD" ]; then
-		stage1UserID="athena"
+		custommapUserID="athena"
 		lowermode="prod"
 		tdServer=prod.teradata.chs.net
 		tdUserIDPassword=inf0rmt1prod3t1
 	elif [ "$MODE" ==  "DEV" ]; then
-    	stage1UserID="athena"
+    	custommapUserID="athena"
     	lowerMode="dev"
     	tdServer=dev.teradata.chs.net
     	tdUserIDPassword=dbc
@@ -45,13 +45,9 @@ else
 #	hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
 #	hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
-	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/data/${dataPartID}/oozie/job.properties"
-	-DcoordStart='date -u "+%Y-%m-%dT%H:00Z"' -DuserName=${uID}
-	-DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID}
-	-DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword}
-	-Dentity=${entity} -submit)
+	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/custommap-oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DuserName=${uID} -DstageOneOwner=${custommapUserID} -DstageOneDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -Dentity=${entity} -submit)
 
-	newJobID=$( echo ${rawJobID} | awk '{print 2}')
+	newJobID=$( echo ${rawJobID} | awk '{print $2}')
 	echo $newJobID > ./${COORD_FILE}
 	fi
 fi

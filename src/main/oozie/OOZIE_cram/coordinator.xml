@@ -1,13 +1,13 @@
 <coordinator-app name="coord-${jobName}"
 	frequency="${coord:minutes(coordTimeInterval)}"
 	start="${coordStart}"
-	end="${coordend}"
+	end="${coordEnd}"
 	timezone="${coordTimeZone}"
 	xmlns="uri:oozie:coordinator:0.1">
 	<controls>
 		<timeout>${coordTimeOut}</timeout>
-		<concurrency>%{coordConcurrency}</concurrency>
-		<execution>%{coordExecution}</execution>
+		<concurrency>${coordConcurrency}</concurrency>
+		<execution>${coordExecution}</execution>
 	</controls>
 	<action>
 		<workflow>

@@ -161,7 +161,7 @@
 	</decision>
 
 	<action name="retrieveSourcePath">
-		<shell>
+		<shell xmlns="uri:oozie:shell-action:0.1">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/bash</exec>
@@ -170,8 +170,42 @@
 			<file>${scriptsDir}/extractPathFromCMControl.sh#extractPathFromCMControl.sh</file>
 		</shell>
 		<ok to="notify-stage3-starting" />
-		<error to="notify-stage3-failed" />
+		<error to="notify-stage3-source-failed" />
 	</action>
+
+	<action name="notify-stage3-source-failed">
+		<java>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<main-class>net.chs.datalake.teradata.TeraStatusPush</main-class>
+			<arg>-h</arg>
+			<arg>${tdServer}</arg>
+			<arg>-d</arg>
+			<arg>${tdAuditDB}</arg>
+			<arg>-u</arg>
+			<arg>${tdUserID}</arg>
+			<arg>-p</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>-j</arg>
+			<!-- probably no jobID if we're here -->
+			<arg>unknown</arg>
+			<arg>-f</arg>
+			<arg>0000</arg>
+			<arg>-s</arg>
+			<arg>${sourceName}</arg>
+			<arg>-z</arg>
+			<arg>STAGE-3</arg>
+			<arg>-x</arg>
+			<arg>FAILED</arg>
+			<arg>-m</arg>
+			<arg>'${wf:id()} Stage 3 Custom Map source path extraction failed; workflow exiting...'</arg>
+			<file>job.properties#job.properties</file>
+			<capture-output />
+		</java>
+		<ok to="stage3-failure-cleanup" />
+		<error to="stage3-failure-cleanup" />
+	</action>
+
 
 	<action name="notify-stage3-control-failed">
 		<java>
