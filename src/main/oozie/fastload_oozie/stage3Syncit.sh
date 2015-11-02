@@ -31,13 +31,14 @@ else
     	stage1UserID="athena"
     	lowerMode="dev"
     	tdServer=dev.teradata.chs.net
+    	tdUserID=dbc
     	tdUserIDPassword=dbc
 	else
 		echo "returnCode=NOOP"
 		exit -1
 	fi
 
-	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/stage-3-oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DuserName=${uID} -DstageThreeOwner=${stage1UserID} -DstageThreeDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -Dentity=${entity} -submit)
+	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/stage-3-oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DuserName=${uID} -DstageThreeOwner=${stage1UserID} -DstageThreeDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserID=${tdUserID} -DtdUserIDPassword=${tdUserIDPassword} -Dentity=${entity} -submit)
 
 	newJobID=$( echo ${rawJobID} | awk '{print $2}')
 	echo $newJobID > ./${COORD_FILE}

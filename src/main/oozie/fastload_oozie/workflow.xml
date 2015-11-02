@@ -253,7 +253,6 @@
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/bash</exec>
 			<argument>athena_load.sh</argument>
-			<argument>-i</argument>
 			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
 			<argument>${stageThreeFinishedDir}</argument>
 			<argument>${tdServer}</argument>
