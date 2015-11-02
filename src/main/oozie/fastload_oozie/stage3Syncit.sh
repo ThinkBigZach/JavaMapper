@@ -22,7 +22,7 @@ else
 		fi
 	#fi
 	lowermode="unset"
-	if [ "$MODE" == "PROD"]; then
+	if [ "$MODE" == "PROD" ]; then
 		stage1UserID="athena"
 		lowermode="prod"
 		tdServer=prod.teradata.chs.net
@@ -37,13 +37,9 @@ else
 		exit -1
 	fi
 
-	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/stage-3-oozie/job.properties"
-	-DcoordStart='date -u "+%Y-%m-%dT%H:00Z"' -DuserName=${uID}
-	-DstageOneOwner=${stage1UserID} -DstageOneDataPartition=${dataPartID}
-	-DtdServer=${tdServer} -DtdUserIDPassword${tdUserIDPassword}
-	-Dentity=${entity} -submit)
+	rawJobID=$(oozie job -oozie http://10.1.132.20:11000/oozie -config "/hdfs_mount/user/${uID}/stage-3-oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DuserName=${uID} -DstageThreeOwner=${stage1UserID} -DstageThreeDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserIDPassword=${tdUserIDPassword} -Dentity=${entity} -submit)
 
-	newJobID=$( echo ${rawJobID} | awk '{print 2}')
+	newJobID=$( echo ${rawJobID} | awk '{print $2}')
 	echo $newJobID > ./${COORD_FILE}
 	fi
 fi

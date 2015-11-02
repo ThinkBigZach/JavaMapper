@@ -56,7 +56,7 @@ else
     	stage1UserID="athena"
     	lowerMode="prod"
     	tdServer=prod.teradata.chs.net
-    	tdUserIDPassword=inf0rmt1prod3t1
+    	tdUserIDPassword=tdchs123
   	else
     	#echo "Error: INVALID MODE [ choice is only PROD for production, QA cannot land data**"
     	#echo "USAGE: syncit1 [MODE PROD] [data partician ID] [source system ID] [facility ID ]"

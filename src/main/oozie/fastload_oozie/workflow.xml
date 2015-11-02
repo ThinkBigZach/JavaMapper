@@ -59,6 +59,9 @@
 			<name>stageThreeRawDir</name>
 		</property>
 		<property>
+			<name>stageThreeFinishedDir</name>
+		</property>
+		<property>
 			<name>scriptsDir</name>
 		</property>
 		<property>
@@ -118,9 +121,9 @@
 		stage-3 -->
 	<action name="clean-up-request">
 		<fs>
-			<delete path="${stageThreeRawDir}" />
-			<mkdir path='${stageThreeRawDir}' />
-			<chmod path='${stageThreeRawDir}' permissions='777' dir-files='false' />
+			<delete path="${stageThreeFinishedDir}" />
+			<mkdir path='${stageThreeFinishedDir}' />
+			<chmod path='${stageThreeFinishedDir}' permissions='777' dir-files='false' />
 		</fs>
 		<!-- We end normally because we succeeded in simply cleaning up -->
 		<ok to="end" />
@@ -137,7 +140,7 @@
 		<fs>
 			<!-- GARY CLEANS FOR TODAYS WORK .... -->
 			<move source="${controlFile}" target="${workingFile}" />
-			<chmod path='${stageThreeRawDir}/*' permissions='777' dir-files='false' />
+			<chmod path='${stageThreeFinishedDir}/*' permissions='777' dir-files='false' />
 		</fs>
 		<!-- Even if this step is not needed, and it may not be, move to next step -->
 		<ok to="retrieveControlJob" />
@@ -342,11 +345,11 @@
 			<file>job.properties#job.properties</file>
 			<capture-output />
 		</java>
-		<ok to="notify-work-queue" />
-		<error to="notify-work-queue" />
+		<ok to="stage-3-write-queue-record" />
+		<error to="stage-3-write-queue-record" />
 	</action>
 
-	<action name="stage-3-write-que-record">
+	<action name="stage-3-write-queue-record">
 		<java>
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
@@ -490,6 +493,19 @@
 		</fs>
 		<ok to="kill" />
 		<error to="kill" />
+	</action>
+	
+		<!-- We have somehow failed late in the process more clean up to do, remove 
+		our WORKING.TXT file -->
+	<action name="success-cleanup">
+		<fs>
+			<delete path="${workingFile}" />
+			<!--Do any other clean up here -->
+			<!--<delete path="${errorDataDir}"/> <mkdir path="${errorDataDir}"/> <chmod 
+				path='${errorDataDir}' permissions='755' dir-files='false'/> -->
+		</fs>
+		<ok to="end" />
+		<error to="end" />
 	</action>
 
 	<!-- End the workflows as having failed -->
