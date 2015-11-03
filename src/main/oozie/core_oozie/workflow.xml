@@ -370,7 +370,7 @@
 			<arg>${tdPswd}</arg>
 			<arg>${tdBase}</arg>
 			<arg>divisional</arg>
-			<arg>validate</arg>
+			<arg>standard</arg>
 		</java>
 		<!--<ok to="end"/> <error to="kill"/> -->
 		<ok to="validate-process-stage-0-files-success" />
@@ -427,7 +427,6 @@
 
 	<action name="stage-1-success-cleanup">
 		<fs>
-
 			<move source="${workingFile}" target="${stageThreeControlFile}" />
 			<chmod path='${stageOneFinishedDir}/*' permissions='777' dir-files='false' />
 			<!--<delete path="${workingFile}" />-->
