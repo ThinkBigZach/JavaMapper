@@ -169,6 +169,7 @@
 			<argument>extractPathFromCMControl.sh</argument>
 			<argument>${controlFile}</argument>
 			<file>${scriptsDir}/extractPathFromCMControl.sh#extractPathFromCMControl.sh</file>
+			<capture-output />
 		</shell>
 		<ok to="notify-stage3-starting" />
 		<error to="notify-stage3-source-failed" />
@@ -290,9 +291,9 @@
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/bash</exec>
 			<argument>athena_cm_load.sh</argument>
-			<argument>-i</argument>
+			<!-- <argument>-i</argument> -->
 			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
-			<argument>${wf:actionData('retrieveSourcePath')</argument>
+			<argument>${wf:actionData('retrieveSourcePath')}</argument>
 			<argument>${customMapFinishedDir}</argument>
 			<argument>${tdServer}</argument>
 			<argument>${tdUserID}</argument>
