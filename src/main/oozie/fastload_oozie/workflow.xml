@@ -35,15 +35,6 @@
 			<name>tdServer</name>
 		</property>
 		<property>
-			<name>tdBase</name>
-		</property>
-		<property>
-			<name>tdUser</name>
-		</property>
-		<property>
-			<name>tdPswd</name>
-		</property>
-		<property>
 			<name>tdUserID</name>
 		</property>
 		<property>
@@ -199,7 +190,7 @@
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
-			<arg>STAGE-1</arg>
+			<arg>STAGE-3</arg>
 			<arg>-x</arg>
 			<arg>FAILED</arg>
 			<arg>-m</arg>
@@ -234,7 +225,7 @@
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
-			<arg>STAGE-1</arg>
+			<arg>STAGE-3</arg>
 			<arg>-x</arg>
 			<arg>STARTED</arg>
 			<arg>-m</arg>
@@ -260,6 +251,7 @@
 			<argument>${tdUserIDPassword}</argument>
 			<argument>${tdStageDB}</argument>
 			<file>${scriptsDir}/athena_load.sh#athena_load.sh</file>
+			<file>${scriptsDir}/athena_load_run.sh#athena_load_run.sh</file>
 			<capture-output />
 		</shell>
 		<ok to="validateJump" />
@@ -424,7 +416,7 @@
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
-			<arg>STAGE-1</arg>
+			<arg>STAGE-3</arg>
 			<arg>-x</arg>
 			<arg>FAILED</arg>
 			<arg>-m</arg>
@@ -456,7 +448,7 @@
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
-			<arg>STAGE-1</arg>
+			<arg>STAGE-3</arg>
 			<arg>-x</arg>
 			<arg>FAILED</arg>
 			<arg>-m</arg>
