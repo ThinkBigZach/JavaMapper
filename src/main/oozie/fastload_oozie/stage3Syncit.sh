@@ -26,7 +26,8 @@ else
 		stage1UserID="athena"
 		lowermode="prod"
 		tdServer=prod.teradata.chs.net
-		tdUserIDPassword=inf0rmt1prod3t1
+		tdUserID=athena
+		tdUserIDPassword=tdchs123
 	elif [ "$MODE" ==  "DEV" ]; then
     	stage1UserID="athena"
     	lowerMode="dev"

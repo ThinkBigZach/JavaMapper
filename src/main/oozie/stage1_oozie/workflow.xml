@@ -366,9 +366,9 @@
 			<arg>${stageOneEntityMappingFile}</arg>
 			<arg>${stageOneDivisionMappingFile}</arg>
 			<arg>${tdServer}</arg>
-			<arg>${tdUser}</arg>
-			<arg>${tdPswd}</arg>
-			<arg>${tdBase}</arg>
+			<arg>${tdUserID}</arg>
+			<arg>${tdUserIDPassword}</arg>
+			<arg>${tdStageDB}</arg>
 			<arg>divisional</arg>
 			<arg>standard</arg>
 		</java>
