@@ -39,13 +39,13 @@ else
 		exit -1
 	fi
 
-#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/job.properties
-#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
-#	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
+	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/job.properties
+	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+	hadoop fs -rm -skipTrash /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
-#	hadoop fs -put job.properties /user/${uID}/data/${dataPartID}/oozie/job.properties
-#	hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
-#	hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
+	hadoop fs -put job.properties /user/${uID}/data/${dataPartID}/oozie/job.properties
+	hadoop fs -put coordinator.xml /user/${uID}/data/${dataPartID}/oozie/coordinator.xml
+	hadoop fs -put workflow.xml /user/${uID}/data/${dataPartID}/oozie/workflow.xml
 
 	rawJobID=$(oozie job -oozie http://10.1.132.24:11000/oozie -config "/hdfs_mount/user/${uID}/custommap-oozie/job.properties" -DcoordStart=`date -u "+%Y-%m-%dT%H:00Z"` -DuserName=${uID} -Dstage3CustomMapOwner=${custommapUserID} -DcustomMapDataPartition=${dataPartID} -DtdServer=${tdServer} -DtdUserID=${tdUserID} -DtdUserIDPassword=${tdUserIDPassword} -Dentity=${entity} -submit)
 
