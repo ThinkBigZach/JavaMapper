@@ -248,7 +248,7 @@
 			<exec>/usr/bin/bash</exec>
 			<argument>athena_load.sh</argument>
 			<argument>${wf:actionData('retrieveControlJob')['jobID']}</argument>
-			<argument>${stage3FinishedDirShort}</argument>
+			<argument>${stageThreeFinishedDirShort}</argument>
 			<argument>${tdServer}</argument>
 			<argument>${tdUserID}</argument>
 			<argument>${tdUserIDPassword}</argument>
