@@ -110,6 +110,14 @@ public class PathDriver implements Driver {
 	private boolean isValidPractice(String practice) {
 		return validPracticeIDs.contains(practice);
 	}
+
+	/**
+	 * Reads in a date wild card or a regular path (specified by the boolean wildCarded)
+	 * @param pathToFiles the path to read from
+	 * @param dateWildCard the date piece (could contain a wildcard or not)
+	 * @param wildCarded whether or not it contains a card
+	 * @throws IOException
+	 */
 	private void readDateWildCard(Path pathToFiles, String dateWildCard, boolean wildCarded) throws IOException {
 		String divisionId = pathToFiles.toString().substring(pathToFiles.toString().indexOf("/data/") + 6);
 
@@ -150,10 +158,16 @@ public class PathDriver implements Driver {
 		}
 	}
 
+
+	/**
+	 * Reads a division wildcard if provided.
+	 * @param divisionPart the piece of the path before the wildcard
+	 * @param datePart the piece of the path after the wildcard
+	 * @throws IOException
+	 */
 	private void readDivisionalWildcard(String divisionPart, String datePart) throws IOException {
 		//FIRST READ IN ALL DIVISION FOLDERS
 		FileStatus[] fileStatuses = fs.listStatus(new Path(divisionPart));
-//        System.out.println(divisionPart);
 		for (FileStatus status : fileStatuses) {
 			if (status.isDirectory() ) {
 				if(isValidPractice(status.getPath().getName())){

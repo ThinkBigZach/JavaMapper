@@ -11,7 +11,7 @@ public class Starter {
 
 
 	//args[0] -- INPUT PATH LIKE THIS - /user/financialDataFeed/data/*/finished
-	//args[1] -- entity like this - allergy or "" "" will give you all entities
+	//args[1] -- entity like this - allergy or "*" "*" will give you all entities
 	//args[2] -- date for which it is run over yyyy-mm-dd[-yyyy-mm-dd]
 	//args[3] -- outpath like this -- /user/athena/financialdatafeed/extracted/finished
 	//args[4] -- valid practice map location like this --/enterprise/mappings/athena/chs-practice-id-mapping-athena.csv
@@ -22,7 +22,7 @@ public class Starter {
 	//TD_PSWD - args[9] - dbc
 	//TD_DATABASE - args[10] -- EDW_ATHENA_STAGE
 	//divisional OR path as args[11]
-	//verbose OR standard as args[12]
+	//validate OR standard as args[12]
 	public static void main(String[] args) throws Exception {
 //		PropertyConfigurator.configure("/src/log4j.properties");
 		if(args.length != 13) {

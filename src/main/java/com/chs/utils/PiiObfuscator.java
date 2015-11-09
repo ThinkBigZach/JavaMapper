@@ -4,8 +4,16 @@ import java.util.List;
 
 public class PiiObfuscator {
 
-	
-	public static String piiProcess(String[] line, String[] headerInfo, List<SchemaRecord> schemarecords, String delimiter) 
+	/**
+	 * This processes each line if it has personally identifiable info which is indicated
+	 * by a comment_string equal to remove
+	 * @param line - The line to be processed
+	 * @param headerInfo - the header for that entity
+	 * @param schemarecords - the schema records for that entity
+	 * @param delimiter - the delimiter that line is delimited by (/036 is the regular one)
+	 * @return
+	 */
+	public static String piiProcess(String[] line, String[] headerInfo, List<SchemaRecord> schemarecords, String delimiter)
     {
     	StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < line.length; i++)
@@ -30,6 +38,13 @@ public class PiiObfuscator {
 		return val;
 	}
 
+
+	/**
+	 * For a given list of schema records, this will return true if that entity has personally identifiable information
+	 * Otherwise it'll return false.
+	 * @param records
+	 * @return
+	 */
 	public static boolean hasRemoveComment(List<SchemaRecord> records)
     {
     	for(SchemaRecord r : records)

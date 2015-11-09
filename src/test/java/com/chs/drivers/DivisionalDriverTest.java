@@ -354,4 +354,16 @@ public class DivisionalDriverTest {
     }
 
 
+    @Test
+    public void testMatchNumbers(){
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        list.add(0);
+        list.add(1);
+        String line = "2222222222\03722\037Hey";
+        assertTrue(ChsUtils.matchNumberTypes(line, list));
+        
+
+    }
+
+
 }

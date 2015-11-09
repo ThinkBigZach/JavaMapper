@@ -1,9 +1,14 @@
 package com.chs.utils;
 
+/**
+ * Class that holds the column names, titles, and comment string from the Teradata database
+ */
 public class SchemaRecord 
 {
 	private String column_name;
 	private String column_id;
+
+	//If comment string is equal to remove, then that column is personally identifiable.
 	private String commentstring;
 
 	public String getColumn_name() {

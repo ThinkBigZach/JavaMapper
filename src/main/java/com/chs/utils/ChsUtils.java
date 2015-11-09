@@ -132,12 +132,14 @@ public class ChsUtils {
                     try {
                         double d = Double.parseDouble(matchLine[i].trim());
                     } catch (NumberFormatException e) {
+                        System.out.println(matchLine[i]);
                         return false;
                     }
                 } else if(!matchLine[i].equals("")) {
                     try {
-                        int index = Integer.parseInt(matchLine[i].trim());
+                        long index = Long.parseLong(matchLine[i].trim());
                     } catch (NumberFormatException e) {
+                        System.out.println(matchLine[i]);
                         return false;
                     }
                 }
