@@ -176,7 +176,7 @@
 			<name-node>${nameNode}</name-node>
 			<exec>/usr/bin/python</exec>
 			<argument>chsSayControlFacility.py</argument>
-			<argument>-i</argument>
+			<argument>-f</argument>
 			<argument>${workingFile}</argument>
 			<file>${scriptsDir}/chsSayControlFacility.py#chsSayControlFacility.py
 			</file>
@@ -191,7 +191,7 @@
 	<!-- We verify the job id was properly grabbed -->
 	<decision name="validateControlFacilityPayload">
 		<switch>
-			<case to="retrieveControlDate">
+			<case to="retrieveControlJob">
 				${
 				wf:actionData('retrieveControlFacility') ['returnCode'] ne 'FAILURE'
 				}
@@ -216,7 +216,7 @@
 			<capture-output />
 		</shell>
 		<ok to="retrieveControlDate" />
-		<error to="stage-1-notify-job-failed" />
+		<error to="retrieveControlDate" />
 	</action>
 
 	<!-- We call say control extract from date python script in order to retrieve 
@@ -236,7 +236,7 @@
 			<capture-output />
 		</shell>
 		<ok to="validateControlPayload" />
-		<error to="stage-1-notify-job-failed" />
+		<error to="validateControlPayload" />
 	</action>
 
 	<!-- We verify the date was properly grabbed -->
@@ -262,8 +262,24 @@
 			<!--<delete path="${errorDataDir}"/> <mkdir path="${errorDataDir}"/> <chmod 
 				path='${errorDataDir}' permissions='755' dir-files='false'/> -->
 		</fs>
+		<ok to="evaluateFacility" />
+		<error to="evaluateFacility" />
+	</action>
+	
+	<action name="evaluateFacility">
+		<shell xmlns="uri:oozie:shell-action:0.1">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<exec>/usr/bin/bash</exec>
+			<argument>evaluateFacilityID.sh</argument>
+			<argument>${wf:actionData('retrieveControlFacility')['facilityID']}</argument>
+			<argument>${stageOneDivisionMappingFile}</argument>
+			<argument>${sourcePath}</argument>
+			<file>${scriptsDir}/evaluateFacilityID.sh#evaluateFacilityID.sh</file>
+			<capture-output />
+		</shell>
 		<ok to="stage-1-notify-status-started" />
-		<error to="stage-1-notify-status-started" />
+		<error to="stage-1-notify-job-failed" />
 	</action>
 
 	<!-- we have failed so tell the scorecard and exit -->
@@ -381,7 +397,7 @@
 				</property>
 			</configuration>
 			<main-class>com.chs.drivers.Starter</main-class>
-			<arg>${sourcePath}</arg>
+			<arg>${wf:actionData('evaluateFacility')['runSource']}</arg>
 			<arg>${entity}</arg>
 			<arg>${wf:actionData('retrieveControlDate')['returnCode']}</arg>
 			<arg>${outputPath}</arg>
@@ -392,7 +408,7 @@
 			<arg>${tdUserID}</arg>
 			<arg>${tdUserIDPassword}</arg>
 			<arg>${tdStageDB}</arg>
-			<arg>divisional</arg>
+			<arg>${wf:actionData('evaluateFacility')['runType']}</arg>
 			<arg>standard</arg>
 		</java>
 		<!--<ok to="end"/> <error to="kill"/> -->
@@ -495,32 +511,6 @@
 		</java>
 		<ok to="stage-1-notify-early-failed" />
 		<error to="stage-1-notify-early-failed" />
-	</action>
-
-	<!--Send status via email -->
-	<action name="email-failure">
-		<email xmlns="uri:oozie:email-action:0.1">
-			<to>${toEmailAddress}</to>
-			<subject>Status of workflow ${wf:id()}</subject>
-			<body>The workflow ${wf:name()} with id -${wf:id()}, had issues and
-				will be kill; The error logged is:
-				${wf:errorMessage(wf:lastErrorNode()); }
-			</body>
-		</email>
-		<ok to="stage-1-notify-early-failed" />
-		<error to="stage-1-notify-early-failed" />
-	</action>
-
-	<action name="email-success">
-		<email xmlns="uri:oozie:email-action:0.1">
-			<to>${toEmailAddress}</to>
-			<subject>Status of workflow ${wf:id()}</subject>
-			<body>The workflow ${wf:name()} with id -${wf:id()}, completed
-				successfully.
-			</body>
-		</email>
-		<ok to="end" />
-		<error to="end" />
 	</action>
 
 	<action name="stage-1-notify-early-failed">

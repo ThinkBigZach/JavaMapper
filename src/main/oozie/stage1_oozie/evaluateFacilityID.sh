@@ -9,21 +9,23 @@ fi
 facilityID=$1
 
 if [ "$facilityID" -eq "9999" ] ; then
-echo "runType=divisional,runSource=$3"
-exit 0
+	echo "runType=divisional"
+	echo"runSource=$3"
+	exit 0
 
 else
-runSource=`echo "$3" | sed "s/\*/$facilityID/g"`
-divs=`hadoop fs -cat $2`
+	runSource=`echo "$3" | sed "s/\*/$facilityID/g"`
+	divs=`hadoop fs -cat $2`
 
-for div in $divs 
-do
-	if [ "$facilityID" -eq "$div" ] ; then
-	echo "runType=divisional,runSource=$runSource"
-	exit 0
-	else
-	echo "runType=path,runSource=$runSource"
-	exit 0
+	for div in $divs 
+	do
+		if [ "$facilityID" -eq "$div" ] ; then
+		echo "runType=divisional"
+		echo "runSource=$runSource"
+		exit 0
+		fi
+	done
+		echo "runType=path"
+		echo "runSource=$runSource"
+		exit 0
 	fi
-done
-fi
