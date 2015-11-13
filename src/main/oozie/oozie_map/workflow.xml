@@ -157,15 +157,17 @@
 			<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
 			<capture-output />
 		</shell>
-		<ok to="validate-control-payload" />
+		<ok to="retrieveSourcePath" />
 		<error to="notify-custom-map-control-failed" />
 	</action>
 
 	<!-- validates the JobID retrieved by retrieveControlJob -->
 	<decision name="validate-control-payload">
 		<switch>
-			<case to="retrieveSourcePath">
-				${wf:actionData('retrieveControlJob')['returnCode'] ne 'FAILURE'}
+			<case to="notify-custom-map-starting">
+				${wf:actionData('retrieveControlJob')['jobID'] ne 'FAILURE'
+				and wf:actionData('retrieveSourcePath')['controlPath'] ne 'FAILURE'
+				and wf:actionData('retrieveFacilityID')['returnCode'] ne 'FAILURE'}
 			</case>
 			<default to="notify-custom-map-control-failed" />
 		</switch>
@@ -185,7 +187,24 @@
 			<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
 			<capture-output />
 		</shell>
-		<ok to="notify-custom-map-starting" />
+		<ok to="retrieveFacilityID" />
+		<error to="notify-custom-map-source-failed" />
+	</action>
+
+	<action name="retrieveFacilityID"/>
+		<shell xmlns="uri:oozie:shell-action:0.1">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<exec>/usr/bin/python</exec>
+			<argument>chsSayControlFacility.py</argument>
+			<argument>-f</argument>
+			<argument>${workingFile}</argument>
+			<file>${scriptsDir}/chsSayControlFacility.py#chsSayControlFacility.py</file>
+			<file>${scriptsDir}/chsHadoopUtils.py#chsHadoopUtils.py</file>
+			<file>${scriptsDir}/simpleflake.py#simpleflake.py</file>
+			<capture-output />
+		</shell>
+		<ok to="validate-control-payload" />
 		<error to="notify-custom-map-source-failed" />
 	</action>
 
@@ -207,7 +226,7 @@
 			<!-- probably no jobID if we're here -->
 			<arg>unknown</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -215,7 +234,7 @@
 			<arg>-x</arg>
 			<arg>FAILED</arg>
 			<arg>-m</arg>
-			<arg>'${wf:id()} Custom Map source path extraction failed; workflow exiting...'</arg>
+			<arg>'${wf:id()} Custom Map source path/facility ID extraction failed; workflow exiting...'</arg>
 			<file>job.properties#job.properties</file>
 			<capture-output />
 		</java>
@@ -241,7 +260,7 @@
 			<!-- probably no jobID if we're here -->
 			<arg>unknown</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -283,7 +302,7 @@
 			<arg>-j</arg>
 			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -348,7 +367,7 @@
 			<arg>-j</arg>
 			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -381,7 +400,7 @@
 			<arg>-j</arg>
 			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -414,7 +433,7 @@
 			<arg>-j</arg>
 			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
-			<arg>${divisionID}</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
@@ -454,7 +473,7 @@
 			<arg>-j</arg>
 			<arg>${wf:actionData('retrieveControlJob')['jobID']}</arg>
 			<arg>-f</arg>
-			<arg>0000</arg>
+			<arg>${wf:actionData('retrieveFacilityID')['returnCode']}</arg>
 			<arg>-s</arg>
 			<arg>${sourceName}</arg>
 			<arg>-z</arg>
